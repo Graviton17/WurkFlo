@@ -16,11 +16,13 @@ const logos = [
 export const LogoTicker = () => {
   return (
     <section className="py-12 border-y border-white/5 bg-white/[0.02] overflow-hidden whitespace-nowrap mt-10">
-      <div className="max-w-[1280px] mx-auto px-6 relative">
-        {/* Fade masks for smooth edges */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#0c0c0d] to-transparent z-10 pointers-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#0c0c0d] to-transparent z-10 pointers-events-none" />
-        
+      <div 
+        className="max-w-[1280px] mx-auto px-6 relative"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent, black 100px, black calc(100% - 100px), transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 100px, black calc(100% - 100px), transparent)'
+        }}
+      >
         <div className="flex w-fit">
           <motion.div
             animate={{ x: '-50%' }}
