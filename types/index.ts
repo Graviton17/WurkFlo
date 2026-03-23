@@ -7,3 +7,11 @@ export type {
 export type { StorageResponse, UploadOptions } from "./storage.types";
 
 export type { DatabaseResponse } from "./database.type";
+
+export type { User } from "./model/user.types";
+export type {
+  Workspace,
+  WorkspaceMember,
+  WorkspaceRole,
+} from "./model/workspace.types";
+export type { Project } from "./model/project.types";
