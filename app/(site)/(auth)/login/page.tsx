@@ -6,6 +6,7 @@ import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  AuthPageLayout,
   AuthCardShell,
   AuthDivider,
   AuthErrorAlert,
@@ -67,63 +68,66 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthCardShell
-      title="Welcome Back"
-      subtitle="Sign in to your WurkFlo account"
-    >
-      <form className="space-y-6" onSubmit={handleLogin}>
-        <AuthField
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          label="Email address"
-          icon={<Mail className="h-5 w-5" />}
-          placeholder="you@example.com"
+    <AuthPageLayout>
+      <AuthCardShell
+        title="Welcome Back"
+        subtitle="Sign in to your WurkFlo account"
+      >
+        <form className="space-y-5" onSubmit={handleLogin}>
+          <AuthField
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            label="Email address"
+            icon={<Mail className="h-5 w-5" />}
+            placeholder="you@example.com"
+          />
+
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-medium text-white/90" style={{ marginBottom: 0 }}>
+                Password
+              </label>
+              <Link href="#" className="text-white/60 text-sm transition-colors hover:text-white">
+                Forgot password?
+              </Link>
+            </div>
+            <div className="mt-1">
+              <AuthField
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                label="Password"
+                hideLabel
+                icon={<Lock className="h-5 w-5" />}
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          {error && <AuthErrorAlert message={error} />}
+
+          <div className="pt-2">
+            <AuthSubmitButton loading={loading} text="Sign in" />
+          </div>
+        </form>
+
+        <AuthDivider text="Or continue with" />
+        <AuthOAuthButton onClick={handleGoogleLogin} label="Google" />
+        <AuthFooterLink
+          text="Don't have an account?"
+          href="/signup"
+          cta="Sign up"
         />
-
-        <div>
-          <div className="mb-0 flex items-center justify-between">
-            <label htmlFor="password" className="auth-label">
-              Password
-            </label>
-            <Link href="#" className="auth-inline-link">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="mt-2">
-            <AuthField
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              label="Password"
-              hideLabel
-              icon={<Lock className="h-5 w-5" />}
-              placeholder="••••••••"
-              className="mt-0"
-            />
-          </div>
-        </div>
-
-        {error && <AuthErrorAlert message={error} />}
-
-        <AuthSubmitButton loading={loading} text="Sign in" />
-      </form>
-
-      <AuthDivider text="Or continue with" />
-      <AuthOAuthButton onClick={handleGoogleLogin} label="Google" />
-      <AuthFooterLink
-        text="Don't have an account?"
-        href="/signup"
-        cta="Sign up"
-      />
-    </AuthCardShell>
+      </AuthCardShell>
+    </AuthPageLayout>
   );
 }
