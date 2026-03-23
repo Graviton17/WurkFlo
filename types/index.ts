@@ -15,3 +15,4 @@ export type {
   WorkspaceRole,
 } from "./model/workspace.types";
 export type { Project } from "./model/project.types";
+export type { WorkflowState, StateCategoryEnum } from "./model/workflow.types";
