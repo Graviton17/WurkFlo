@@ -50,15 +50,15 @@
 
 /* Force dark theme default colors */
 :root {
-  --background: oklch(
-    0.145 0 0
-  ); /* Using #0c0c0d for true black sections inside app, but using dark base here */
+  --background: oklch(0.145 0 0);
+  /* Using #0c0c0d for true black sections inside app, but using dark base here */
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.25 25); /* Approximate of #ff1f1f */
+  --primary: oklch(0.6 0.25 25);
+  /* Approximate of #ff1f1f */
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -90,6 +90,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-[#0c0c0d] text-foreground font-sans antialiased;
   }
@@ -106,26 +107,20 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       rgba(37, 53, 115, 0.14) 0%,
       rgba(37, 53, 115, 0.04) 34%,
-      rgba(10, 15, 28, 0) 62%
-    ),
-    repeating-linear-gradient(
-      0deg,
+      rgba(10, 15, 28, 0) 62%),
+    repeating-linear-gradient(0deg,
       rgba(130, 154, 198, 0.06) 0,
       rgba(130, 154, 198, 0.06) 1px,
       transparent 1px,
-      transparent 44px
-    ),
-    repeating-linear-gradient(
-      90deg,
+      transparent 44px),
+    repeating-linear-gradient(90deg,
       rgba(130, 154, 198, 0.06) 0,
       rgba(130, 154, 198, 0.06) 1px,
       transparent 1px,
-      transparent 44px
-    ),
+      transparent 44px),
     linear-gradient(135deg, #060b15 0%, #050a13 48%, #040812 100%);
 }
 
@@ -142,11 +137,9 @@ body {
   width: 440px;
   height: 440px;
   opacity: 0.16;
-  background: radial-gradient(
-    circle,
-    rgba(67, 103, 226, 0.55) 0%,
-    rgba(67, 103, 226, 0) 72%
-  );
+  background: radial-gradient(circle,
+      rgba(67, 103, 226, 0.55) 0%,
+      rgba(67, 103, 226, 0) 72%);
 }
 
 .auth-orb-right {
@@ -155,11 +148,9 @@ body {
   width: 420px;
   height: 420px;
   opacity: 0.08;
-  background: radial-gradient(
-    circle,
-    rgba(76, 112, 224, 0.45) 0%,
-    rgba(76, 112, 224, 0) 70%
-  );
+  background: radial-gradient(circle,
+      rgba(76, 112, 224, 0.45) 0%,
+      rgba(76, 112, 224, 0) 70%);
 }
 
 .auth-orb-center {
@@ -175,11 +166,9 @@ body {
 .auth-card {
   border: 1px solid var(--auth-border);
   border-radius: var(--auth-radius-lg);
-  background: linear-gradient(
-    180deg,
-    rgba(21, 21, 25, 0.94) 0%,
-    rgba(16, 16, 17, 0.92) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(21, 21, 25, 0.94) 0%,
+      rgba(16, 16, 17, 0.92) 100%);
   box-shadow: var(--auth-shadow);
   -webkit-backdrop-filter: blur(7px);
   backdrop-filter: blur(7px);
@@ -235,11 +224,9 @@ body {
   width: 100%;
   border: 1px solid var(--auth-border);
   border-radius: var(--auth-radius-md);
-  background: linear-gradient(
-    180deg,
-    rgba(34, 34, 37, 0.9) 0%,
-    var(--auth-control) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(34, 34, 37, 0.9) 0%,
+      var(--auth-control) 100%);
   color: var(--auth-text);
   padding: 0.78rem 0.95rem 0.78rem 2.7rem;
   outline: none;
@@ -257,11 +244,9 @@ body {
 .auth-input:focus {
   border-color: var(--auth-ring);
   box-shadow: 0 0 0 3px rgba(255, 60, 0, 0.16);
-  background: linear-gradient(
-    180deg,
-    rgba(40, 40, 46, 0.95) 0%,
-    var(--auth-control) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(40, 40, 46, 0.95) 0%,
+      var(--auth-control) 100%);
   transform: translateY(-1px);
 }
 
@@ -395,6 +380,7 @@ body {
     opacity: 0;
     transform: translateY(18px) scale(0.985);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -420,6 +406,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .auth-reveal,
   .auth-primary-button,
   .auth-oauth-button,
