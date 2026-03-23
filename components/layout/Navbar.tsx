@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
@@ -36,12 +37,10 @@ export const Navbar = () => {
       <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
 
         {/* Left Side: Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-white text-black rounded font-bold flex items-center justify-center">
-            W
-          </div>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/favicon.ico" alt="WurkFlo Logo" width={32} height={32} className="rounded" />
           <span className="font-semibold text-lg tracking-tight">WurkFlo</span>
-        </div>
+        </Link>
 
         {/* Center Links */}
         <div className="hidden md:flex items-center">
@@ -54,7 +53,7 @@ export const Navbar = () => {
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 bg-black/90 border border-white/10 backdrop-blur-xl rounded-xl">
                     {productFeatures.map((component) => (
                       <li key={component.title}>
-                        <NavigationMenuLink 
+                        <NavigationMenuLink
                           render={<Link href={component.href} />}
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10"
                         >
@@ -73,7 +72,7 @@ export const Navbar = () => {
                   <ul className="grid w-[300px] gap-3 p-4 bg-black/90 border border-white/10 backdrop-blur-xl rounded-xl">
                     {solutions.map((item) => (
                       <li key={item.title}>
-                        <NavigationMenuLink 
+                        <NavigationMenuLink
                           render={<Link href={item.href} />}
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10"
                         >
@@ -92,7 +91,7 @@ export const Navbar = () => {
                   <ul className="grid w-[300px] gap-3 p-4 bg-black/90 border border-white/10 backdrop-blur-xl rounded-xl">
                     {resources.map((res) => (
                       <li key={res.title}>
-                        <NavigationMenuLink 
+                        <NavigationMenuLink
                           render={<Link href={res.href} />}
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-white/10"
                         >
@@ -106,8 +105,8 @@ export const Navbar = () => {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuLink 
-                  render={<Link href="/company" />} 
+                <NavigationMenuLink
+                  render={<Link href="/company" />}
                   className={`${navigationMenuTriggerStyle()} bg-transparent hover:bg-white/5 text-white/70 hover:text-white`}
                 >
                   Company
@@ -121,11 +120,11 @@ export const Navbar = () => {
         {/* Right Side */}
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-            Log In
+            Login
           </Link>
           <Link href="/signup">
             <Button className="bg-[#ff1f1f] hover:bg-[#ff1f1f]/90 text-white rounded-full px-6 font-medium border-0">
-              Get Started
+              Sign Up
             </Button>
           </Link>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Twitter, Linkedin, Github } from 'lucide-react';
 
 export const Footer = () => {
@@ -8,12 +9,10 @@ export const Footer = () => {
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
           <div className="col-span-2 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-white text-black rounded font-bold flex items-center justify-center">
-                W
-              </div>
+            <Link href="/" className="flex items-center gap-2 mb-6">
+              <Image src="/favicon.ico" alt="WurkFlo Logo" width={32} height={32} className="rounded" />
               <span className="font-semibold text-lg tracking-tight text-white">WurkFlo</span>
-            </div>
+            </Link>
             <p className="text-white/50 max-w-sm leading-relaxed mb-8">
               The modern platform for project documentation, issue tracking, and seamless team collaboration.
             </p>

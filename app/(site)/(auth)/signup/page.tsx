@@ -12,7 +12,7 @@ import {
   AuthFooterLink,
   AuthOAuthButton,
   AuthSubmitButton,
-} from "@/components";
+} from "@/components/auth";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
