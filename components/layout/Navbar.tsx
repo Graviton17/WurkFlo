@@ -21,12 +21,11 @@ export const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/signin" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-            Sign In
+          <Link href="/signin">
+            <Button variant="default" className="bg-[#ff1f1f] hover:bg-[#ff1f1f]/90 text-white rounded-full px-6">
+              Sign In
+            </Button>
           </Link>
-          <Button variant="default" className="bg-[#ff1f1f] hover:bg-[#ff1f1f]/90 text-white rounded-full px-6">
-            Join Waitlist
-          </Button>
         </div>
       </div>
     </nav>
