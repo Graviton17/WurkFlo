@@ -66,7 +66,7 @@ export function KanbanBoard() {
                 dragElastic={0.8}
                 onDragStart={() => setActiveTaskId(task.id)}
                 onDragEnd={(e, info) => handleDragEnd(e, info, task)}
-                whileDrag={{ scale: 1.05, zIndex: 50, rotate: 2 }}
+                whileDrag={{ scale: 1.05, zIndex: 50 }}
                 className={`
                   bg-[#161618] border border-zinc-700/60 shadow-lg p-3.5 rounded-lg cursor-grab active:cursor-grabbing text-sm flex flex-col gap-3 relative
                   ${activeTaskId === task.id ? 'opacity-80 ring-2 ring-indigo-500/50' : 'hover:border-zinc-600'}
