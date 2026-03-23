@@ -46,7 +46,7 @@ export function InteractiveSandbox() {
           hidden: { opacity: 0, y: 20 },
           visible: { opacity: 1, y: 0 }
         }}
-        className="relative z-10 w-full flex flex-col items-center mt-2"
+        className="relative z-50 w-full flex flex-col items-center mt-2"
       >
         <div className="flex items-center gap-2.5 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 px-3 py-1.5 rounded-full mb-6 relative">
           <span className="relative flex h-2 w-2">
