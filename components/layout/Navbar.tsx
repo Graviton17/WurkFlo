@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/services/supabase";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { User, LogOut, Settings } from "lucide-react";
 import {
   NavigationMenu,
@@ -74,13 +75,15 @@ export const Navbar = () => {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }: any) => {
-      setUser(data.user);
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data?.user ?? null);
       setLoading(false);
-    });
+    };
+    checkUser();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (error: any, session: any) => {
+      (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null);
       },
     );

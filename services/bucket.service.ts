@@ -1,15 +1,27 @@
 import { supabase } from "./supabase";
+import { createServerComponentClient } from "./server.service";
 import type { StorageResponse, UploadOptions } from "@/types/index";
 
 /**
  * Storage Service
- * Handles file storage operations
+ * Handles file storage operations.
+ * Uses getClient() to resolve correct Supabase client for server vs browser context.
  */
 export class StorageService {
   private bucketName: string;
 
   constructor(bucketName: string) {
     this.bucketName = bucketName;
+  }
+
+  /**
+   * Resolve the correct Supabase client based on execution context.
+   */
+  private async getClient() {
+    if (typeof window === "undefined") {
+      return await createServerComponentClient();
+    }
+    return supabase;
   }
 
   /**
@@ -25,7 +37,8 @@ export class StorageService {
     options?: UploadOptions,
   ): Promise<StorageResponse<{ path: string }>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .upload(path, file, options);
 
@@ -50,7 +63,8 @@ export class StorageService {
    */
   async download(path: string): Promise<StorageResponse<Blob>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .download(path);
 
@@ -73,10 +87,11 @@ export class StorageService {
    * @param path - File path in bucket
    * @returns Public URL
    */
-  getPublicUrl(path: string): string {
+  async getPublicUrl(path: string): Promise<string> {
+    const client = await this.getClient();
     const {
       data: { publicUrl },
-    } = supabase.storage.from(this.bucketName).getPublicUrl(path);
+    } = client.storage.from(this.bucketName).getPublicUrl(path);
 
     return publicUrl;
   }
@@ -92,7 +107,8 @@ export class StorageService {
     expiresIn: number = 3600,
   ): Promise<StorageResponse<{ signedUrl: string }>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .createSignedUrl(path, expiresIn);
 
@@ -125,7 +141,8 @@ export class StorageService {
     },
   ): Promise<StorageResponse<any[]>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .list(path, options);
 
@@ -151,7 +168,8 @@ export class StorageService {
   async delete(paths: string | string[]): Promise<StorageResponse<null>> {
     try {
       const pathArray = Array.isArray(paths) ? paths : [paths];
-      const { error } = await supabase.storage
+      const client = await this.getClient();
+      const { error } = await client.storage
         .from(this.bucketName)
         .remove(pathArray);
 
@@ -180,7 +198,8 @@ export class StorageService {
     toPath: string,
   ): Promise<StorageResponse<{ message: string }>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .move(fromPath, toPath);
 
@@ -209,7 +228,8 @@ export class StorageService {
     toPath: string,
   ): Promise<StorageResponse<{ path: string }>> {
     try {
-      const { data, error } = await supabase.storage
+      const client = await this.getClient();
+      const { data, error } = await client.storage
         .from(this.bucketName)
         .copy(fromPath, toPath);
 

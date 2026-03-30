@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerComponentClient, userService } from "@/services/index";
+import { createServerComponentClient } from "@/services/server.service";
+import { userService } from "@/services/index";
 import { BASE_URL } from "@/app/env";
 
 /**

@@ -25,11 +25,13 @@ export default function SignupPage() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }: any) => {
-      if (data.user) {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
         router.replace("/onboarding");
       }
-    });
+    };
+    checkSession();
   }, [router]);
 
   const handleSignup = async (e: React.FormEvent) => {

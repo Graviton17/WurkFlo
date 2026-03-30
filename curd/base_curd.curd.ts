@@ -1,6 +1,7 @@
 import { supabase as browserClient } from "../services/supabase";
 import { createServerComponentClient } from "../services/server.service";
 import type { DatabaseResponse } from "@/types/index";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export class BaseCURD<T = any> {
   protected tableName: string;
@@ -29,7 +30,9 @@ export class BaseCURD<T = any> {
   }): Promise<DatabaseResponse<T[]>> {
     try {
       const db = await this.getClient();
-      let query = db.from(this.tableName).select(options?.select || "*");
+      let query = db.from(this.tableName)
+        .select(options?.select || "*")
+        .is("deleted_at", null); // Enforce Soft Delete tracking
 
       // Apply filters
       if (options?.filters) {
@@ -82,6 +85,7 @@ export class BaseCURD<T = any> {
         .from(this.tableName)
         .select(select || "*")
         .eq("id", id)
+        .is("deleted_at", null) // Prevent reading soft-deleted entities
         .maybeSingle();
 
       return {
@@ -156,16 +160,10 @@ export class BaseCURD<T = any> {
   }
 
   /**
-   * Update a record by ID
-   * @param id - Record ID
-   * @param data - Updated data
-   * @returns Promise with updated data or error
+   * Upsert a record (Insert or Update)
+   * @param data - Record data
+   * @returns Promise with upserted data or error
    */
-  /** 
-   * Upsert a record (Insert or Update) 
-   * @param data - Record data 
-   * @returns Promise with upserted data or error 
-   */ 
   async upsert(data: Partial<T>): Promise<DatabaseResponse<T>> { 
     try { 
       const db = await this.getClient(); 
@@ -190,6 +188,12 @@ export class BaseCURD<T = any> {
     } 
   } 
 
+  /**
+   * Update a record by ID
+   * @param id - Record ID
+   * @param data - Updated data
+   * @returns Promise with updated data or error
+   */
   async update(
     id: string | number,
     data: Partial<T>,
@@ -226,7 +230,10 @@ export class BaseCURD<T = any> {
   async delete(id: string | number): Promise<DatabaseResponse<null>> {
     try {
       const db = await this.getClient();
-      const { error } = await db.from(this.tableName).delete().eq("id", id);
+      const { error } = await db
+        .from(this.tableName)
+        .update({ deleted_at: new Date().toISOString() }) // Soft Delete
+        .eq("id", id);
 
       return {
         data: null,
@@ -254,7 +261,8 @@ export class BaseCURD<T = any> {
       const db = await this.getClient();
       let query = db
         .from(this.tableName)
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .is("deleted_at", null);
 
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
@@ -284,7 +292,7 @@ export class BaseCURD<T = any> {
    * @returns Promise with data or error
    */
   async customQuery<R = any>(
-    queryBuilder: (table: ReturnType<typeof browserClient.from>) => any,
+    queryBuilder: (table: ReturnType<SupabaseClient['from']>) => any,
   ): Promise<DatabaseResponse<R>> {
     try {
       const db = await this.getClient();
