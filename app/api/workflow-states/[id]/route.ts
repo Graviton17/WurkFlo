@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { userService } from "@/services/index";
-import { createServerComponentClient } from "@/services/server.service";
+import { workflowStateService } from "@/services/index";
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +7,7 @@ export async function GET(
 ) {
   try {
     const id = (await params).id;
-    const result = await userService.getUserById(id);
+    const result = await workflowStateService.getStateById(id);
     
     if (!result.success) {
       return NextResponse.json({ error: result.error?.message }, { status: 404 });
@@ -27,20 +26,7 @@ export async function PUT(
   try {
     const id = (await params).id;
     const body = await request.json();
-
-    const supabase = await createServerComponentClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user || user.id !== id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Upsert the user to ensure an entry is created if it does not exist
-    const result = await userService.upsertUser({ 
-      id, 
-      email: user.email,
-      ...body 
-    });
+    const result = await workflowStateService.updateState(id, body);
     
     if (!result.success) {
       return NextResponse.json({ error: result.error?.message }, { status: 400 });
@@ -58,13 +44,13 @@ export async function DELETE(
 ) {
   try {
     const id = (await params).id;
-    const result = await userService.deleteUser(id);
+    const result = await workflowStateService.deleteState(id);
     
     if (!result.success) {
       return NextResponse.json({ error: result.error?.message }, { status: 400 });
     }
     
-    return NextResponse.json({ message: "User deleted successfully" });
+    return NextResponse.json({ message: "Workflow state deleted successfully" });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

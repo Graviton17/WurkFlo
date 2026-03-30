@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/services/supabase";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +23,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // If user is already logged in, redirect to onboarding
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        router.replace("/onboarding");
+      }
+    });
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,18 +48,7 @@ export default function LoginPage() {
       setError(signInError.message);
       setLoading(false);
     } else {
-      try {
-        const res = await fetch(`/api/users/${data.user.id}`);
-        const userData = await res.json();
-
-        if (!res.ok || !userData.data) {
-          router.push("/onboarding");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch {
-        router.push("/dashboard");
-      }
+      router.push("/onboarding");
       router.refresh();
     }
   };
@@ -89,10 +87,17 @@ export default function LoginPage() {
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium text-white/90" style={{ marginBottom: 0 }}>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-white/90"
+                style={{ marginBottom: 0 }}
+              >
                 Password
               </label>
-              <Link href="#" className="text-white/60 text-sm transition-colors hover:text-white">
+              <Link
+                href="#"
+                className="text-white/60 text-sm transition-colors hover:text-white"
+              >
                 Forgot password?
               </Link>
             </div>
