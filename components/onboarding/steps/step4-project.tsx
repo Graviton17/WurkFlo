@@ -125,7 +125,7 @@ export function Step4Project() {
             <div className="relative">
               <input
                 id="project-identifier"
-                className="relative z-0 w-full border border-white/10 rounded-md bg-gradient-to-b from-[#222225]/90 to-[#28282e]/95 text-white py-3 pr-4 pl-[0.95rem] uppercase outline-none transition-all duration-300 placeholder:text-white/30 focus:border-[#ff1f1f] focus:ring-4 focus:ring-[#ff1f1f]/15 focus:-translate-y-px"
+                className="h-[50px] relative z-0 w-full border border-white/10 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.05] text-white px-4 uppercase outline-none transition-all duration-300 placeholder:text-white/30 focus:border-[#ff1f1f]/50 focus:ring-4 focus:ring-[#ff1f1f]/20 focus:bg-white/[0.04] shadow-inner"
                 placeholder="WEB"
                 maxLength={5}
                 value={identifier}
@@ -157,7 +157,7 @@ export function Step4Project() {
           <div className="relative">
             <textarea
               id="project-desc"
-              className="relative z-0 w-full border border-white/10 rounded-md bg-gradient-to-b from-[#222225]/90 to-[#28282e]/95 text-white py-3 pr-4 pl-[0.95rem] outline-none transition-all duration-300 placeholder:text-white/30 focus:border-[#ff1f1f] focus:ring-4 focus:ring-[#ff1f1f]/15 focus:-translate-y-px resize-none"
+              className="relative z-0 w-full border border-white/10 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.05] text-white px-4 py-3 outline-none transition-all duration-300 placeholder:text-white/30 focus:border-[#ff1f1f]/50 focus:ring-4 focus:ring-[#ff1f1f]/20 focus:bg-white/[0.04] shadow-inner resize-none"
               placeholder="What is this project about?"
               rows={3}
               value={description}

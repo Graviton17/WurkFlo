@@ -25,7 +25,7 @@ export default function LoginPage() {
 
   // If user is already logged in, redirect to onboarding
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: any) => {
       if (data.user) {
         router.replace("/onboarding");
       }

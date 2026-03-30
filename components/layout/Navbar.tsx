@@ -74,13 +74,13 @@ export const Navbar = () => {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: any) => {
       setUser(data.user);
       setLoading(false);
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (error, session) => {
+      (error: any, session: any) => {
         setUser(session?.user ?? null);
       },
     );

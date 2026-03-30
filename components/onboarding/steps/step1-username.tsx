@@ -23,22 +23,24 @@ function AvatarPreview({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <div className="flex items-center gap-4 mb-6 p-4 rounded-xl border border-white/8 bg-white/3">
+    <div className="flex items-center gap-4 mb-8 p-4 rounded-[20px] border border-white/5 bg-white/[0.02] shadow-inner relative overflow-hidden group">
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
       <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
+        className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 relative z-10 shadow-lg transition-transform duration-300 group-hover:scale-105"
         style={{
           background: initials
-            ? "linear-gradient(135deg, oklch(0.6 0.25 25) 0%, oklch(0.5 0.2 280) 100%)"
-            : "rgba(255,255,255,0.07)",
+            ? "rgba(255,255,255,0.1)"
+            : "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
         }}
       >
         {initials || <User className="h-7 w-7 text-white/40" />}
       </div>
-      <div>
+      <div className="relative z-10">
         <p className="text-white font-semibold text-base leading-tight">
           {name.trim() || "Your Name"}
         </p>
-        <p className="text-sm mt-0.5 text-white/60">
+        <p className="text-sm mt-0.5 text-white/50 font-medium">
           This is how you'll appear in workspaces
         </p>
       </div>

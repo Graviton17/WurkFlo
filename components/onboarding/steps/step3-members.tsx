@@ -169,7 +169,7 @@ export function Step3Members() {
             <div className="auth-input-wrapper flex-1">
               <input
                 id="member-email"
-                className="auth-input !pl-[0.95rem]"
+                className="h-[50px] relative z-0 w-full border border-white/10 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.05] text-white px-4 outline-none transition-all duration-300 placeholder:text-white/30 focus:border-[#ff1f1f]/50 focus:ring-4 focus:ring-[#ff1f1f]/20 focus:bg-white/[0.04] shadow-inner"
                 type="email"
                 placeholder="teammate@company.com"
                 value={emailInput}
@@ -182,7 +182,7 @@ export function Step3Members() {
               />
             </div>
             <select
-              className="onboarding-role-select"
+              className="h-[50px] border border-white/10 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.05] text-white px-4 outline-none transition-all duration-300 focus:border-[#ff1f1f]/50 focus:ring-4 focus:ring-[#ff1f1f]/20"
               value={role}
               onChange={(e) => setRole(e.target.value as MemberRole)}
               disabled={!workspaceId}
@@ -195,16 +195,10 @@ export function Step3Members() {
               type="button"
               onClick={addMember}
               disabled={!workspaceId || !emailInput.trim()}
-              className="onboarding-primary-btn"
-              style={{
-                flex: "0 0 auto",
-                minHeight: 44,
-                padding: "0 1rem",
-                fontSize: "0.85rem",
-              }}
+              className="h-[50px] w-[50px] flex items-center justify-center border-none bg-white text-black transition-all duration-200 hover:bg-gray-200 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] disabled:opacity-50 rounded-[14px]"
               aria-label="Add member"
             >
-              <UserPlus size={16} />
+              <UserPlus size={18} />
             </button>
           </div>
           <p className="onboarding-hint">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/services/supabase";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   OnboardingProvider,
   StepIndicator,
@@ -27,56 +28,84 @@ function OnboardingContent() {
   };
 
   return (
-    <div className="relative z-10 w-full max-w-[640px] flex flex-col gap-8">
+    <motion.div
+      className="relative z-10 w-full max-w-[640px] flex flex-col gap-8"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8, delay: 0.2 }}
+    >
       {/* Brand header */}
-      <div className="flex items-center justify-center gap-2.5">
+      <motion.div
+        className="flex items-center justify-center gap-2.5"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
         <div
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            background: "oklch(0.6 0.25 25)",
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: "rgba(255, 255, 255, 0.1)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "1rem",
+            fontSize: "1.1rem",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
           }}
         >
           ⚡
         </div>
         <span
           style={{
-            fontSize: "1.1rem",
+            fontSize: "1.2rem",
             fontWeight: 700,
             color: "#f0f0f0",
-            letterSpacing: "-0.01em",
+            letterSpacing: "-0.02em",
           }}
         >
           WurkFlo
         </span>
-      </div>
+      </motion.div>
 
       {/* Step indicator */}
-      <StepIndicator
-        current={currentStep}
-        onStepClick={(s) => s < currentStep && goToStep(s)}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        <StepIndicator
+          current={currentStep}
+          onStepClick={(s) => s < currentStep && goToStep(s)}
+        />
+      </motion.div>
 
-      {/* Active step card */}
-      {stepMap[currentStep]}
+      {/* Active step card with AnimatePresence for smooth transitions */}
+      <div className="relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.4, type: "spring", bounce: 0.2 }}
+          >
+            {stepMap[currentStep]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Footer note */}
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: "0.78rem",
-          color: "oklch(0.45 0 0)",
-        }}
+      <motion.p
+        className="text-center text-[0.8rem] text-white/40 tracking-tight"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
       >
-        Your progress is saved automatically. Finish setup anytime from your
-        dashboard.
-      </p>
-    </div>
+        Your progress is saved automatically. Finish setup anytime from your dashboard.
+      </motion.p>
+    </motion.div>
   );
 }
 
@@ -84,18 +113,21 @@ function OnboardingContent() {
 
 function LoadingSpinner() {
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-auth-pattern">
-      <div
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
         style={{
-          width: 40,
-          height: 40,
+          width: 48,
+          height: 48,
           borderRadius: "50%",
-          border: "3px solid rgba(255,255,255,0.1)",
-          borderTopColor: "oklch(0.6 0.25 25)",
-          animation: "spin 0.8s linear infinite",
+          border: "3px solid rgba(255,255,255,0.05)",
+          borderTopColor: "#ff1f1f",
+          borderRightColor: "#3c00ff",
         }}
+        className="animate-spin"
       />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -177,26 +209,36 @@ export default function OnboardingPage() {
     initData();
   }, [router]);
 
-  if (checking || !userId) return <LoadingSpinner />;
-
   return (
-    <OnboardingProvider
-      userId={userId}
-      initialStep={initialStep}
-      initialWorkspaceId={initialWorkspaceId}
-      initialFullName={initialFullName}
-      onFinish={() => router.push("/dashboard")}
-    >
-      <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-auth-pattern">
-        {/* Background orbs */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute rounded-full pointer-events-none blur-[95px] -top-[200px] -left-[210px] w-[440px] h-[440px] opacity-15 max-sm:w-[360px] max-sm:h-[360px] bg-[radial-gradient(circle,rgba(67,103,226,0.55)_0%,rgba(67,103,226,0)_72%)]" />
-          <div className="absolute rounded-full pointer-events-none blur-[95px] -top-[180px] -right-[220px] w-[420px] h-[420px] opacity-5 max-sm:w-[360px] max-sm:h-[360px] bg-[radial-gradient(circle,rgba(76,112,224,0.45)_0%,rgba(76,112,224,0)_70%)]" />
-          <div className="absolute rounded-full pointer-events-none blur-[95px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] opacity-5 max-sm:w-[500px] max-sm:h-[500px] bg-[radial-gradient(circle,rgba(86,124,232,0.5),transparent_70%)]" />
-        </div>
+    <AnimatePresence mode="wait">
+      {checking || !userId ? (
+        <LoadingSpinner key="loader" />
+      ) : (
+        <motion.div
+          key="content"
+          className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <OnboardingProvider
+            userId={userId}
+            initialStep={initialStep}
+            initialWorkspaceId={initialWorkspaceId}
+            initialFullName={initialFullName}
+            onFinish={() => router.push("/dashboard")}
+          >
+            {/* Background glowing effects */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+              <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/5 rounded-full blur-[120px] pointer-events-none" />
+              <div className="absolute bottom-1/4 right-1/3 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
+            </div>
 
-        <OnboardingContent />
-      </div>
-    </OnboardingProvider>
+            <OnboardingContent />
+          </OnboardingProvider>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
+

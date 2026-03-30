@@ -25,7 +25,7 @@ export default function SignupPage() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: any) => {
       if (data.user) {
         router.replace("/onboarding");
       }
