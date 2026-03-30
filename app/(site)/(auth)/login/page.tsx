@@ -25,11 +25,13 @@ export default function LoginPage() {
 
   // If user is already logged in, redirect to onboarding
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
         router.replace("/onboarding");
       }
-    });
+    };
+    checkSession();
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {

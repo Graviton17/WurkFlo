@@ -1,45 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { authService } from "@/services/index";
+import { withApiSetup } from "@/lib/api-wrapper";
+import { LoginSchema } from "@/types/validation";
 
 /**
  * POST /api/auth/login
  * Authenticate a user
  */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { email, password } = body;
-
-    // Validate required fields
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 },
-      );
-    }
-
-    // Sign in user
-    const result = await authService.signIn({
-      email,
-      password,
-    });
+export const POST = withApiSetup({
+  requireAuth: false,
+  schema: LoginSchema,
+  rateLimit: { limit: 5, windowMs: 60000 }, // 5 requests per minute
+  handler: async ({ validatedData }) => {
+    const result = await authService.signIn(validatedData!);
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message || "Invalid credentials" },
+        { success: false, error: result.error?.message || "Invalid credentials" },
         { status: 401 },
       );
     }
 
     return NextResponse.json({
+      success: true,
       message: "Login successful",
       session: result.data,
     });
-  } catch (error) {
-    console.error("Error in POST /api/auth/login:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
   }
-}
+});

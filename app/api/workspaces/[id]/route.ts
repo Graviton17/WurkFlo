@@ -1,57 +1,43 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { workspaceService } from "@/services/index";
+import { withApiSetup } from "@/lib/api-wrapper";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const result = await workspaceService.getWorkspaceById(id);
+export const GET = withApiSetup({
+  requireAuth: true,
+  handler: async ({ params }) => {
+    const result = await workspaceService.getWorkspaceById(params.id);
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 404 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 404 });
     }
     
-    return NextResponse.json({ data: result.data });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, data: result.data });
   }
-}
+});
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const body = await request.json();
-    const result = await workspaceService.updateWorkspace(id, body);
+export const PUT = withApiSetup({
+  requireAuth: true,
+  handler: async ({ req, params }) => {
+    const body = await req.json();
+    const result = await workspaceService.updateWorkspace(params.id, body);
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
     }
     
-    return NextResponse.json({ data: result.data });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, data: result.data });
   }
-}
+});
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const result = await workspaceService.deleteWorkspace(id);
+export const DELETE = withApiSetup({
+  requireAuth: true,
+  handler: async ({ params }) => {
+    const result = await workspaceService.deleteWorkspace(params.id);
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
     }
     
-    return NextResponse.json({ message: "Workspace deleted successfully" });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, message: "Workspace deleted successfully" });
   }
-}
+});

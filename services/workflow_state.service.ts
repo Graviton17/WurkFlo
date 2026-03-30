@@ -1,6 +1,5 @@
 import { WorkflowStateCURD } from "@/curd/index";
 import { WorkflowState, DatabaseResponse } from "@/types/index";
-import { supabase } from "./supabase";
 
 export class WorkflowStateService {
   private workflowStateCurd: WorkflowStateCURD;

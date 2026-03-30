@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { createServerComponentClient } from "./server.service";
 import { User, Session } from "@supabase/supabase-js";
 import type {
   AuthResponse,
@@ -8,9 +9,22 @@ import type {
 
 /**
  * Authentication Service
- * Handles all authentication-related operations
+ * Handles all authentication-related operations.
+ * Uses getClient() to resolve correct Supabase client for server vs browser context.
  */
 export class AuthService {
+  /**
+   * Resolve the correct Supabase client based on execution context.
+   * Server-side (API routes, server components) → server client with cookie access.
+   * Browser-side → browser singleton.
+   */
+  private async getClient() {
+    if (typeof window === "undefined") {
+      return await createServerComponentClient();
+    }
+    return supabase;
+  }
+
   /**
    * Sign up a new user
    * @param credentials - User credentials
@@ -18,7 +32,8 @@ export class AuthService {
    */
   async signUp(credentials: SignUpCredentials): Promise<AuthResponse<User>> {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const client = await this.getClient();
+      const { data, error } = await client.auth.signUp({
         email: credentials.email,
         password: credentials.password,
         options: {
@@ -48,7 +63,8 @@ export class AuthService {
    */
   async signIn(credentials: SignInCredentials): Promise<AuthResponse<Session>> {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const client = await this.getClient();
+      const { data, error } = await client.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
@@ -74,7 +90,8 @@ export class AuthService {
    */
   async signInWithOAuth(provider: "google" | "github" | "gitlab" | "facebook") {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const client = await this.getClient();
+      const { data, error } = await client.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
@@ -101,7 +118,8 @@ export class AuthService {
    */
   async signOut(): Promise<AuthResponse<null>> {
     try {
-      const { error } = await supabase.auth.signOut();
+      const client = await this.getClient();
+      const { error } = await client.auth.signOut();
 
       return {
         data: null,
@@ -123,10 +141,11 @@ export class AuthService {
    */
   async getCurrentUser(): Promise<AuthResponse<User>> {
     try {
+      const client = await this.getClient();
       const {
         data: { user },
         error,
-      } = await supabase.auth.getUser();
+      } = await client.auth.getUser();
 
       return {
         data: user,
@@ -148,10 +167,11 @@ export class AuthService {
    */
   async getSession(): Promise<AuthResponse<Session>> {
     try {
+      const client = await this.getClient();
       const {
         data: { session },
         error,
-      } = await supabase.auth.getSession();
+      } = await client.auth.getSession();
 
       return {
         data: session,
@@ -174,7 +194,8 @@ export class AuthService {
    */
   async resetPassword(email: string): Promise<AuthResponse<null>> {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const client = await this.getClient();
+      const { error } = await client.auth.resetPasswordForEmail(email);
 
       return {
         data: null,
@@ -197,7 +218,8 @@ export class AuthService {
    */
   async updatePassword(newPassword: string): Promise<AuthResponse<User>> {
     try {
-      const { data, error } = await supabase.auth.updateUser({
+      const client = await this.getClient();
+      const { data, error } = await client.auth.updateUser({
         password: newPassword,
       });
 
@@ -224,7 +246,8 @@ export class AuthService {
     metadata: Record<string, any>,
   ): Promise<AuthResponse<User>> {
     try {
-      const { data, error } = await supabase.auth.updateUser({
+      const client = await this.getClient();
+      const { data, error } = await client.auth.updateUser({
         data: metadata,
       });
 
@@ -243,13 +266,14 @@ export class AuthService {
   }
 
   /**
-   * Listen to auth state changes
+   * Listen to auth state changes (browser-only)
    * @param callback - Callback function
    * @returns Unsubscribe function
    */
   onAuthStateChange(
     callback: (event: string, session: Session | null) => void,
   ) {
+    // onAuthStateChange is browser-only, so use the browser client directly
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(callback);
