@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/services/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 import {
   OnboardingProvider,
   StepIndicator,
   Step1Username,
   Step2Workspace,
-  Step3Members,
-  Step4Project,
+  Step3Project,
+  Step4Members,
   useOnboarding,
 } from "@/components/onboarding";
 import type { OnboardingStep } from "@/components/onboarding";
@@ -23,8 +23,8 @@ function OnboardingContent() {
   const stepMap: Record<OnboardingStep, React.ReactNode> = {
     1: <Step1Username />,
     2: <Step2Workspace />,
-    3: <Step3Members />,
-    4: <Step4Project />,
+    3: <Step3Project />,
+    4: <Step4Members />,
   };
 
   return (
@@ -41,30 +41,10 @@ function OnboardingContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "rgba(255, 255, 255, 0.1)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "1.1rem",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
-          }}
-        >
+        <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-[1.1rem] shadow-[0_4px_12px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.1)]">
           ⚡
         </div>
-        <span
-          style={{
-            fontSize: "1.2rem",
-            fontWeight: 700,
-            color: "#f0f0f0",
-            letterSpacing: "-0.02em",
-          }}
-        >
+        <span className="text-[1.2rem] font-bold text-[#f0f0f0] tracking-[-0.02em]">
           WurkFlo
         </span>
       </motion.div>
@@ -103,7 +83,8 @@ function OnboardingContent() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.6 }}
       >
-        Your progress is saved automatically. Finish setup anytime from your dashboard.
+        Your progress is saved automatically. Finish setup anytime from your
+        dashboard.
       </motion.p>
     </motion.div>
   );
@@ -118,15 +99,7 @@ function LoadingSpinner() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          border: "3px solid rgba(255,255,255,0.05)",
-          borderTopColor: "#ff1f1f",
-          borderRightColor: "#3c00ff",
-        }}
-        className="animate-spin"
+        className="w-12 h-12 rounded-full border-[3px] border-white/5 border-t-[#ff1f1f] border-r-[#3c00ff] animate-spin"
       />
     </div>
   );
@@ -140,67 +113,35 @@ export default function OnboardingPage() {
   const [checking, setChecking] = useState(true);
 
   const [initialStep, setInitialStep] = useState<OnboardingStep>(1);
-  const [initialWorkspaceId, setInitialWorkspaceId] = useState<string | null>(
-    null,
-  );
   const [initialFullName, setInitialFullName] = useState<string>("");
 
   useEffect(() => {
     const initData = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData?.user) {
-        router.replace("/login");
-        return;
-      }
-
-      const uId = authData.user.id;
-      setUserId(uId);
-
       try {
-        let step: OnboardingStep = 1;
+        // Fetch onboarding status specifically using our new GET endpoint via Axios
+        const { data } = await axios.get("/api/onboarding");
 
-        // 1. Check if user already setup their profile
-        const { data: userData } = await supabase
-          .from("users")
-          .select("id, full_name")
-          .eq("id", uId)
-          .maybeSingle();
-
-        if (userData) {
-          step = 2; // proceed to Step 2 (Workspace)
-          setInitialFullName(userData.full_name || "");
-
-          // 2. Check if a workspace already belongs to this user
-          const { data: memberData } = await supabase
-            .from("workspace_members")
-            .select("workspace_id")
-            .eq("user_id", uId)
-            .limit(1)
-            .maybeSingle();
-
-          if (memberData?.workspace_id) {
-            step = 4; // Skip directly to Step 4 (Projects)
-            setInitialWorkspaceId(memberData.workspace_id);
-
-            // 3. Check if any project exists inside this workspace
-            const { data: projectData } = await supabase
-              .from("projects")
-              .select("id")
-              .eq("workspace_id", memberData.workspace_id)
-              .limit(1)
-              .maybeSingle();
-
-            if (projectData?.id) {
-              // Entire onboarding is done
-              router.replace("/dashboard");
-              return; // Halt rendering the onboarding form
-            }
-          }
+        if (data?.userId) {
+          setUserId(data.userId);
         }
 
-        setInitialStep(step as OnboardingStep);
-      } catch (err) {
+        if (data?.hasWorkspace) {
+          router.replace("/dashboard");
+          return;
+        }
+
+        if (data?.fullName) {
+          setInitialFullName(data.fullName);
+        }
+
+        setInitialStep(1);
+      } catch (err: any) {
         console.error("Error checking onboarding status:", err);
+        // Redirect to login if user session is invalid / unauthorized
+        if (err?.response?.status === 401) {
+          router.replace("/login");
+          return;
+        }
       }
 
       setChecking(false);
@@ -224,7 +165,6 @@ export default function OnboardingPage() {
           <OnboardingProvider
             userId={userId}
             initialStep={initialStep}
-            initialWorkspaceId={initialWorkspaceId}
             initialFullName={initialFullName}
             onFinish={() => router.push("/dashboard")}
           >
@@ -241,4 +181,3 @@ export default function OnboardingPage() {
     </AnimatePresence>
   );
 }
-

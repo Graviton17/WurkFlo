@@ -1,8 +1,25 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import axios from "axios";
 
 export type OnboardingStep = 1 | 2 | 3 | 4;
+
+export interface WorkspaceData {
+  name: string;
+  slug: string;
+}
+
+export interface MemberData {
+  email: string;
+  role: "admin" | "member" | "owner";
+}
+
+export interface ProjectData {
+  name: string;
+  identifier: string;
+  description: string;
+}
 
 interface OnboardingState {
   currentStep: OnboardingStep;
@@ -10,11 +27,17 @@ interface OnboardingState {
   // Step data collected along the way
   fullName: string;
   setFullName: (v: string) => void;
-  workspaceId: string | null;
-  setWorkspaceId: (id: string | null) => void;
+  workspaceData: WorkspaceData | null;
+  setWorkspaceData: (data: WorkspaceData | null) => void;
+  membersData: MemberData[];
+  setMembersData: (data: MemberData[]) => void;
+  projectData: ProjectData | null;
+  setProjectData: (data: ProjectData | null) => void;
+  
   goToStep: (step: OnboardingStep) => void;
   advance: () => void;
   skip: () => void;
+  submitOnboarding: () => Promise<void>;
 }
 
 const OnboardingContext = createContext<OnboardingState | null>(null);
@@ -30,7 +53,6 @@ interface OnboardingProviderProps {
   children: ReactNode;
   userId: string;
   initialStep?: OnboardingStep;
-  initialWorkspaceId?: string | null;
   initialFullName?: string;
   onFinish: () => void;
 }
@@ -39,15 +61,15 @@ export function OnboardingProvider({
   children,
   userId,
   initialStep = 1,
-  initialWorkspaceId = null,
   initialFullName = "",
   onFinish,
 }: OnboardingProviderProps) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(initialStep);
   const [fullName, setFullName] = useState(initialFullName);
-  const [workspaceId, setWorkspaceId] = useState<string | null>(
-    initialWorkspaceId,
-  );
+  
+  const [workspaceData, setWorkspaceData] = useState<WorkspaceData | null>(null);
+  const [membersData, setMembersData] = useState<MemberData[]>([]);
+  const [projectData, setProjectData] = useState<ProjectData | null>(null);
 
   const goToStep = (step: OnboardingStep) => {
     if (step >= 1 && step <= 4) setCurrentStep(step);
@@ -65,6 +87,23 @@ export function OnboardingProvider({
     advance();
   };
 
+  const submitOnboarding = async () => {
+    try {
+      // Using axios as requested
+      const res = await axios.post("/api/onboarding", {
+        userId,
+        fullName,
+        workspaceData,
+        membersData,
+        projectData,
+      });
+
+      onFinish();
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.error || "Failed to complete onboarding.");
+    }
+  };
+
   return (
     <OnboardingContext.Provider
       value={{
@@ -72,11 +111,16 @@ export function OnboardingProvider({
         userId,
         fullName,
         setFullName,
-        workspaceId,
-        setWorkspaceId,
+        workspaceData,
+        setWorkspaceData,
+        membersData,
+        setMembersData,
+        projectData,
+        setProjectData,
         goToStep,
         advance,
         skip,
+        submitOnboarding,
       }}
     >
       {children}

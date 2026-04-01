@@ -53,14 +53,13 @@ function MemberTag({
   );
 }
 
-// ---- Step 3: Add Members ---------------------------------------------------
+// ---- Step 4: Add Members ---------------------------------------------------
 
-export function Step3Members() {
-  const { workspaceId, advance, skip } = useOnboarding();
+export function Step4Members() {
+  const { setMembersData, advance, skip, workspaceData } = useOnboarding();
   const [emailInput, setEmailInput] = useState("");
   const [role, setRole] = useState<MemberRole>("member");
   const [members, setMembers] = useState<MemberEntry[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -92,57 +91,8 @@ export function Step3Members() {
   };
 
   const handleContinue = async () => {
-    // If no workspace was created, just skip this step
-    if (!workspaceId) {
-      advance();
-      return;
-    }
-
-    // If no members added, just advance
-    if (members.length === 0) {
-      advance();
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Fetch all users to look up by email
-      const usersRes = await fetch("/api/users");
-      const usersData = await usersRes.json();
-      const allUsers: { id: string; email: string }[] = usersData?.data ?? [];
-
-      const results = await Promise.allSettled(
-        members.map(async (m) => {
-          const match = allUsers.find(
-            (u) => u.email.toLowerCase() === m.email.toLowerCase(),
-          );
-          if (!match) throw new Error(`No account found for ${m.email}`);
-          return fetch(`/api/workspaces/${workspaceId}/members`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: match.id, role: m.role }),
-          });
-        }),
-      );
-
-      const failed = results.filter(
-        (r) => r.status === "rejected",
-      ) as PromiseRejectedResult[];
-      setLoading(false);
-
-      if (failed.length > 0) {
-        const msgs = failed.map((f) => f.reason?.message ?? "Unknown error");
-        setError(`Some invites failed: ${msgs.join(", ")}`);
-        return;
-      }
-
-      advance();
-    } catch (err: unknown) {
-      setLoading(false);
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    }
+    setMembersData(members);
+    advance();
   };
 
   return (
@@ -154,7 +104,7 @@ export function Step3Members() {
         </>
       }
       subtitle={
-        workspaceId
+        workspaceData
           ? "Add teammates to your workspace. You can always invite more people later."
           : "No workspace was created — you can still set up your team later."
       }
@@ -178,14 +128,14 @@ export function Step3Members() {
                   if (error) setError(null);
                 }}
                 onKeyDown={handleKeyDown}
-                disabled={!workspaceId}
+                disabled={!workspaceData}
               />
             </div>
             <select
               className="h-[50px] border border-white/10 rounded-[14px] bg-white/[0.03] hover:bg-white/[0.05] text-white px-4 outline-none transition-all duration-300 focus:border-[#ff1f1f]/50 focus:ring-4 focus:ring-[#ff1f1f]/20"
               value={role}
               onChange={(e) => setRole(e.target.value as MemberRole)}
-              disabled={!workspaceId}
+              disabled={!workspaceData}
               aria-label="Member role"
             >
               <option value="member">Member</option>
@@ -194,7 +144,7 @@ export function Step3Members() {
             <button
               type="button"
               onClick={addMember}
-              disabled={!workspaceId || !emailInput.trim()}
+              disabled={!workspaceData || !emailInput.trim()}
               className="h-[50px] w-[50px] flex items-center justify-center border-none bg-white text-black transition-all duration-200 hover:bg-gray-200 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] disabled:opacity-50 rounded-[14px]"
               aria-label="Add member"
             >
@@ -220,7 +170,7 @@ export function Step3Members() {
           </div>
         )}
 
-        {members.length === 0 && workspaceId && (
+        {members.length === 0 && workspaceData && (
           <div
             style={{
               borderRadius: 12,
@@ -241,7 +191,6 @@ export function Step3Members() {
       <NavButtons
         onContinue={handleContinue}
         onSkip={skip}
-        loading={loading}
         continueLabel={
           members.length > 0
             ? `Invite ${members.length} member${members.length > 1 ? "s" : ""}`

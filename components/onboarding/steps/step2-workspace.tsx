@@ -36,11 +36,10 @@ function toSlug(name: string) {
 // ---- Step 2: Workspace Creation --------------------------------------------
 
 export function Step2Workspace() {
-  const { setWorkspaceId, advance, skip } = useOnboarding();
+  const { setWorkspaceData, advance } = useOnboarding();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleNameChange = (val: string) => {
@@ -65,27 +64,8 @@ export function Step2Workspace() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/workspaces", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmedName, slug }),
-      });
-
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data?.error || "Failed to create workspace.");
-
-      setWorkspaceId(data.data?.id ?? null);
-      advance();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    setWorkspaceData({ name: trimmedName, slug });
+    advance();
   };
 
   return (
@@ -135,7 +115,6 @@ export function Step2Workspace() {
 
       <NavButtons
         onContinue={handleContinue}
-        loading={loading}
         continueLabel="Create Workspace"
         disabled={!name.trim()}
       />
