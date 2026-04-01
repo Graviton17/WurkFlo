@@ -113,7 +113,7 @@ function OnboardingContent() {
 
 function LoadingSpinner() {
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0d0d0f]">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -192,7 +192,17 @@ export default function OnboardingPage() {
 
             if (projectData?.id) {
               // Entire onboarding is done
-              router.replace("/dashboard");
+              const { data: workspaceData } = await supabase
+                .from("workspaces")
+                .select("slug")
+                .eq("id", memberData.workspace_id)
+                .single();
+
+              if (workspaceData?.slug) {
+                router.replace(`/${workspaceData.slug}/get-started`);
+              } else {
+                router.replace("/dashboard");
+              }
               return; // Halt rendering the onboarding form
             }
           }
@@ -216,7 +226,7 @@ export default function OnboardingPage() {
       ) : (
         <motion.div
           key="content"
-          className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]"
+          className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0d0d0f]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -226,7 +236,17 @@ export default function OnboardingPage() {
             initialStep={initialStep}
             initialWorkspaceId={initialWorkspaceId}
             initialFullName={initialFullName}
-            onFinish={() => router.push("/dashboard")}
+            onFinish={async (wid) => {
+              const idToUse = wid || initialWorkspaceId;
+              if (idToUse) {
+                const { data } = await supabase.from("workspaces").select("slug").eq("id", idToUse).single();
+                if (data?.slug) {
+                  router.push(`/${data.slug}/get-started`);
+                  return;
+                }
+              }
+              router.push("/dashboard");
+            }}
           >
             {/* Background glowing effects */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">

@@ -32,7 +32,7 @@ interface OnboardingProviderProps {
   initialStep?: OnboardingStep;
   initialWorkspaceId?: string | null;
   initialFullName?: string;
-  onFinish: () => void;
+  onFinish: (workspaceId: string | null) => void;
 }
 
 export function OnboardingProvider({
@@ -57,7 +57,7 @@ export function OnboardingProvider({
     if (currentStep < 4) {
       setCurrentStep((s) => (s + 1) as OnboardingStep);
     } else {
-      onFinish();
+      onFinish(workspaceId);
     }
   };
 
