@@ -16,8 +16,8 @@ interface StepConfig {
 const STEPS: StepConfig[] = [
   { number: 1, label: "Profile" },
   { number: 2, label: "Workspace" },
-  { number: 3, label: "Members" },
-  { number: 4, label: "Project" },
+  { number: 3, label: "Project" },
+  { number: 4, label: "Members" },
 ];
 
 interface StepIndicatorProps {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authService } from "@/services/index";
+import { auth } from "@/lib/auth";
 import { withApiSetup } from "@/lib/api-wrapper";
 import { CreateUserSchema } from "@/types/validation";
 
@@ -12,7 +12,7 @@ export const POST = withApiSetup({
   schema: CreateUserSchema,
   rateLimit: { limit: 5, windowMs: 60000 }, // 5 requests per minute
   handler: async ({ validatedData }) => {
-    const result = await authService.signUp(validatedData!);
+    const result = await auth.signUp(validatedData!);
 
     if (!result.success) {
       return NextResponse.json(

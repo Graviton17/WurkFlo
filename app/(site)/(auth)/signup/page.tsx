@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/services/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { Mail, Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import {
   AuthPageLayout,
   AuthCardShell,
@@ -39,23 +40,26 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
+    try {
+      const response = await axios.post("/api/auth/signup", {
+        email,
+        password,
+        metadata: {
           first_name: firstName,
           last_name: lastName,
         },
-      },
-    });
+      });
 
-    if (signUpError) {
-      setError(signUpError.message);
+      if (!response.data?.success) {
+        setError(response.data?.error || "Failed to sign up");
+        setLoading(false);
+      } else {
+        router.push("/onboarding");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "An error occurred during sign up");
       setLoading(false);
-    } else {
-      router.push("/onboarding");
-      router.refresh();
     }
   };
 

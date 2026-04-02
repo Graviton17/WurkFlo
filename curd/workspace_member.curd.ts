@@ -6,6 +6,22 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     super("workspace_members");
   }
 
+  async getWorkspaceByUserId(userId: string) {
+    const db = await this.getClient();
+    const { data, error } = await db
+      .from(this.tableName)
+      .select("*")
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    return { 
+      data: data as WorkspaceMember | null, 
+      error, 
+      success: !error 
+    };
+  }
+
   // Override standard BaseCURD by extending with composite ID capability if needed
   async deleteByCompositeKey(workspaceId: string, userId: string) {
     const db = await this.getClient();

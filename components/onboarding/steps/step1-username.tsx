@@ -51,8 +51,7 @@ function AvatarPreview({ name }: { name: string }) {
 // ---- Step 1: Profile Setup -------------------------------------------------
 
 export function Step1Username() {
-  const { fullName, setFullName, userId, advance } = useOnboarding();
-  const [loading, setLoading] = useState(false);
+  const { fullName, setFullName, advance } = useOnboarding();
   const [error, setError] = useState<string | null>(null);
 
   const handleContinue = async () => {
@@ -61,27 +60,10 @@ export function Step1Username() {
       setError("Please enter your full name to continue.");
       return;
     }
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`/api/users/${userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full_name: trimmed }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || "Failed to save your name.");
-      }
-
-      advance();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    
+    // Save to context and advance directly
+    setFullName(trimmed);
+    advance();
   };
 
   return (
@@ -113,9 +95,6 @@ export function Step1Username() {
 
       <NavButtons
         onContinue={handleContinue}
-        loading={loading}
-        continueLabel="Save & Continue"
-        disabled={!fullName.trim()}
       />
     </OnboardingShell>
   );

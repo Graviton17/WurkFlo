@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { SUPABASE_URL, SUPABASE_KEY } from "@/app/env";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/app/env";
 
 /**
  * Supabase Client Singleton
@@ -13,11 +13,11 @@ let supabaseClient: ReturnType<typeof createBrowserClient> | null = null;
  */
 export const getSupabaseClient = () => {
   if (!supabaseClient) {
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error("Supabase URL and Key must be provided");
     }
 
-    supabaseClient = createBrowserClient(SUPABASE_URL, SUPABASE_KEY);
+    supabaseClient = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
   return supabaseClient;

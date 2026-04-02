@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser } from "@/services/auth.helper";
+import { auth } from "@/lib/auth";
 import { z } from "zod";
 import type { User } from "@supabase/supabase-js";
 import { logger } from "./logger";
 
-export type ApiContext<T = any> = {
+export type ApiContext<T = unknown> = {
   req: NextRequest;
   params: Record<string, string>;
   user?: User | null;
@@ -12,11 +12,11 @@ export type ApiContext<T = any> = {
   pagination?: { limit: number; offset: number; page: number };
 };
 
-export type ApiHandler<T = any> = (
+export type ApiHandler<T = unknown> = (
   ctx: ApiContext<T>
 ) => Promise<NextResponse | void> | NextResponse | void;
 
-export type ApiSetupConfig<T extends z.ZodTypeAny> = {
+export type ApiSetupConfig<T extends z.ZodTypeAny = z.ZodTypeAny> = {
   requireAuth?: boolean;
   schema?: T;
   rateLimit?: { limit: number; windowMs: number };
@@ -33,16 +33,17 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
  * - Parses and validates JSON payload using Zod.
  * - Returns uniform `{ success, data, error }` structures.
  */
-export function withApiSetup<T extends z.ZodTypeAny = any>(
+export function withApiSetup<T extends z.ZodTypeAny = z.ZodTypeAny>(
   config: ApiSetupConfig<T>
 ) {
   return async (
     req: NextRequest,
-    { params }: { params: Promise<Record<string, string>> | Record<string, string> } = { params: {} }
+    context?: { params?: Promise<Record<string, string>> | Record<string, string> }
   ) => {
     try {
-      const resolvedParams = await params;
-      const ctx: ApiContext<z.infer<T>> = { req, params: resolvedParams || {} };
+      // Robustly handle missing context or params
+      const resolvedParams = context?.params ? await context.params : {};
+      const ctx: ApiContext<z.infer<T>> = { req, params: resolvedParams };
 
       // 0. Extract highly-scalable Standard Output Pagination
       if (req.method === "GET") {
@@ -55,8 +56,18 @@ export function withApiSetup<T extends z.ZodTypeAny = any>(
 
       // 0.5 Rate Limiting Check
       if (config.rateLimit) {
-        const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+        const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
         const now = Date.now();
+        
+        // Clean up store periodically to prevent memory leaks in long-running processes
+        if (rateLimitStore.size > 1000) {
+          for (const [k, v] of rateLimitStore.entries()) {
+            if (v.resetTime < now) {
+              rateLimitStore.delete(k);
+            }
+          }
+        }
+
         const record = rateLimitStore.get(ip);
         
         if (record && now < record.resetTime) {
@@ -74,7 +85,9 @@ export function withApiSetup<T extends z.ZodTypeAny = any>(
 
       // 1. Authentication Check
       if (config.requireAuth) {
-        ctx.user = await getAuthenticatedUser();
+        const user = await auth.getUser();
+        ctx.user = user;
+
         if (!ctx.user) {
           return NextResponse.json(
             { success: false, error: "Unauthorized access" },
@@ -83,7 +96,7 @@ export function withApiSetup<T extends z.ZodTypeAny = any>(
         }
       }
 
-      // 2. Input Validation (only for POST/PUT)
+      // 2. Input Validation (only for POST/PUT/PATCH)
       if (config.schema && ["POST", "PUT", "PATCH"].includes(req.method)) {
         let body;
         try {
@@ -117,18 +130,21 @@ export function withApiSetup<T extends z.ZodTypeAny = any>(
       
       return NextResponse.json({ success: true }, { status: 200 });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errMessage = error instanceof Error ? error.message : String(error);
+      
       logger.error({
         msg: `API Error`,
         method: req.method,
         path: req.nextUrl.pathname,
-        err: error?.message || error
+        err: errMessage
       });
+      
       return NextResponse.json(
         {
           success: false,
           error: "Internal Server Error",
-          message: error?.message || "An unexpected error occurred",
+          message: errMessage || "An unexpected error occurred",
         },
         { status: 500 }
       );

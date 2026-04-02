@@ -29,10 +29,10 @@ function toIdentifier(name: string) {
   );
 }
 
-// ---- Step 4: Create Project ------------------------------------------------
+// ---- Step 3: Create Project ------------------------------------------------
 
-export function Step4Project() {
-  const { workspaceId, advance, skip } = useOnboarding();
+export function Step3Project() {
+  const { workspaceData, projectData, setProjectData, advance, submitWorkspaceAndProject } = useOnboarding();
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [identifierEdited, setIdentifierEdited] = useState(false);
@@ -57,41 +57,30 @@ export function Step4Project() {
       return;
     }
 
-    // If no workspace was created, just finish
-    if (!workspaceId) {
-      advance();
-      return;
-    }
-
-    setLoading(true);
     setError(null);
+    setLoading(true);
+
+    const pd = {
+      name: trimmedName,
+      identifier,
+      description: description.trim() || "",
+    };
+    setProjectData(pd);
 
     try {
-      const res = await fetch(`/api/projects`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: trimmedName,
-          identifier,
-          description: description.trim() || null,
-          workspace_id: workspaceId,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to create project.");
-
+      if (workspaceData) {
+        await submitWorkspaceAndProject(pd);
+      }
       advance();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.");
       setLoading(false);
     }
   };
 
   return (
     <OnboardingShell
-      badge="Step 4 of 4 · Project"
+      badge="Step 3 of 4 · Project"
       title={
         <>
           Create your first{" "}
@@ -99,7 +88,7 @@ export function Step4Project() {
         </>
       }
       subtitle={
-        workspaceId
+        workspaceData
           ? "Projects organise your work inside a workspace. Add issues, sprints and more."
           : "No workspace found — you can create projects from the dashboard later."
       }
@@ -114,6 +103,7 @@ export function Step4Project() {
             onChange={(e) => handleNameChange(e.target.value)}
             autoFocus
             required
+            disabled={!workspaceData}
           />
           <div className="flex flex-col gap-1.5">
             <label
@@ -138,6 +128,7 @@ export function Step4Project() {
                       .slice(0, 5),
                   );
                 }}
+                disabled={!workspaceData}
               />
             </div>
             <p className="text-[0.78rem] text-orange-500/80 mt-1">
@@ -163,6 +154,7 @@ export function Step4Project() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               style={{ paddingLeft: "0.95rem" }}
+              disabled={!workspaceData}
             />
           </div>
         </div>
@@ -172,9 +164,9 @@ export function Step4Project() {
 
       <NavButtons
         onContinue={handleContinue}
+        continueLabel="Continue"
         loading={loading}
-        continueLabel="Create Project & Finish 🚀"
-        disabled={!workspaceId || !name.trim()}
+        disabled={!workspaceData || !name.trim()}
       />
     </OnboardingShell>
   );
