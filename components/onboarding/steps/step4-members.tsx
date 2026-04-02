@@ -56,10 +56,11 @@ function MemberTag({
 // ---- Step 4: Add Members ---------------------------------------------------
 
 export function Step4Members() {
-  const { setMembersData, advance, skip, workspaceData } = useOnboarding();
+  const { workspaceData, setMembersData, submitMembers } = useOnboarding();
   const [emailInput, setEmailInput] = useState("");
   const [role, setRole] = useState<MemberRole>("member");
   const [members, setMembers] = useState<MemberEntry[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -91,8 +92,24 @@ export function Step4Members() {
   };
 
   const handleContinue = async () => {
+    setLoading(true);
     setMembersData(members);
-    advance();
+    try {
+      await submitMembers(members);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.");
+      setLoading(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    setLoading(true);
+    try {
+      await submitMembers([]);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -190,11 +207,12 @@ export function Step4Members() {
 
       <NavButtons
         onContinue={handleContinue}
-        onSkip={skip}
+        onSkip={handleSkip}
+        loading={loading}
         continueLabel={
           members.length > 0
             ? `Invite ${members.length} member${members.length > 1 ? "s" : ""}`
-            : "Continue"
+            : "Finish Setup 🚀"
         }
       />
     </OnboardingShell>

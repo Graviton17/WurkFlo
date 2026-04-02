@@ -1,5 +1,5 @@
-import { supabase } from "./supabase";
-import { createServerComponentClient } from "./server.service";
+
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { StorageResponse, UploadOptions } from "@/types/index";
 
 /**
@@ -18,10 +18,7 @@ export class StorageService {
    * Resolve the correct Supabase client based on execution context.
    */
   private async getClient() {
-    if (typeof window === "undefined") {
-      return await createServerComponentClient();
-    }
-    return supabase;
+    return await createServerSupabaseClient();
   }
 
   /**

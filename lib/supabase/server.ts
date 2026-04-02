@@ -1,16 +1,16 @@
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { SUPABASE_URL, SUPABASE_KEY } from "@/app/env";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/app/env";
 
 /**
  * Create a Supabase client for use in Server Components and Route Handlers.
- * Reads cookies from the request (read-only).
+ * Reads cookies from the request.
  */
-export async function createServerComponentClient() {
+export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
 
-  return createSupabaseServerClient(SUPABASE_URL, SUPABASE_KEY, {
+  return createSupabaseServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -37,7 +37,7 @@ export function createMiddlewareClient(
   request: NextRequest,
   response: NextResponse,
 ) {
-  return createSupabaseServerClient(SUPABASE_URL, SUPABASE_KEY, {
+  return createSupabaseServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

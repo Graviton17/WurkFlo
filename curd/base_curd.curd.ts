@@ -1,5 +1,4 @@
-import { supabase as browserClient } from "../services/supabase";
-import { createServerComponentClient } from "../services/server.service";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { DatabaseResponse } from "@/types/index";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -11,10 +10,7 @@ export class BaseCURD<T = any> {
   }
 
   protected async getClient() {
-    if (typeof window === "undefined") {
-      return await createServerComponentClient();
-    }
-    return browserClient;
+    return await createServerSupabaseClient();
   }
 
   /**
@@ -32,7 +28,6 @@ export class BaseCURD<T = any> {
       const db = await this.getClient();
       let query = db.from(this.tableName)
         .select(options?.select || "*")
-        .is("deleted_at", null); // Enforce Soft Delete tracking
 
       // Apply filters
       if (options?.filters) {
@@ -85,7 +80,6 @@ export class BaseCURD<T = any> {
         .from(this.tableName)
         .select(select || "*")
         .eq("id", id)
-        .is("deleted_at", null) // Prevent reading soft-deleted entities
         .maybeSingle();
 
       return {
@@ -232,7 +226,7 @@ export class BaseCURD<T = any> {
       const db = await this.getClient();
       const { error } = await db
         .from(this.tableName)
-        .update({ deleted_at: new Date().toISOString() }) // Soft Delete
+        .delete()
         .eq("id", id);
 
       return {

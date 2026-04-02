@@ -34,10 +34,14 @@ interface OnboardingState {
   projectData: ProjectData | null;
   setProjectData: (data: ProjectData | null) => void;
   
+  workspaceId: string | null;
+  setWorkspaceId: (id: string | null) => void;
+  
   goToStep: (step: OnboardingStep) => void;
   advance: () => void;
   skip: () => void;
-  submitOnboarding: () => Promise<void>;
+  submitWorkspaceAndProject: (projData?: ProjectData) => Promise<string | null>;
+  submitMembers: (overrideMembers?: MemberData[]) => Promise<void>;
 }
 
 const OnboardingContext = createContext<OnboardingState | null>(null);
@@ -71,6 +75,8 @@ export function OnboardingProvider({
   const [membersData, setMembersData] = useState<MemberData[]>([]);
   const [projectData, setProjectData] = useState<ProjectData | null>(null);
 
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
   const goToStep = (step: OnboardingStep) => {
     if (step >= 1 && step <= 4) setCurrentStep(step);
   };
@@ -87,20 +93,43 @@ export function OnboardingProvider({
     advance();
   };
 
-  const submitOnboarding = async () => {
+  const submitWorkspaceAndProject = async (projData?: ProjectData) => {
     try {
-      // Using axios as requested
       const res = await axios.post("/api/onboarding", {
+        action: "create_workspace",
         userId,
         fullName,
         workspaceData,
-        membersData,
-        projectData,
+        projectData: projData || projectData,
+      });
+
+      const newWsId = res.data?.data?.workspaceId;
+      if (newWsId) {
+        setWorkspaceId(newWsId);
+      }
+      return newWsId || null;
+    } catch (err: any) {
+      throw new Error(err?.response?.data?.error || "Failed to create workspace.");
+    }
+  };
+
+  const submitMembers = async (overrideMembers?: MemberData[]) => {
+    try {
+      // If we don't have a workspace, just skip adding members
+      if (!workspaceId) {
+        onFinish();
+        return;
+      }
+      await axios.post("/api/onboarding", {
+        action: "add_members",
+        userId,
+        workspaceId,
+        membersData: overrideMembers !== undefined ? overrideMembers : membersData,
       });
 
       onFinish();
     } catch (err: any) {
-      throw new Error(err?.response?.data?.error || "Failed to complete onboarding.");
+      throw new Error(err?.response?.data?.error || "Failed to add members.");
     }
   };
 
@@ -117,10 +146,13 @@ export function OnboardingProvider({
         setMembersData,
         projectData,
         setProjectData,
+        workspaceId,
+        setWorkspaceId,
         goToStep,
         advance,
         skip,
-        submitOnboarding,
+        submitWorkspaceAndProject,
+        submitMembers,
       }}
     >
       {children}

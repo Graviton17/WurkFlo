@@ -14,6 +14,7 @@ import {
   useOnboarding,
 } from "@/components/onboarding";
 import type { OnboardingStep } from "@/components/onboarding";
+import { logger } from "@/lib/logger";
 
 // ---- Step renderer (inside provider, can read context) ----------------------
 
@@ -136,7 +137,7 @@ export default function OnboardingPage() {
 
         setInitialStep(1);
       } catch (err: any) {
-        console.error("Error checking onboarding status:", err);
+        logger.error({ err }, "Error checking onboarding status:");
         // Redirect to login if user session is invalid / unauthorized
         if (err?.response?.status === 401) {
           router.replace("/login");

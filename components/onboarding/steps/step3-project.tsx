@@ -32,7 +32,7 @@ function toIdentifier(name: string) {
 // ---- Step 3: Create Project ------------------------------------------------
 
 export function Step3Project() {
-  const { workspaceData, setProjectData, submitOnboarding } = useOnboarding();
+  const { workspaceData, projectData, setProjectData, advance, submitWorkspaceAndProject } = useOnboarding();
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [identifierEdited, setIdentifierEdited] = useState(false);
@@ -57,17 +57,21 @@ export function Step3Project() {
       return;
     }
 
-    setLoading(true);
     setError(null);
+    setLoading(true);
 
-    setProjectData({
+    const pd = {
       name: trimmedName,
       identifier,
       description: description.trim() || "",
-    });
+    };
+    setProjectData(pd);
 
     try {
-      await submitOnboarding();
+      if (workspaceData) {
+        await submitWorkspaceAndProject(pd);
+      }
+      advance();
     } catch (err: any) {
       setError(err?.message || "Something went wrong.");
       setLoading(false);
@@ -76,7 +80,7 @@ export function Step3Project() {
 
   return (
     <OnboardingShell
-      badge="Step 4 of 4 · Project"
+      badge="Step 3 of 4 · Project"
       title={
         <>
           Create your first{" "}
@@ -160,8 +164,8 @@ export function Step3Project() {
 
       <NavButtons
         onContinue={handleContinue}
+        continueLabel="Continue"
         loading={loading}
-        continueLabel="Create Project & Finish 🚀"
         disabled={!workspaceData || !name.trim()}
       />
     </OnboardingShell>

@@ -1,5 +1,5 @@
-import { supabase } from "./supabase";
-import { createServerComponentClient } from "./server.service";
+
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { User, Session } from "@supabase/supabase-js";
 import type {
   AuthResponse,
@@ -12,17 +12,13 @@ import type {
  * Handles all authentication-related operations.
  * Uses getClient() to resolve correct Supabase client for server vs browser context.
  */
-export class AuthService {
+export class Auth {
   /**
-   * Resolve the correct Supabase client based on execution context.
-   * Server-side (API routes, server components) → server client with cookie access.
-   * Browser-side → browser singleton.
+   * Get the Supabase server client for the current request.
+   * Always creates a fresh instance to ensure correct cookie context.
    */
   private async getClient() {
-    if (typeof window === "undefined") {
-      return await createServerComponentClient();
-    }
-    return supabase;
+    return await createServerSupabaseClient();
   }
 
   /**
@@ -162,6 +158,22 @@ export class AuthService {
   }
 
   /**
+   * Get the authenticated user directly.
+   * Returns User | null without the AuthResponse wrapper.
+   * Ideal for quick auth guards (e.g. API wrapper).
+   */
+  async getUser(): Promise<User | null> {
+    try {
+      const client = await this.getClient();
+      const { data: { user }, error } = await client.auth.getUser();
+      if (error || !user) return null;
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Get the current session
    * @returns Promise with session data or error
    */
@@ -265,24 +277,41 @@ export class AuthService {
     }
   }
 
-  /**
-   * Listen to auth state changes (browser-only)
-   * @param callback - Callback function
-   * @returns Unsubscribe function
-   */
-  onAuthStateChange(
-    callback: (event: string, session: Session | null) => void,
-  ) {
-    // onAuthStateChange is browser-only, so use the browser client directly
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(callback);
 
-    return () => subscription.unsubscribe();
+  /**
+   * Handle OAuth Callback
+   * @param code - Authorization code
+   * @param next - Redirect path
+   * @returns Redirect path
+   */
+  async handleOAuthCallback(code: string, next: string | null): Promise<string> {
+    const client = await this.getClient();
+    const { error, data: sessionData } = await client.auth.exchangeCodeForSession(code);
+
+    if (!error && sessionData?.user) {
+      let redirectPath = next;
+      
+      if (!redirectPath) {
+        const { userService } = await import("../services/user.service");
+        const dbUser = await userService.getUserById(sessionData.user.id);
+        
+        if (!dbUser.success || !dbUser.data) {
+          redirectPath = "/onboarding";
+        } else {
+          redirectPath = "/dashboard";
+        }
+      }
+      
+      return redirectPath;
+    } else {
+      const { logger } = await import("@/lib/logger");
+      logger.error({ err: error }, "OAuth callback error:");
+      return "/login?error=auth_callback_failed";
+    }
   }
 }
 
 /**
  * Export singleton instance
  */
-export const authService = new AuthService();
+export const auth = new Auth();

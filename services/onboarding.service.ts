@@ -1,27 +1,23 @@
-import { UserCURD, WorkspaceMemberCURD, ProjectCURD } from "@/curd/index";
-import { createServerComponentClient } from "./server.service";
+import { UserCURD, WorkspaceMemberCURD } from "@/curd/index";
+import { AtomicCreateWorkspaceWithProjectParams } from "@/types/index";
+import { RPCService, rpcService } from "./rpc.service";
+import { logger } from "@/lib/logger";
 
 export class OnboardingService {
   private userCurd: UserCURD;
   private workspaceMemberCurd: WorkspaceMemberCURD;
+  private rpcService: RPCService;
 
   constructor() {
     this.userCurd = new UserCURD();
     this.workspaceMemberCurd = new WorkspaceMemberCURD();
+    this.rpcService = new RPCService()
   }
 
   async getMemberWorkspace(userId: string) {
-    const { data, error } = await this.workspaceMemberCurd.getAll({
-      filters: { user_id: userId },
-      limit: 1,
-      select: "workspace_id",
-    });
-
-    // Mimic the .maybeSingle() behavior
-    if (data && data.length > 0) {
-      return { data: data[0], error };
-    }
-    return { data: null, error };
+    const { data, error } =
+      await this.workspaceMemberCurd.getWorkspaceByUserId(userId);
+    return { data, error };
   }
 
   async getUserProfile(userId: string) {
@@ -37,9 +33,7 @@ export class OnboardingService {
       throw new Error("Project data is required to initialize a workspace.");
     }
 
-    const supabase = await createServerComponentClient();
-
-    return await supabase.rpc("atomic_create_workspace_with_project", {
+    const params: AtomicCreateWorkspaceWithProjectParams = {
       workspace_name: workspaceData.name,
       workspace_identifier: workspaceData.slug,
       workspace_description: "",
@@ -47,7 +41,9 @@ export class OnboardingService {
       project_identifier: projectData.identifier,
       project_description: projectData.description || "",
       owner_id: userId,
-    });
+    };
+
+    return await this.rpcService.atomicCreateWorkspaceWithProject(params);
   }
 
   async addMembers(
@@ -56,9 +52,8 @@ export class OnboardingService {
   ) {
     if (!membersData || membersData.length === 0) return { success: true };
 
-    const { data: usersList } = await this.userCurd.getAll({
-      select: "id, email",
-    });
+    const emails = membersData.map((m) => m.email);
+    const { data: usersList } = await this.userCurd.getByEmails(emails, "id, email");
     const allUsers = usersList || [];
 
     const membersToInsert = membersData
@@ -81,7 +76,7 @@ export class OnboardingService {
       const { error, success } =
         await this.workspaceMemberCurd.createMany(membersToInsert);
       if (!success) {
-        console.error("Failed to add some members:", error);
+        logger.error({ err: error }, "Failed to add some members:");
         return { success: false, error };
       }
     }

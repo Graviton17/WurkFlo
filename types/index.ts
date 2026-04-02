@@ -14,5 +14,9 @@ export type {
   WorkspaceMember,
   WorkspaceRole,
 } from "./model/workspace.types";
+
 export type { Project } from "./model/project.types";
+
 export type { WorkflowState, StateCategoryEnum } from "./model/workflow.types";
+
+export type { AtomicCreateWorkspaceWithProjectParams } from "./rpc.types";

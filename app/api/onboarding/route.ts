@@ -33,36 +33,45 @@ export const POST = withApiSetup({
   handler: async ({ req, user }) => {
     try {
       const body = await req.json();
-      const { fullName, workspaceData, membersData, projectData } = body;
+      const { action, fullName, workspaceData, membersData, projectData, workspaceId } = body;
 
       if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
 
-      // Update user full name
-      if (fullName?.trim()) {
-        await userService.updateUser(user.id, { full_name: fullName.trim() });
-      }
+      if (action === "create_workspace") {
+        // Update user full name
+        if (fullName?.trim()) {
+          await userService.updateUser(user.id, { full_name: fullName.trim() });
+        }
 
-      if (!workspaceData) {
+        if (!workspaceData) {
+          return NextResponse.json({ success: true });
+        }
+
+        const { data: newWorkspaceId, error: rpcError } = await onboardingService.createWorkspaceAndProject(
+          workspaceData,
+          projectData,
+          user.id
+        );
+
+        if (rpcError) {
+          return NextResponse.json({ success: false, error: rpcError.message }, { status: 400 });
+        }
+
+        return NextResponse.json({ success: true, data: { workspaceId: newWorkspaceId } });
+      } else if (action === "add_members") {
+        if (!workspaceId) {
+           return NextResponse.json({ success: false, error: "Workspace ID is required to add members" }, { status: 400 });
+        }
+        
+        // Add Members
+        await onboardingService.addMembers(workspaceId, membersData);
+
         return NextResponse.json({ success: true });
+      } else {
+        return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
       }
-
-
-      const { data: workspaceId, error: rpcError } = await onboardingService.createWorkspaceAndProject(
-        workspaceData,
-        projectData,
-        user.id
-      );
-
-      if (rpcError) {
-        return NextResponse.json({ success: false, error: rpcError.message }, { status: 400 });
-      }
-
-      // Add Members
-      await onboardingService.addMembers(workspaceId, membersData);
-
-      return NextResponse.json({ success: true, data: { workspaceId } });
     } catch (err: any) {
       return NextResponse.json(
         { success: false, error: err.message || "Failed to process onboarding" },

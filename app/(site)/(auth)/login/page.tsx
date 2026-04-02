@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/services/supabase";
+import { supabase } from "@/lib/supabase/client";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import {
   AuthPageLayout,
   AuthCardShell,
@@ -39,19 +40,19 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error: signInError, data } = await supabase.auth.signInWithPassword(
-      {
-        email,
-        password,
-      },
-    );
+    try {
+      const response = await axios.post("/api/auth/login", { email, password });
 
-    if (signInError) {
-      setError(signInError.message);
+      if (!response.data?.success) {
+        setError(response.data?.error || "Failed to sign in");
+        setLoading(false);
+      } else {
+        router.push("/onboarding");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "An error occurred during sign in");
       setLoading(false);
-    } else {
-      router.push("/onboarding");
-      router.refresh();
     }
   };
 
