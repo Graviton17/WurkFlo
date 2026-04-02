@@ -1,11 +1,16 @@
-import { supabase } from "../services/supabase";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { DatabaseResponse } from "@/types/index";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export class BaseCURD<T = any> {
   protected tableName: string;
 
   constructor(tableName: string) {
     this.tableName = tableName;
+  }
+
+  protected async getClient() {
+    return await createServerSupabaseClient();
   }
 
   /**
@@ -20,7 +25,9 @@ export class BaseCURD<T = any> {
     limit?: number;
   }): Promise<DatabaseResponse<T[]>> {
     try {
-      let query = supabase.from(this.tableName).select(options?.select || "*");
+      const db = await this.getClient();
+      let query = db.from(this.tableName)
+        .select(options?.select || "*")
 
       // Apply filters
       if (options?.filters) {
@@ -68,11 +75,12 @@ export class BaseCURD<T = any> {
     select?: string,
   ): Promise<DatabaseResponse<T>> {
     try {
-      const { data, error } = await supabase
+      const db = await this.getClient();
+      const { data, error } = await db
         .from(this.tableName)
         .select(select || "*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       return {
         data: data as T | null,
@@ -95,12 +103,13 @@ export class BaseCURD<T = any> {
    */
   async create(data: Partial<T>): Promise<DatabaseResponse<T>> {
     try {
+      const db = await this.getClient();
       const { data: createdData, error } = await (
-        supabase.from(this.tableName) as any
+        db.from(this.tableName) as any
       )
         .insert(data)
         .select()
-        .single();
+        .maybeSingle();
 
       return {
         data: createdData as T | null,
@@ -123,8 +132,9 @@ export class BaseCURD<T = any> {
    */
   async createMany(data: Partial<T>[]): Promise<DatabaseResponse<T[]>> {
     try {
+      const db = await this.getClient();
       const { data: createdData, error } = await (
-        supabase.from(this.tableName) as any
+        db.from(this.tableName) as any
       )
         .insert(data)
         .select();
@@ -144,6 +154,35 @@ export class BaseCURD<T = any> {
   }
 
   /**
+   * Upsert a record (Insert or Update)
+   * @param data - Record data
+   * @returns Promise with upserted data or error
+   */
+  async upsert(data: Partial<T>): Promise<DatabaseResponse<T>> { 
+    try { 
+      const db = await this.getClient(); 
+      const { data: upsertedData, error } = await ( 
+        db.from(this.tableName) as any 
+      ) 
+        .upsert(data) 
+        .select() 
+        .maybeSingle(); 
+ 
+      return { 
+        data: upsertedData as T | null, 
+        error, 
+        success: !error, 
+      }; 
+    } catch (error) { 
+      return { 
+        data: null, 
+        error: error as Error, 
+        success: false, 
+      }; 
+    } 
+  } 
+
+  /**
    * Update a record by ID
    * @param id - Record ID
    * @param data - Updated data
@@ -154,13 +193,14 @@ export class BaseCURD<T = any> {
     data: Partial<T>,
   ): Promise<DatabaseResponse<T>> {
     try {
+      const db = await this.getClient();
       const { data: updatedData, error } = await (
-        supabase.from(this.tableName) as any
+        db.from(this.tableName) as any
       )
         .update(data)
         .eq("id", id)
         .select()
-        .single();
+        .maybeSingle();
 
       return {
         data: updatedData as T | null,
@@ -183,7 +223,8 @@ export class BaseCURD<T = any> {
    */
   async delete(id: string | number): Promise<DatabaseResponse<null>> {
     try {
-      const { error } = await supabase
+      const db = await this.getClient();
+      const { error } = await db
         .from(this.tableName)
         .delete()
         .eq("id", id);
@@ -211,9 +252,11 @@ export class BaseCURD<T = any> {
     filters?: Record<string, any>,
   ): Promise<DatabaseResponse<number>> {
     try {
-      let query = supabase
+      const db = await this.getClient();
+      let query = db
         .from(this.tableName)
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .is("deleted_at", null);
 
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
@@ -243,10 +286,11 @@ export class BaseCURD<T = any> {
    * @returns Promise with data or error
    */
   async customQuery<R = any>(
-    queryBuilder: (table: ReturnType<typeof supabase.from>) => any,
+    queryBuilder: (table: ReturnType<SupabaseClient['from']>) => any,
   ): Promise<DatabaseResponse<R>> {
     try {
-      const table = supabase.from(this.tableName);
+      const db = await this.getClient();
+      const table = db.from(this.tableName);
       const { data, error } = await queryBuilder(table);
 
       return {

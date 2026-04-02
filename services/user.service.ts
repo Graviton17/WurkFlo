@@ -20,6 +20,10 @@ export class UserService {
     return this.userCurd.create(data);
   }
 
+  async upsertUser(data: Partial<User>): Promise<DatabaseResponse<User>> { 
+    return this.userCurd.upsert(data); 
+  } 
+
   async updateUser(id: string, data: Partial<User>): Promise<DatabaseResponse<User>> {
     return this.userCurd.update(id, data);
   }
