@@ -167,15 +167,9 @@ export default function OnboardingPage() {
             userId={userId}
             initialStep={initialStep}
             initialFullName={initialFullName}
-            onFinish={async (wid) => {
-              const idToUse = wid || initialWorkspaceId;
-              if (idToUse) {
-                const { data } = await supabase.from("workspaces").select("slug").eq("id", idToUse).single();
-                if (data?.slug) {
-                  router.push(`/${data.slug}/get-started`);
-                  return;
-                }
-              }
+            onFinish={async () => {
+              // The global /dashboard endpoint handled by Next.js Server Components
+              // will resolve the newly created or existing workspace and redirect appropriately.
               router.push("/dashboard");
             }}
           >
