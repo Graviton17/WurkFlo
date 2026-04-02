@@ -15,3 +15,5 @@ export type {
   WorkspaceRole,
 } from "./model/workspace.types";
 export type { Project } from "./model/project.types";
+export * from './model/sprint.types';
+export * from './model/epic.types';

@@ -4,3 +4,5 @@ export * from "./bucket.service";
 export * from "./user.service";
 export * from "./workspace.service";
 export * from "./project.service";
+export * from './sprint.service';
+export * from './epic.service';
