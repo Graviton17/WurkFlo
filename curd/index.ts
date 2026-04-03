@@ -6,3 +6,4 @@ export * from './sprint.curd';
 export * from './epic.curd';
 export * from './release.curd';
 export * from './issue.curd';
+export * from "./workflow_state.curd";

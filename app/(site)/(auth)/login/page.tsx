@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { supabase } from "@/services/supabase";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import {
   AuthPageLayout,
   AuthCardShell,
@@ -23,35 +24,35 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // If user is already logged in, redirect to onboarding
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        router.replace("/onboarding");
+      }
+    };
+    checkSession();
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error: signInError, data } = await supabase.auth.signInWithPassword(
-      {
-        email,
-        password,
-      },
-    );
+    try {
+      const response = await axios.post("/api/auth/login", { email, password });
 
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
-    } else {
-      try {
-        const res = await fetch(`/api/users/${data.user.id}`);
-        const userData = await res.json();
-
-        if (!res.ok || !userData.data) {
-          router.push("/onboarding");
-        } else {
-          router.push("/dashboard");
-        }
-      } catch {
-        router.push("/dashboard");
+      if (!response.data?.success) {
+        setError(response.data?.error || "Failed to sign in");
+        setLoading(false);
+      } else {
+        router.push("/onboarding");
+        router.refresh();
       }
-      router.refresh();
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "An error occurred during sign in");
+      setLoading(false);
     }
   };
 
@@ -89,10 +90,17 @@ export default function LoginPage() {
 
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium text-white/90" style={{ marginBottom: 0 }}>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-white/90"
+                style={{ marginBottom: 0 }}
+              >
                 Password
               </label>
-              <Link href="#" className="text-white/60 text-sm transition-colors hover:text-white">
+              <Link
+                href="#"
+                className="text-white/60 text-sm transition-colors hover:text-white"
+              >
                 Forgot password?
               </Link>
             </div>

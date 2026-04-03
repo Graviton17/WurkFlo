@@ -1,10 +1,39 @@
-export * from "./auth.service";
-export * from "./server.service";
-export * from "./bucket.service";
-export * from "./user.service";
-export * from "./workspace.service";
-export * from "./project.service";
-export * from './sprint.service';
-export * from './epic.service';
-export * from './release.service';
-export * from './issue.service';
+export {
+  userService
+} from "./user.service";
+
+export {
+  workspaceService
+} from "./workspace.service";
+
+export {
+  projectService
+} from "./project.service";
+
+export {
+  workflowStateService
+} from "./workflow_state.service";
+
+export {
+  onboardingService
+} from "./onboarding.service";
+
+export {
+  rpcService
+} from "./rpc.service";
+
+export {
+  sprintService
+} from './sprint.service';
+
+export {
+  epicService
+} from './epic.service';
+
+export {
+  releaseService
+} from './release.service';
+
+export {
+  issueService
+} from './issue.service';

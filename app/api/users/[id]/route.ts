@@ -1,57 +1,56 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { userService } from "@/services/index";
+import { withApiSetup } from "@/lib/api-wrapper";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const result = await userService.getUserById(id);
+export const GET = withApiSetup({
+  requireAuth: true,
+  handler: async ({ params }) => {
+    const result = await userService.getUserById(params.id);
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 404 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 404 });
     }
     
-    return NextResponse.json({ data: result.data });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, data: result.data });
   }
-}
+});
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const body = await request.json();
-    const result = await userService.updateUser(id, body);
+export const PUT = withApiSetup({
+  requireAuth: true,
+  // Skipping strict schema here to allow partial updates, but ideally we add an UpdateUserSchema
+  handler: async ({ req, params, user }) => {
+    if (user!.id !== params.id) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const result = await userService.upsertUser({ 
+      id: params.id, 
+      email: user!.email,
+      ...body 
+    });
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
     }
     
-    return NextResponse.json({ data: result.data });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, data: result.data });
   }
-}
+});
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const id = (await params).id;
-    const result = await userService.deleteUser(id);
+export const DELETE = withApiSetup({
+  requireAuth: true,
+  handler: async ({ params, user }) => {
+    if (user!.id !== params.id) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const result = await userService.deleteUser(params.id);
     
     if (!result.success) {
-      return NextResponse.json({ error: result.error?.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
     }
     
-    return NextResponse.json({ message: "User deleted successfully" });
-  } catch (error) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ success: true, message: "User deleted successfully" });
   }
-}
+});

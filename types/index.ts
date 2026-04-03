@@ -14,8 +14,14 @@ export type {
   WorkspaceMember,
   WorkspaceRole,
 } from "./model/workspace.types";
+
 export type { Project } from "./model/project.types";
-export * from './model/sprint.types';
-export * from './model/epic.types';
-export * from './model/release.types';
-export * from './model/issue.types';
+
+export type { SprintStatus, Sprint } from './model/sprint.types';
+export type { Epic } from './model/epic.types';
+export type { Release } from './model/release.types';
+export type { IssueType, IssuePriority, Issue } from './model/issue.types';
+
+export type { WorkflowState, StateCategoryEnum } from "./model/workflow.types";
+
+export type { AtomicCreateWorkspaceWithProjectParams } from "./rpc.types";

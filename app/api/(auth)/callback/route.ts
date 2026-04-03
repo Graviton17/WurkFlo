@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerComponentClient, userService } from "@/services/index";
+import { auth } from "@/lib/auth";
 import { BASE_URL } from "@/app/env";
 
 /**
@@ -12,28 +12,8 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next");
 
   if (code) {
-    const supabase = await createServerComponentClient();
-    const { error, data: sessionData } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error && sessionData?.user) {
-      let redirectPath = next;
-      
-      if (!redirectPath) {
-        // Check if user exists in the database
-        const dbUser = await userService.getUserById(sessionData.user.id);
-        
-        // If they don't exist in the users table, send to onboarding
-        if (!dbUser.success || !dbUser.data) {
-          redirectPath = "/onboarding";
-        } else {
-          redirectPath = "/dashboard";
-        }
-      }
-      
-      return NextResponse.redirect(`${BASE_URL}${redirectPath}`);
-    } else {
-      console.error("OAuth callback error:", error);
-    }
+    const redirectPath = await auth.handleOAuthCallback(code, next);
+    return NextResponse.redirect(`${BASE_URL}${redirectPath}`);
   }
 
   // If there's no code or an error, redirect to login with error
