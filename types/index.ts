@@ -13,6 +13,7 @@ export type {
   Workspace,
   WorkspaceMember,
   WorkspaceRole,
+  WorkspaceWithRole,
 } from "./model/workspace.types";
 
 export type { Project } from "./model/project.types";

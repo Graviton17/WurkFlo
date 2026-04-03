@@ -22,6 +22,39 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     };
   }
 
+  async getAllWorkspacesByUserId(userId: string) {
+    const db = await this.getClient();
+    const { data, error } = await db
+      .from(this.tableName)
+      .select(`
+        role,
+        workspaces!inner (
+          *
+        )
+      `)
+      .eq("user_id", userId);
+
+    if (error || !data) {
+      return { 
+        data: null, 
+        error, 
+        success: false 
+      };
+    }
+
+    // Map to match the expected WorkspaceWithRole format
+    const formattedData = data.map((item: any) => ({
+      ...(Array.isArray(item.workspaces) ? item.workspaces[0] : item.workspaces),
+      role: item.role,
+    }));
+
+    return { 
+      data: formattedData, 
+      error: null, 
+      success: true 
+    };
+  }
+
   // Override standard BaseCURD by extending with composite ID capability if needed
   async deleteByCompositeKey(workspaceId: string, userId: string) {
     const db = await this.getClient();

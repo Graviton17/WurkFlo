@@ -5,8 +5,9 @@ import { CreateWorkspaceSchema } from "@/types/validation";
 
 export const GET = withApiSetup({
   requireAuth: true,
-  handler: async () => {
-    const result = await workspaceService.getAllWorkspaces();
+  handler: async ({ user }) => {
+    // Only fetch workspaces that the authenticated user is a member of
+    const result = await workspaceService.getAllWorkspacesByUserId(user!.id);
     
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });

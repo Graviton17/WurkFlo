@@ -7,10 +7,14 @@ import { InteractiveSandboxSection } from '@/components/home/InteractiveSandboxS
 import { CtaSection } from '@/components/home/CtaSection';
 import { Footer } from '@/components/layout/Footer';
 
-export default function Home() {
+import { auth } from '@/lib/auth';
+
+export default async function Home() {
+  const user = await auth.getUser();
+  
   return (
     <main className="min-h-screen bg-[#0c0c0d] text-white selection:bg-[#ff1f1f]/30">
-      <Navbar />
+      <Navbar initialUser={user} />
       <HeroSection />
       <LogoTicker />
       <CoreFeaturesSection />
