@@ -4,3 +4,5 @@ export * from "./workspace_member.curd";
 export * from "./project.curd";
 export * from './sprint.curd';
 export * from './epic.curd';
+export * from './release.curd';
+export * from './issue.curd';

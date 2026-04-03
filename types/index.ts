@@ -17,3 +17,5 @@ export type {
 export type { Project } from "./model/project.types";
 export * from './model/sprint.types';
 export * from './model/epic.types';
+export * from './model/release.types';
+export * from './model/issue.types';
