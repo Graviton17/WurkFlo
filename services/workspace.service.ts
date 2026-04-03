@@ -32,6 +32,10 @@ export class WorkspaceService {
     return this.workspaceCurd.delete(id);
   }
 
+  async getWorkspaceMembershipByUserId(userId: string) {
+    return this.memberCurd.getWorkspaceByUserId(userId);
+  }
+
   // --- Workspace Member Operations ---
 
   async getWorkspaceMembers(workspaceId: string): Promise<DatabaseResponse<WorkspaceMember[]>> {

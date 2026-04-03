@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withApiSetup } from "@/lib/api-wrapper";
 import { CreateUserSchema } from "@/types/validation";
+import { authSyncService } from "@/services";
 
 /**
- * POST /api/auth/signup
+ * POST /api/signup
  * Register a new user
  */
 export const POST = withApiSetup({
@@ -14,12 +15,15 @@ export const POST = withApiSetup({
   handler: async ({ validatedData }) => {
     const result = await auth.signUp(validatedData!);
 
-    if (!result.success) {
+    if (!result.success || !result.data) {
       return NextResponse.json(
         { success: false, error: result.error?.message || "Failed to sign up" },
         { status: 400 },
       );
     }
+
+    // Sync public.users with auth table on signup
+    await authSyncService.syncUser(result.data);
 
     return NextResponse.json(
       {
@@ -29,5 +33,5 @@ export const POST = withApiSetup({
       },
       { status: 201 },
     );
-  }
+  },
 });

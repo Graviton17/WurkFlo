@@ -34,7 +34,7 @@ export class Auth {
         password: credentials.password,
         options: {
           data: credentials.metadata,
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
         },
       });
 
@@ -90,7 +90,7 @@ export class Auth {
       const { data, error } = await client.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
         },
       });
 
@@ -289,17 +289,26 @@ export class Auth {
     const { error, data: sessionData } = await client.auth.exchangeCodeForSession(code);
 
     if (!error && sessionData?.user) {
+      // ── Sync auth user → public.users (non-blocking) ──
+      try {
+        const { authSyncService } = await import("@/services");
+        const syncResult = await authSyncService.syncUser(sessionData.user);
+        if (!syncResult.success) {
+          const { logger } = await import("@/lib/logger");
+          logger.error({ error: syncResult.error }, "OAuth syncUser failed");
+        }
+      } catch (syncErr) {
+        const { logger } = await import("@/lib/logger");
+        logger.error({ err: syncErr }, "OAuth syncUser threw");
+      }
+
       let redirectPath = next;
       
       if (!redirectPath) {
-        const { userService } = await import("../services/user.service");
-        const dbUser = await userService.getUserById(sessionData.user.id);
-        
-        if (!dbUser.success || !dbUser.data) {
-          redirectPath = "/onboarding";
-        } else {
-          redirectPath = "/dashboard";
-        }
+        // Check workspace membership to decide redirect
+        const { workspaceService } = await import("@/services");
+        const membership = await workspaceService.getWorkspaceMembershipByUserId(sessionData.user.id);
+        redirectPath = membership.data ? "/dashboard" : "/onboarding";
       }
       
       return redirectPath;
