@@ -21,3 +21,19 @@ export {
 export {
   rpcService
 } from "./rpc.service";
+
+export {
+  sprintService
+} from './sprint.service';
+
+export {
+  epicService
+} from './epic.service';
+
+export {
+  releaseService
+} from './release.service';
+
+export {
+  issueService
+} from './issue.service';
