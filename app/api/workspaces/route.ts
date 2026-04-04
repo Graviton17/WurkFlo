@@ -21,21 +21,14 @@ export const POST = withApiSetup({
   requireAuth: true,
   schema: CreateWorkspaceSchema,
   handler: async ({ user, validatedData }) => {
-    const result = await workspaceService.createWorkspace(validatedData!);
-    
-    if (!result.success || !result.data) {
-      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
-    }
-    
-    // We will refactor this to an RPC later in Phase II
-    const memberResult = await workspaceService.addMember(result.data.id, user!.id, "owner");
+    // Append a simple random string to the slug to prevent unique constraint violations
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    validatedData!.slug = `${validatedData!.slug}-${randomSuffix}`;
 
-    if (!memberResult.success) {
-      await workspaceService.deleteWorkspace(result.data.id);
-      return NextResponse.json(
-        { success: false, error: "Failed to create workspace" },
-        { status: 500 }
-      );
+    const result = await workspaceService.createWorkspace(validatedData!, user!.id);
+    
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error?.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, data: result.data }, { status: 201 });

@@ -6,22 +6,6 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     super("workspace_members");
   }
 
-  async getWorkspaceByUserId(userId: string) {
-    const db = await this.getClient();
-    const { data, error } = await db
-      .from(this.tableName)
-      .select("*")
-      .eq("user_id", userId)
-      .limit(1)
-      .maybeSingle();
-
-    return { 
-      data: data as WorkspaceMember | null, 
-      error, 
-      success: !error 
-    };
-  }
-
   async getAllWorkspacesByUserId(userId: string) {
     const db = await this.getClient();
     const { data, error } = await db
@@ -55,6 +39,19 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     };
   }
 
+  /**
+   * Delete all members for a given workspace
+   */
+  async deleteAllByWorkspaceId(workspaceId: string) {
+    const db = await this.getClient();
+    const { error } = await db
+      .from(this.tableName)
+      .delete()
+      .eq("workspace_id", workspaceId);
+
+    return { data: null, error, success: !error };
+  }
+
   // Override standard BaseCURD by extending with composite ID capability if needed
   async deleteByCompositeKey(workspaceId: string, userId: string) {
     const db = await this.getClient();
@@ -67,28 +64,4 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     return { data: null, error, success: !error };
   }
 
-  async getByCompositeKey(workspaceId: string, userId: string) {
-    const db = await this.getClient();
-    const { data, error } = await db
-      .from(this.tableName)
-      .select("*")
-      .eq("workspace_id", workspaceId)
-      .eq("user_id", userId)
-      .single();
-      
-    return { data: data as WorkspaceMember | null, error, success: !error };
-  }
-
-  async updateByCompositeKey(workspaceId: string, userId: string, data: Partial<WorkspaceMember>) {
-    const db = await this.getClient();
-    const { data: updatedData, error } = await db
-      .from(this.tableName)
-      .update(data)
-      .eq("workspace_id", workspaceId)
-      .eq("user_id", userId)
-      .select()
-      .single();
-      
-    return { data: updatedData as WorkspaceMember | null, error, success: !error };
-  }
 }

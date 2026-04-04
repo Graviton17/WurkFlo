@@ -16,8 +16,8 @@ export class OnboardingService {
 
   async getMemberWorkspace(userId: string) {
     const { data, error } =
-      await this.workspaceMemberCurd.getWorkspaceByUserId(userId);
-    return { data, error };
+      await this.workspaceMemberCurd.getAllWorkspacesByUserId(userId);
+    return { data: data && data.length > 0 ? data[0] : null, error };
   }
 
   async getUserProfile(userId: string) {
