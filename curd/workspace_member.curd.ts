@@ -64,4 +64,14 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     return { data: null, error, success: !error };
   }
 
+  async updateByCompositeKey(workspaceId: string, userId: string, data: Partial<WorkspaceMember>) {
+    const db = await this.getClient();
+    const { error } = await db
+      .from(this.tableName)
+      .update(data)
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", userId);
+      
+    return { data: null, error, success: !error };
+  }
 }

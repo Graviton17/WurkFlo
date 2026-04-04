@@ -69,6 +69,7 @@ const resources = [
 
 export const Navbar = ({ initialUser }: { initialUser?: any }) => {
   const [user, setUser] = useState<any>(initialUser || null);
+  const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -84,6 +85,20 @@ export const Navbar = ({ initialUser }: { initialUser?: any }) => {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      supabase.from('users')
+        .select('full_name, avatar_url')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }: { data: any }) => {
+          if (data) setProfile(data);
+        });
+    } else {
+      setProfile(null);
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -105,6 +120,9 @@ export const Navbar = ({ initialUser }: { initialUser?: any }) => {
     router.push("/login");
     router.refresh();
   };
+
+  const displayName = profile?.full_name || user?.email || "User";
+  const initials = displayName.substring(0, 2).toUpperCase();
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-transparent/80 border-b border-white/5">
@@ -218,28 +236,44 @@ export const Navbar = ({ initialUser }: { initialUser?: any }) => {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors border border-white/10 focus:outline-none"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 overflow-hidden transition-colors border border-white/10 focus:outline-none"
                 >
-                  <User size={20} className="text-white/70" />
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="User Avatar" className="w-full h-full object-cover" />
+                  ) : profile?.full_name ? (
+                    <span className="text-[14px] font-semibold text-white/70">{initials}</span>
+                  ) : (
+                    <User size={20} className="text-white/70" />
+                  )}
                 </button>
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-black/90 border border-white/10 backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1 z-50">
                     <div className="px-4 py-3 border-b border-white/10">
-                      <p className="text-sm font-medium text-white truncate">
-                        {user.email || "User"}
+                      <p className="text-sm font-medium text-white truncate" title={displayName}>
+                        {displayName}
                       </p>
                     </div>
                     <div className="py-1">
                       <button
                         onClick={() => {
                           setDropdownOpen(false);
-                          router.push("/onboarding");
+                          router.push("/dashboard/workspace");
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2"
                       >
                         <Settings size={16} />
                         Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          router.push("/profile");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <User size={16} />
+                        Profile
                       </button>
                       <button
                         onClick={handleSignOut}

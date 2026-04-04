@@ -73,6 +73,7 @@ export function Step3Project() {
       }
       advance();
     } catch (err: any) {
+      if (err.message === "REDIRECT_TO_WORKSPACE") return;
       setError(err?.message || "Something went wrong.");
       setLoading(false);
     }
