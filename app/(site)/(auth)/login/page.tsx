@@ -41,7 +41,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await axios.post("/api/login", { email, password });
 
       if (!response.data?.success) {
         setError(response.data?.error || "Failed to sign in");
@@ -57,6 +57,9 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -65,6 +68,7 @@ export default function LoginPage() {
     });
     if (error) {
       setError(error.message);
+      setLoading(false);
     }
   };
 

@@ -16,6 +16,11 @@ export interface Workspace {
 /**
  * Workspace Member interface representing the public.workspace_members table
  */
+export interface WorkspaceWithRole extends Workspace {
+  role: WorkspaceRole;
+  member_count?: number;
+}
+
 export interface WorkspaceMember {
   workspace_id: string; // UUID references workspaces(id)
   user_id: string; // UUID references users(id)

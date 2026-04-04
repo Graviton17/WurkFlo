@@ -164,7 +164,7 @@ export class BaseCURD<T = any> {
       const { data: upsertedData, error } = await ( 
         db.from(this.tableName) as any 
       ) 
-        .upsert(data) 
+        .upsert(data, { onConflict: "id" }) 
         .select() 
         .maybeSingle(); 
  

@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { BASE_URL } from "@/app/env";
 
 /**
- * GET /api/auth/callback
+ * GET /api/callback
  * Handle OAuth code exchange after provider sign-in redirect.
  */
 export async function GET(request: NextRequest) {

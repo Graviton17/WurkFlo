@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { withApiSetup } from "@/lib/api-wrapper";
 import { LoginSchema } from "@/types/validation";
+import { authSyncService } from "@/services";
 
 /**
- * POST /api/auth/login
+ * POST /api/login
  * Authenticate a user
  */
 export const POST = withApiSetup({
@@ -14,17 +15,23 @@ export const POST = withApiSetup({
   handler: async ({ validatedData }) => {
     const result = await auth.signIn(validatedData!);
 
-    if (!result.success) {
+    if (!result.success || !result.data?.user) {
       return NextResponse.json(
-        { success: false, error: result.error?.message || "Invalid credentials" },
+        {
+          success: false,
+          error: result.error?.message || "Invalid credentials",
+        },
         { status: 401 },
       );
     }
+
+    // Sync public.users with auth table on login
+    await authSyncService.syncUser(result.data.user);
 
     return NextResponse.json({
       success: true,
       message: "Login successful",
       session: result.data,
     });
-  }
+  },
 });

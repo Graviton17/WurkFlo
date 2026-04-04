@@ -67,21 +67,13 @@ const resources = [
   },
 ];
 
-export const Navbar = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export const Navbar = ({ initialUser }: { initialUser?: any }) => {
+  const [user, setUser] = useState<any>(initialUser || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user ?? null);
-      setLoading(false);
-    };
-    checkUser();
-
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null);
@@ -210,7 +202,7 @@ export const Navbar = () => {
 
               <NavigationMenuItem>
                 <NavigationMenuLink
-                  render={<Link href="/company" />}
+                  render={<Link href="/" />}
                   className={`${navigationMenuTriggerStyle()} bg-transparent hover:bg-white/5 text-white/70 hover:text-white`}
                 >
                   Company
@@ -222,8 +214,7 @@ export const Navbar = () => {
 
         {/* Right Side */}
         <div className="flex items-center gap-6">
-          {!loading &&
-            (user ? (
+          {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -275,7 +266,7 @@ export const Navbar = () => {
                   </Button>
                 </Link>
               </>
-            ))}
+            )}
         </div>
       </div>
     </nav>
