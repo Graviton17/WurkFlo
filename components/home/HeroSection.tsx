@@ -17,7 +17,8 @@ export const HeroSection = () => {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.1 }}
           className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 text-sm text-white/80"
         >
@@ -28,7 +29,8 @@ export const HeroSection = () => {
         <motion.h1
           className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-white leading-[1.1] max-w-[800px]"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           The project management platform for high-velocity software teams.
@@ -37,7 +39,8 @@ export const HeroSection = () => {
         <motion.p
           className="mt-6 text-lg md:text-xl text-white/60 max-w-[600px] tracking-tight leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           Streamline your workflow, track progress in real-time, and ship faster with our intuitive Kanban boards and powerful collaboration tools.
@@ -46,10 +49,11 @@ export const HeroSection = () => {
         <motion.div
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <Link href="/signin" className="w-full sm:w-auto">
+          <Link href="/login" className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto bg-[#ff1f1f] hover:bg-[#ff1f1f]/90 text-white rounded-full px-8 py-6 text-lg font-medium shadow-[0_0_40px_-10px_#ff1f1f]">
               Start Building for Free
             </Button>
@@ -65,7 +69,8 @@ export const HeroSection = () => {
         <motion.div
           className="w-full max-w-[1000px] mt-20 transform perspective-1000"
           initial={{ opacity: 0, y: 40, rotateX: 5 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 1, delay: 0.4, type: "spring", stiffness: 100 }}
         >
           <div className="relative group perspective">
