@@ -1,0 +1,74 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { CreateIssueDialog } from "./CreateIssueDialog";
+import type { WorkflowState, Issue } from "@/types/index";
+import { useRouter } from "next/navigation";
+
+interface CreateIssueContextType {
+  openCreateIssue: (defaultStateId?: string) => void;
+}
+
+const CreateIssueContext = createContext<CreateIssueContextType | null>(null);
+
+export function useCreateIssue() {
+  const context = useContext(CreateIssueContext);
+  if (!context) {
+    throw new Error("useCreateIssue must be used within a CreateIssueProvider");
+  }
+  return context;
+}
+
+interface CreateIssueProviderProps {
+  children: React.ReactNode;
+  projectId: string;
+  workspaceId: string;
+  states: WorkflowState[];
+}
+
+export function CreateIssueProvider({
+  children,
+  projectId,
+  workspaceId,
+  states,
+}: CreateIssueProviderProps) {
+  const [open, setOpen] = useState(false);
+  const [defaultStateId, setDefaultStateId] = useState<string | undefined>();
+  const router = useRouter();
+
+  const openCreateIssue = (stateId?: string) => {
+    setDefaultStateId(stateId);
+    setOpen(true);
+  };
+
+  // Listen for the global event from out-of-scope components (like CommandPalette)
+  useEffect(() => {
+    const handleGlobalOpen = (e: Event) => {
+      // If event passes a custom detail for stateId, we can cast and extract it
+      const customEvent = e as CustomEvent<{ defaultStateId?: string }>;
+      openCreateIssue(customEvent.detail?.defaultStateId);
+    };
+
+    window.addEventListener("open-create-issue", handleGlobalOpen);
+    return () => window.removeEventListener("open-create-issue", handleGlobalOpen);
+  }, []);
+
+  return (
+    <CreateIssueContext.Provider value={{ openCreateIssue }}>
+      {children}
+      <CreateIssueDialog
+        open={open}
+        onOpenChange={setOpen}
+        projectId={projectId}
+        workspaceId={workspaceId}
+        states={states}
+        defaultStateId={defaultStateId}
+        onSuccess={(issue) => {
+          // You might trigger a project reload or global issue re-fetch here if necessary.
+          // For now, refreshing the router ensures the active page's async fetch picks up the new issue.
+          router.refresh();
+        }}
+      />
+    </CreateIssueContext.Provider>
+  );
+}

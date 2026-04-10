@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { createWorkspaceAction } from "@/app/actions/workspace.actions";
 
 function slugify(name: string): string {
   return name
@@ -28,20 +29,14 @@ export default function NewWorkspacePage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/workspaces", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), slug }),
-      });
+      const result = await createWorkspaceAction({ name: name.trim(), slug });
 
-      const json = await res.json();
-
-      if (!res.ok || !json.success) {
-        setError(json.error ?? "Failed to create workspace. Please try again.");
+      if (!result.success || !result.data) {
+        setError(result.error ?? "Failed to create workspace. Please try again.");
         return;
       }
 
-      router.push(`/dashboard/workspace/${json.data.id}`);
+      router.push(`/dashboard/workspace/${result.data.id}`);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");

@@ -1,5 +1,7 @@
 import { ReleaseCURD } from "@/curd/index";
 import { Release, DatabaseResponse } from "@/types/index";
+import { issueService } from "./issue.service";
+import type { IssueWithRelations } from "@/types/index";
 
 export class ReleaseService {
   private releaseCurd: ReleaseCURD;
@@ -33,6 +35,15 @@ export class ReleaseService {
 
   async deleteRelease(id: string): Promise<DatabaseResponse<null>> {
     return this.releaseCurd.delete(id);
+  }
+
+  /**
+   * Get changelog for a release (all issues linked to it).
+   */
+  async getReleaseChangelog(
+    releaseId: string,
+  ): Promise<DatabaseResponse<IssueWithRelations[]>> {
+    return issueService.getIssuesByRelease(releaseId);
   }
 }
 

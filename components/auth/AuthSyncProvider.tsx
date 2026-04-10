@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
-import axios from "axios";
+import { syncUserAction } from "@/app/actions/auth.actions";
 import { useRouter } from "next/navigation";
 
 export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
       if (event === "SIGNED_IN" && session?.user && !syncAttempted.current) {
         syncAttempted.current = true;
         try {
-          await axios.post("/api/sync");
+          await syncUserAction();
           
           if (hasCode) {
             router.push("/onboarding");

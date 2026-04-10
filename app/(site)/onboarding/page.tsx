@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import { getOnboardingStatus } from "@/app/actions/user.actions";
 import {
   OnboardingProvider,
   StepIndicator,
@@ -95,7 +95,7 @@ function OnboardingContent() {
 
 function LoadingSpinner() {
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0d0d0f]">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -119,8 +119,14 @@ export default function OnboardingPage() {
   useEffect(() => {
     const initData = async () => {
       try {
-        // Fetch onboarding status specifically using our new GET endpoint via Axios
-        const { data } = await axios.get("/api/onboarding");
+        // Fetch onboarding status specifically using our new GET endpoint via Server Actions
+        const result = await getOnboardingStatus();
+
+        if (!result.success) {
+          throw new Error("unauthorized");
+        }
+        
+        const data = result.data;
 
         if (data?.userId) {
           setUserId(data.userId);
@@ -138,11 +144,8 @@ export default function OnboardingPage() {
         setInitialStep(1);
       } catch (err: any) {
         logger.error({ err }, "Error checking onboarding status:");
-        // Redirect to login if user session is invalid / unauthorized
-        if (err?.response?.status === 401) {
-          router.replace("/login");
-          return;
-        }
+        router.replace("/login");
+        return;
       }
 
       setChecking(false);
@@ -158,7 +161,7 @@ export default function OnboardingPage() {
       ) : (
         <motion.div
           key="content"
-          className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0a0a0b]"
+          className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center py-8 px-4 bg-[#0d0d0f]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -167,7 +170,11 @@ export default function OnboardingPage() {
             userId={userId}
             initialStep={initialStep}
             initialFullName={initialFullName}
-            onFinish={() => router.push("/dashboard")}
+            onFinish={async () => {
+              // The global /dashboard endpoint handled by Next.js Server Components
+              // will resolve the newly created or existing workspace and redirect appropriately.
+              router.push("/dashboard");
+            }}
           >
             {/* Background glowing effects */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
