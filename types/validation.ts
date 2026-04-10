@@ -63,3 +63,38 @@ export const CreateWorkflowStateSchema = z.object({
 });
 
 export const UpdateWorkflowStateSchema = CreateWorkflowStateSchema.partial();
+
+// --- Issues ---
+export const CreateIssueSchema = z.object({
+  workspace_id: z.string().uuid({ message: "Valid workspace ID is required" }),
+  project_id: z.string().uuid({ message: "Valid project ID is required" }),
+  title: z.string().min(1, { message: "Title is required" }),
+  issue_type: z.enum(["task", "bug", "story"]).default("task"),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  sprint_id: z.string().uuid().optional().nullable(),
+  epic_id: z.string().uuid().optional().nullable(),
+  release_id: z.string().uuid().optional().nullable(),
+  state_id: z.string().uuid().optional().nullable(),
+  assignee_id: z.string().uuid().optional().nullable(),
+  estimate: z.number().int().optional().nullable(),
+  description: z.any().optional().nullable(),
+});
+
+export const UpdateIssueSchema = z.object({
+  title: z.string().min(1).optional(),
+  issue_type: z.enum(["task", "bug", "story"]).optional(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+  sprint_id: z.string().uuid().optional().nullable(),
+  epic_id: z.string().uuid().optional().nullable(),
+  release_id: z.string().uuid().optional().nullable(),
+  state_id: z.string().uuid().optional().nullable(),
+  assignee_id: z.string().uuid().optional().nullable(),
+  estimate: z.number().int().optional().nullable(),
+  description: z.any().optional().nullable(),
+});
+
+// --- Search ---
+export const SearchQuerySchema = z.object({
+  query: z.string().min(1).max(200),
+  workspaceId: z.string().uuid(),
+});

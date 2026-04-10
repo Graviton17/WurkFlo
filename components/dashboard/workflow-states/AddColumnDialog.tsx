@@ -4,7 +4,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Columns } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
+import { createWorkflowState } from "@/app/actions/workflow.actions";
 import { WorkflowState, StateCategoryEnum } from "@/types/index";
 
 interface AddColumnDialogProps {
@@ -53,20 +53,20 @@ export function AddColumnDialog({
     setError("");
 
     try {
-      const { data } = await axios.post(`/api/projects/${projectId}/workflow-states`, {
+      const result = await createWorkflowState(projectId, {
         name:     name.trim(),
         category,
         position: nextPosition,
       });
 
-      if (data.success && data.data) {
-        onSuccess(data.data);
+      if (result.success && result.data) {
+        onSuccess(result.data as WorkflowState);
         onOpenChange(false);
       } else {
-        setError(data.error || "Failed to create column");
+        setError(result.error || "Failed to create column");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }

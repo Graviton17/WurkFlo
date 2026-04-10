@@ -6,7 +6,7 @@ import { WorkflowState, StateCategoryEnum, Issue } from "@/types/index";
 import { AddColumnDialog } from "@/components/dashboard/workflow-states/AddColumnDialog";
 import { WorkflowKanbanBoard } from "@/components/dashboard/workflow-states/WorkflowKanbanBoard";
 import { CreateIssueDialog } from "@/components/dashboard/issues/CreateIssueDialog";
-import axios from "axios";
+import { getWorkflowConfigData } from "@/app/actions/workflow.actions";
 
 interface WorkflowStatesPageProps {
   params: Promise<{ id: string }>;
@@ -33,15 +33,13 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
   const fetchData = useCallback(async (pId: string) => {
     setError("");
     try {
-      const [statesRes, issuesRes, projectRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}/workflow-states`),
-        axios.get(`/api/issues?projectId=${pId}`),
-        axios.get(`/api/projects/${pId}`),
-      ]);
-      if (statesRes.data.success) setStates(statesRes.data.data ?? []);
-      if (issuesRes.data.data) setIssues(issuesRes.data.data ?? []);
-      if (projectRes.data.data?.workspace_id) {
-        setWorkspaceId(projectRes.data.data.workspace_id);
+      const result = await getWorkflowConfigData(pId);
+      if (result.success && result.data) {
+        setStates(result.data.states);
+        setIssues(result.data.issues);
+        setWorkspaceId(result.data.workspaceId);
+      } else {
+        setError(result.error || "Failed to load workflow states");
       }
     } catch {
       setError("Failed to load workflow states and issues");

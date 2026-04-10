@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { loginAction } from "@/app/actions/auth.actions";
 import {
   AuthPageLayout,
   AuthCardShell,
@@ -41,17 +41,17 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await axios.post("/api/login", { email, password });
+      const result = await loginAction({ email, password });
 
-      if (!response.data?.success) {
-        setError(response.data?.error || "Failed to sign in");
+      if (!result.success) {
+        setError(result.error || "Failed to sign in");
         setLoading(false);
       } else {
         router.push("/onboarding");
         router.refresh();
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "An error occurred during sign in");
+      setError(err.message || "An error occurred during sign in");
       setLoading(false);
     }
   };

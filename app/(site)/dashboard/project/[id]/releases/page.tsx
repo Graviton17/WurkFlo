@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { ReleasesList } from "@/components/dashboard/project/releases/ReleasesList";
 import { Loader2, AlertCircle, Plus, Tag } from "lucide-react";
-import type { Release, Issue } from "@/types/index";
-import axios from "axios";
+import type { Release } from "@/types/index";
+import { getReleasesData } from "@/app/actions/release.actions";
 
 interface ReleasesPageProps {
   params: Promise<{ id: string }>;
@@ -14,7 +14,6 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
   const { id: projectId } = React.use(params);
 
   const [releases, setReleases] = useState<Release[]>([]);
-  const [issues, setIssues] = useState<Issue[]>([]);
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,21 +25,15 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
   const loadReleases = async (pId: string) => {
     setError("");
     try {
-      const [projectRes, releasesRes, issuesRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}`),
-        axios.get(`/api/releases?projectId=${pId}`),
-        axios.get(`/api/issues?projectId=${pId}`),
-      ]);
+      const result = await getReleasesData(pId);
 
-      if (projectRes.data.success) {
-        setProjectIdentifier(projectRes.data.data.identifier || "");
+      if (!result.success || !result.data) {
+        setError(result.error || "Failed to load releases");
+        return;
       }
-      if (releasesRes.data.success) {
-        setReleases(releasesRes.data.data);
-      }
-      if (issuesRes.data.success) {
-        setIssues(issuesRes.data.data);
-      }
+
+      setReleases(result.data.releases);
+      setProjectIdentifier(result.data.projectIdentifier);
     } catch (err) {
       setError("Failed to load releases");
     } finally {
@@ -86,7 +79,6 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
       <div className="flex-1 overflow-y-auto">
         <ReleasesList
           releases={releases}
-          issues={issues}
           projectIdentifier={projectIdentifier}
         />
       </div>

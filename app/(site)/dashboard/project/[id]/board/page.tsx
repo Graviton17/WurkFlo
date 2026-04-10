@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { KanbanBoard } from "@/components/dashboard/project/board/KanbanBoard";
 import { IssueDetailModal } from "@/components/dashboard/project/issue/IssueDetailModal";
 import { Loader2, AlertCircle, Plus, Zap } from "lucide-react";
-import type { Issue, WorkflowState, Sprint } from "@/types/index";
-import axios from "axios";
+import type { IssueWithRelations, WorkflowState, Sprint } from "@/types/index";
+import { getSprintBoardData } from "@/app/actions/board.actions";
+import { moveIssue } from "@/app/actions/issue.actions";
 
 interface BoardPageProps {
   params: Promise<{ id: string }>;
@@ -14,13 +15,14 @@ interface BoardPageProps {
 export default function BoardPage({ params }: BoardPageProps) {
   const { id: projectId } = React.use(params);
 
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [issues, setIssues] = useState<IssueWithRelations[]>([]);
   const [workflowStates, setWorkflowStates] = useState<WorkflowState[]>([]);
   const [activeSprint, setActiveSprint] = useState<Sprint | null>(null);
   const [projectIdentifier, setProjectIdentifier] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<IssueWithRelations | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (projectId) loadBoardData(projectId);
@@ -29,35 +31,17 @@ export default function BoardPage({ params }: BoardPageProps) {
   const loadBoardData = async (pId: string) => {
     setError("");
     try {
-      // Fetch project info, workflow states, sprints, and issues in parallel
-      const [projectRes, statesRes, sprintsRes, issuesRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}`),
-        axios.get(`/api/workflow-states?projectId=${pId}`),
-        axios.get(`/api/sprints?projectId=${pId}`),
-        axios.get(`/api/issues?projectId=${pId}`),
-      ]);
+      const result = await getSprintBoardData(pId);
 
-      if (projectRes.data.success) {
-        setProjectIdentifier(projectRes.data.data.identifier || "");
+      if (!result.success || !result.data) {
+        setError(result.error || "Failed to load board data");
+        return;
       }
 
-      if (statesRes.data.success) {
-        setWorkflowStates(statesRes.data.data);
-      }
-
-      // Find active sprint
-      if (sprintsRes.data.success) {
-        const active = sprintsRes.data.data.find(
-          (s: Sprint) => s.status === "active"
-        );
-        setActiveSprint(active || null);
-      }
-
-      if (issuesRes.data.success) {
-        // Filter to active sprint issues if there's an active sprint
-        const allIssues = issuesRes.data.data as Issue[];
-        setIssues(allIssues);
-      }
+      setActiveSprint(result.data.activeSprint);
+      setWorkflowStates(result.data.workflowStates);
+      setIssues(result.data.issues);
+      setProjectIdentifier(result.data.projectIdentifier);
     } catch (err) {
       setError("Failed to load board data");
     } finally {
@@ -66,12 +50,21 @@ export default function BoardPage({ params }: BoardPageProps) {
   };
 
   const handleIssueMoved = async (issueId: string, newStateId: string) => {
-    try {
-      await axios.patch(`/api/issues/${issueId}`, { state_id: newStateId });
-    } catch (err) {
-      console.error("Failed to update issue state:", err);
-      // Could revert the optimistic update here
-    }
+    // Optimistic update
+    setIssues((prev) =>
+      prev.map((issue) =>
+        issue.id === issueId ? { ...issue, state_id: newStateId } : issue,
+      ),
+    );
+
+    startTransition(async () => {
+      const result = await moveIssue(issueId, newStateId);
+      if (!result.success) {
+        console.error("Failed to update issue state:", result.error);
+        // Revert by reloading
+        loadBoardData(projectId);
+      }
+    });
   };
 
   if (isLoading) {

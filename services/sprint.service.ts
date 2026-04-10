@@ -32,6 +32,15 @@ export class SprintService {
   async deleteSprint(id: string): Promise<DatabaseResponse<null>> {
     return this.sprintCurd.delete(id);
   }
+
+  /**
+   * Get the currently active sprint for a project.
+   */
+  async getActiveSprint(
+    projectId: string,
+  ): Promise<DatabaseResponse<Sprint>> {
+    return this.sprintCurd.getActiveSprint(projectId);
+  }
 }
 
 export const sprintService = new SprintService();

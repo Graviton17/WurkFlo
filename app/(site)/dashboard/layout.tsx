@@ -13,6 +13,7 @@ export default async function DashboardLayout({
     ? await workspaceService.getAllWorkspacesByUserId(user.id)
     : { data: [] };
   const workspaces = result.data || [];
+  const activeWorkspaceId = workspaces.length > 0 ? workspaces[0].id : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#111113]">
@@ -22,7 +23,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-      <CommandPalette />
+      <CommandPalette workspaceId={activeWorkspaceId} />
     </div>
   );
 }

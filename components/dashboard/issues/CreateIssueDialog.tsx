@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Component, Link as LinkIcon,
 } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
+import { createIssue } from "@/app/actions/issue.actions";
 import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
 
 interface CreateIssueDialogProps {
@@ -82,7 +82,7 @@ export function CreateIssueDialog({
     setError("");
 
     try {
-      const { data } = await axios.post("/api/issues", {
+      const result = await createIssue({
         project_id:   projectId,
         workspace_id: workspaceId,
         state_id:     stateId === "unassigned" ? null : (stateId || null),
@@ -90,11 +90,10 @@ export function CreateIssueDialog({
         description:  description || null,
         priority,
         issue_type:   issueType,
-        sequence_id:  Number(sequenceId),
       });
 
-      if (data.data) {
-        onSuccess(data.data);
+      if (result.success && result.data) {
+        onSuccess(result.data as Issue);
         if (!createMore) {
           onOpenChange(false);
         } else {
@@ -102,10 +101,10 @@ export function CreateIssueDialog({
           setDescription("");
         }
       } else {
-        setError(data.error || "Failed to create issue");
+        setError(result.error || "Failed to create issue");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }

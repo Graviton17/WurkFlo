@@ -16,25 +16,37 @@ import {
   X,
   CornerDownLeft,
   Hash,
+  Loader2,
+  Bug,
+  BookOpen,
 } from "lucide-react";
+import { globalSearch, type SearchResults } from "@/app/actions/search.actions";
 
 interface CommandAction {
   id: string;
   title: string;
+  subtitle?: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   group: string;
   href?: string;
   action?: () => void;
 }
 
-export function CommandPalette() {
+interface CommandPaletteProps {
+  workspaceId?: string | null;
+}
+
+export function CommandPalette({ workspaceId }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
-  const ACTIONS: CommandAction[] = [
+  const STATIC_ACTIONS: CommandAction[] = [
     {
       id: "board",
       title: "Go to Active Sprint",
@@ -83,20 +95,101 @@ export function CommandPalette() {
     },
   ];
 
-  const filtered = ACTIONS.filter((a) =>
-    a.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // Build combined actions list from static + search results
+  const buildActions = useCallback((): CommandAction[] => {
+    const staticFiltered = STATIC_ACTIONS.filter((a) =>
+      a.title.toLowerCase().includes(search.toLowerCase()),
+    );
+
+    if (!searchResults || !search.trim()) return staticFiltered;
+
+    const dynamicActions: CommandAction[] = [];
+
+    // Issues from search
+    for (const issue of searchResults.issues.slice(0, 5)) {
+      dynamicActions.push({
+        id: `issue-${issue.id}`,
+        title: issue.title,
+        subtitle: `${issue.workflow_state?.name || "No status"} · ${issue.priority}`,
+        icon: issue.issue_type === "bug" ? Bug : Hash,
+        group: "Issues",
+      });
+    }
+
+    // Projects from search
+    for (const project of searchResults.projects.slice(0, 3)) {
+      dynamicActions.push({
+        id: `project-${project.id}`,
+        title: project.name,
+        subtitle: project.identifier,
+        icon: BookOpen,
+        group: "Projects",
+        href: `/dashboard/project/${project.id}/board`,
+      });
+    }
+
+    // Epics from search
+    for (const epic of searchResults.epics.slice(0, 3)) {
+      dynamicActions.push({
+        id: `epic-${epic.id}`,
+        title: epic.name,
+        subtitle: epic.target_date
+          ? `Target: ${new Date(epic.target_date).toLocaleDateString()}`
+          : undefined,
+        icon: Milestone,
+        group: "Epics",
+      });
+    }
+
+    return [...dynamicActions, ...staticFiltered];
+  }, [search, searchResults]);
+
+  const filtered = buildActions();
+
+  // Debounced search
+  useEffect(() => {
+    if (!isOpen || !search.trim() || !workspaceId) {
+      setSearchResults(null);
+      return;
+    }
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const result = await globalSearch(search.trim(), workspaceId);
+        if (result.success && result.data) {
+          setSearchResults(result.data);
+        }
+      } catch (err) {
+        // Silently fail
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [search, isOpen, workspaceId]);
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
     setSearch("");
     setSelectedIndex(0);
+    setSearchResults(null);
   }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setSearch("");
     setSelectedIndex(0);
+    setSearchResults(null);
   }, []);
 
   const executeAction = useCallback(
@@ -106,7 +199,7 @@ export function CommandPalette() {
         router.push(action.href);
       }
     },
-    [handleClose, router]
+    [handleClose, router],
   );
 
   // Listen for Cmd+K
@@ -161,7 +254,7 @@ export function CommandPalette() {
       acc[action.group].push(action);
       return acc;
     },
-    {} as Record<string, CommandAction[]>
+    {} as Record<string, CommandAction[]>,
   );
 
   let globalIdx = -1;
@@ -200,6 +293,9 @@ export function CommandPalette() {
                 placeholder="Type a command or search..."
                 className="flex-1 bg-transparent border-none outline-none text-[#e0e0e0] placeholder:text-[#444] text-[15px]"
               />
+              {isSearching && (
+                <Loader2 size={14} className="animate-spin text-[#555] mr-2" />
+              )}
               <button
                 onClick={handleClose}
                 className="p-1 text-[#555] hover:text-[#aaa] hover:bg-white/5 rounded-md transition-colors"
@@ -235,9 +331,9 @@ export function CommandPalette() {
                               : "text-[#888] hover:bg-white/[0.04] hover:text-[#ccc]"
                           }`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
                             <div
-                              className={`p-1.5 rounded-lg ${
+                              className={`p-1.5 rounded-lg shrink-0 ${
                                 idx === selectedIndex
                                   ? "bg-indigo-500/20 text-indigo-400"
                                   : "bg-white/[0.04] text-[#666] group-hover:text-[#aaa]"
@@ -245,12 +341,21 @@ export function CommandPalette() {
                             >
                               <action.icon size={15} />
                             </div>
-                            <span className="font-medium">{action.title}</span>
+                            <div className="min-w-0">
+                              <span className="font-medium block truncate">
+                                {action.title}
+                              </span>
+                              {action.subtitle && (
+                                <span className="text-[11px] text-[#555] block truncate">
+                                  {action.subtitle}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           {idx === selectedIndex && (
                             <CornerDownLeft
                               size={14}
-                              className="text-indigo-400/50"
+                              className="text-indigo-400/50 shrink-0"
                             />
                           )}
                         </button>

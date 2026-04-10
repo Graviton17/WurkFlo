@@ -10,7 +10,7 @@ import {
 import { WorkflowState, Issue, IssuePriority, IssueType } from "@/types/index";
 import { CreateIssueDialog } from "../issues/CreateIssueDialog";
 import { EditIssueDialog } from "../issues/EditIssueDialog";
-import axios from "axios";
+import { moveIssue } from "@/app/actions/issue.actions";
 import { GripVertical, AlertCircle, Bug, BookOpen, CheckSquare, Layers } from "lucide-react";
 
 interface WorkflowKanbanBoardProps {
@@ -185,7 +185,7 @@ export function WorkflowKanbanBoard({
       // Only call API if it actually changed state columns
       const rawSourceStateId = source.droppableId === "unassigned" ? null : source.droppableId;
       if (newStateId !== rawSourceStateId) {
-        await axios.put(`/api/issues/${draggableId}`, { state_id: newStateId });
+        await moveIssue(draggableId, newStateId || "unassigned");
       }
     } catch (err) {
       console.error("Failed to update issue state:", err);

@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { EpicsList } from "@/components/dashboard/project/epics/EpicsList";
 import { Loader2, AlertCircle, Plus, Milestone } from "lucide-react";
-import type { Epic, Issue } from "@/types/index";
-import axios from "axios";
+import type { EpicWithProgress } from "@/types/index";
+import { getEpicsData } from "@/app/actions/epic.actions";
 
 interface EpicsPageProps {
   params: Promise<{ id: string }>;
@@ -13,8 +13,7 @@ interface EpicsPageProps {
 export default function EpicsPage({ params }: EpicsPageProps) {
   const { id: projectId } = React.use(params);
 
-  const [epics, setEpics] = useState<Epic[]>([]);
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [epics, setEpics] = useState<EpicWithProgress[]>([]);
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,21 +25,15 @@ export default function EpicsPage({ params }: EpicsPageProps) {
   const loadEpics = async (pId: string) => {
     setError("");
     try {
-      const [projectRes, epicsRes, issuesRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}`),
-        axios.get(`/api/epics?projectId=${pId}`),
-        axios.get(`/api/issues?projectId=${pId}`),
-      ]);
+      const result = await getEpicsData(pId);
 
-      if (projectRes.data.success) {
-        setProjectIdentifier(projectRes.data.data.identifier || "");
+      if (!result.success || !result.data) {
+        setError(result.error || "Failed to load epics");
+        return;
       }
-      if (epicsRes.data.success) {
-        setEpics(epicsRes.data.data);
-      }
-      if (issuesRes.data.success) {
-        setIssues(issuesRes.data.data);
-      }
+
+      setEpics(result.data.epics);
+      setProjectIdentifier(result.data.projectIdentifier);
     } catch (err) {
       setError("Failed to load epics");
     } finally {
@@ -86,7 +79,6 @@ export default function EpicsPage({ params }: EpicsPageProps) {
       <div className="flex-1 overflow-y-auto">
         <EpicsList
           epics={epics}
-          issues={issues}
           projectIdentifier={projectIdentifier}
         />
       </div>

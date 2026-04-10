@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import { getOnboardingStatus } from "@/app/actions/user.actions";
 import {
   OnboardingProvider,
   StepIndicator,
@@ -119,8 +119,14 @@ export default function OnboardingPage() {
   useEffect(() => {
     const initData = async () => {
       try {
-        // Fetch onboarding status specifically using our new GET endpoint via Axios
-        const { data } = await axios.get("/api/onboarding");
+        // Fetch onboarding status specifically using our new GET endpoint via Server Actions
+        const result = await getOnboardingStatus();
+
+        if (!result.success) {
+          throw new Error("unauthorized");
+        }
+        
+        const data = result.data;
 
         if (data?.userId) {
           setUserId(data.userId);
@@ -138,11 +144,8 @@ export default function OnboardingPage() {
         setInitialStep(1);
       } catch (err: any) {
         logger.error({ err }, "Error checking onboarding status:");
-        // Redirect to login if user session is invalid / unauthorized
-        if (err?.response?.status === 401) {
-          router.replace("/login");
-          return;
-        }
+        router.replace("/login");
+        return;
       }
 
       setChecking(false);

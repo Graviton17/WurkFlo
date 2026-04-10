@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Component, Link as LinkIcon,
 } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
+import { updateIssueProperty } from "@/app/actions/issue.actions";
 import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
 
 interface EditIssueDialogProps {
@@ -71,23 +71,22 @@ export function EditIssueDialog({
     setError("");
 
     try {
-      const { data } = await axios.put(`/api/issues/${issue.id}`, {
+      const result = await updateIssueProperty(issue.id, {
         state_id:     stateId === "unassigned" ? null : (stateId || null),
         title:        title.trim(),
         description:  description || null,
         priority,
         issue_type:   issueType,
-        sequence_id:  Number(sequenceId),
       });
 
-      if (data.data) {
-        onSuccess(data.data);
+      if (result.success && result.data) {
+        onSuccess(result.data as Issue);
         onOpenChange(false);
       } else {
-        setError(data.error || "Failed to create issue");
+        setError(result.error || "Failed to update issue");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,5 +1,5 @@
 import { EpicCURD } from "@/curd/index";
-import { Epic, DatabaseResponse } from "@/types/index";
+import { Epic, EpicWithProgress, DatabaseResponse } from "@/types/index";
 
 export class EpicService {
   private epicCurd: EpicCURD;
@@ -31,6 +31,15 @@ export class EpicService {
 
   async deleteEpic(id: string): Promise<DatabaseResponse<null>> {
     return this.epicCurd.delete(id);
+  }
+
+  /**
+   * Get epics with calculated progress (total and done issue counts).
+   */
+  async getEpicsWithProgress(
+    projectId: string,
+  ): Promise<DatabaseResponse<EpicWithProgress[]>> {
+    return this.epicCurd.getByProjectWithProgress(projectId);
   }
 }
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { SprintsList } from "@/components/dashboard/project/sprints/SprintsList";
 import { Loader2, AlertCircle, Plus, Timer } from "lucide-react";
 import type { Sprint, Issue } from "@/types/index";
-import axios from "axios";
+import { getProjectSprintsData } from "@/app/actions/sprint.actions";
 
 interface SprintsPageProps {
   params: Promise<{ id: string }>;
@@ -26,20 +26,14 @@ export default function SprintsPage({ params }: SprintsPageProps) {
   const loadSprints = async (pId: string) => {
     setError("");
     try {
-      const [projectRes, sprintsRes, issuesRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}`),
-        axios.get(`/api/sprints?projectId=${pId}`),
-        axios.get(`/api/issues?projectId=${pId}`),
-      ]);
+      const result = await getProjectSprintsData(pId);
 
-      if (projectRes.data.success) {
-        setProjectIdentifier(projectRes.data.data.identifier || "");
-      }
-      if (sprintsRes.data.success) {
-        setSprints(sprintsRes.data.data);
-      }
-      if (issuesRes.data.success) {
-        setIssues(issuesRes.data.data);
+      if (result.success && result.data) {
+        setProjectIdentifier(result.data.projectIdentifier);
+        setSprints(result.data.sprints);
+        setIssues(result.data.issues);
+      } else {
+        setError(result.error || "Failed to load sprints");
       }
     } catch (err) {
       setError("Failed to load sprints");

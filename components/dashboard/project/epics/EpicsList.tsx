@@ -6,19 +6,17 @@ import {
   ChevronDown,
   ChevronRight,
   Calendar,
-  CheckCircle2,
   Circle,
   Target,
 } from "lucide-react";
-import type { Epic, Issue } from "@/types/index";
+import type { EpicWithProgress } from "@/types/index";
 
 interface EpicsListProps {
-  epics: Epic[];
-  issues: Issue[];
+  epics: EpicWithProgress[];
   projectIdentifier?: string;
 }
 
-export function EpicsList({ epics, issues, projectIdentifier }: EpicsListProps) {
+export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (id: string) => {
@@ -45,13 +43,9 @@ export function EpicsList({ epics, issues, projectIdentifier }: EpicsListProps) 
   return (
     <div className="space-y-3 p-6">
       {epics.map((epic) => {
-        const epicIssues = issues.filter((i) => i.epic_id === epic.id);
-        const doneCount = epicIssues.filter(
-          (i) => i.state_id !== null
-        ).length; // simplified — in real app check state category
         const progress =
-          epicIssues.length > 0
-            ? Math.round((doneCount / epicIssues.length) * 100)
+          epic.total_issues > 0
+            ? Math.round((epic.done_issues / epic.total_issues) * 100)
             : 0;
         const isExpanded = expandedIds.has(epic.id);
 
@@ -90,14 +84,14 @@ export function EpicsList({ epics, issues, projectIdentifier }: EpicsListProps) 
                     />
                   </div>
                   <span className="text-[11px] text-[#555] font-mono">
-                    {progress}%
+                    {epic.done_issues}/{epic.total_issues} ({progress}%)
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 shrink-0">
                 <span className="text-[11px] text-[#555] font-mono bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/[0.04]">
-                  {epicIssues.length} issues
+                  {epic.total_issues} issues
                 </span>
                 {epic.target_date && (
                   <span className="flex items-center gap-1.5 text-[11px] text-[#555]">
@@ -110,54 +104,6 @@ export function EpicsList({ epics, issues, projectIdentifier }: EpicsListProps) 
                 )}
               </div>
             </button>
-
-            {/* Expanded Issues */}
-            {isExpanded && (
-              <div className="border-t border-white/[0.04]">
-                {epicIssues.length === 0 ? (
-                  <div className="px-5 py-6 text-[12px] text-[#555] text-center">
-                    No issues linked to this epic
-                  </div>
-                ) : (
-                  epicIssues.map((issue, idx) => {
-                    const identifier = projectIdentifier
-                      ? `${projectIdentifier}-${issue.sequence_id}`
-                      : `#${issue.sequence_id}`;
-                    return (
-                      <div
-                        key={issue.id}
-                        className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors ${
-                          idx !== epicIssues.length - 1
-                            ? "border-b border-white/[0.03]"
-                            : ""
-                        }`}
-                      >
-                        <div className="pl-7">
-                          <Circle size={13} className="text-[#444]" />
-                        </div>
-                        <span className="text-[11px] font-mono text-[#555] w-20">
-                          {identifier}
-                        </span>
-                        <span className="text-[13px] text-[#bbb] flex-1 truncate">
-                          {issue.title}
-                        </span>
-                        <span
-                          className={`text-[10px] font-medium uppercase ${
-                            issue.priority === "urgent"
-                              ? "text-red-400"
-                              : issue.priority === "high"
-                                ? "text-orange-400"
-                                : "text-[#555]"
-                          }`}
-                        >
-                          {issue.priority}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            )}
           </div>
         );
       })}

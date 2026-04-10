@@ -24,3 +24,12 @@ export interface Issue {
   created_at: string;
   updated_at: string;
 }
+
+/** Issue with all related data resolved via JOINs */
+export interface IssueWithRelations extends Issue {
+  assignee?: { id: string; full_name: string | null; avatar_url: string | null } | null;
+  workflow_state?: { id: string; name: string; category: string } | null;
+  sprint?: { id: string; name: string } | null;
+  epic?: { id: string; name: string } | null;
+  release?: { id: string; version: string } | null;
+}

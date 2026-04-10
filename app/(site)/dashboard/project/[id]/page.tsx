@@ -9,7 +9,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     if (params && params.id) {
-      router.replace(`/dashboard/project/${params.id}/get-started`);
+      router.replace(`/dashboard/project/${params.id}/board`);
     }
   }, [params, router]);
 

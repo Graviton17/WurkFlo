@@ -1,8 +1,21 @@
-import { InboxFeed } from "@/components/dashboard/inbox/InboxFeed";
 import { Inbox } from "lucide-react";
 import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrapper";
+import { MyIssuesFeed } from "@/components/dashboard/inbox/MyIssuesFeed";
+import { auth } from "@/lib/auth";
+import { workspaceService } from "@/services/index";
 
-export default function InboxPage() {
+export default async function InboxPage() {
+  const user = await auth.getUser();
+  let activeWorkspaceId: string | null = null;
+
+  if (user) {
+    const result = await workspaceService.getAllWorkspacesByUserId(user.id);
+    const workspaces = result.data || [];
+    if (workspaces.length > 0) {
+      activeWorkspaceId = workspaces[0].id;
+    }
+  }
+
   return (
     <SidebarLayoutWrapper>
       <div className="flex flex-col w-full h-full bg-[#111113] text-[#e5e7eb]">
@@ -15,8 +28,8 @@ export default function InboxPage() {
         </div>
 
         {/* Feed */}
-        <div className="flex-1">
-          <InboxFeed />
+        <div className="flex-1 overflow-hidden">
+          <MyIssuesFeed workspaceId={activeWorkspaceId} />
         </div>
       </div>
     </SidebarLayoutWrapper>

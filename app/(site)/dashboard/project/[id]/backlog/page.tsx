@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import { BacklogList } from "@/components/dashboard/project/backlog/BacklogList";
 import { IssueDetailModal } from "@/components/dashboard/project/issue/IssueDetailModal";
 import { Loader2, AlertCircle, Plus, List } from "lucide-react";
-import type { Issue } from "@/types/index";
-import axios from "axios";
+import type { IssueWithRelations } from "@/types/index";
+import { getBacklogData } from "@/app/actions/board.actions";
 
 interface BacklogPageProps {
   params: Promise<{ id: string }>;
@@ -14,11 +14,11 @@ interface BacklogPageProps {
 export default function BacklogPage({ params }: BacklogPageProps) {
   const { id: projectId } = React.use(params);
 
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [issues, setIssues] = useState<IssueWithRelations[]>([]);
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<IssueWithRelations | null>(null);
 
   useEffect(() => {
     if (projectId) loadBacklog(projectId);
@@ -27,22 +27,15 @@ export default function BacklogPage({ params }: BacklogPageProps) {
   const loadBacklog = async (pId: string) => {
     setError("");
     try {
-      const [projectRes, issuesRes] = await Promise.all([
-        axios.get(`/api/projects/${pId}`),
-        axios.get(`/api/issues?projectId=${pId}`),
-      ]);
+      const result = await getBacklogData(pId);
 
-      if (projectRes.data.success) {
-        setProjectIdentifier(projectRes.data.data.identifier || "");
+      if (!result.success || !result.data) {
+        setError(result.error || "Failed to load backlog");
+        return;
       }
 
-      if (issuesRes.data.success) {
-        // Filter to only backlog items (no sprint assigned)
-        const backlogIssues = (issuesRes.data.data as Issue[]).filter(
-          (i) => !i.sprint_id
-        );
-        setIssues(backlogIssues);
-      }
+      setIssues(result.data.issues);
+      setProjectIdentifier(result.data.projectIdentifier);
     } catch (err) {
       setError("Failed to load backlog");
     } finally {

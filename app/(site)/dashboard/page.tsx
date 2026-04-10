@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { getOnboardingStatus } from '@/app/actions/user.actions';
 import { logger } from "@/lib/logger";
 
 export default function DashboardRedirectPage() {
@@ -14,10 +14,10 @@ export default function DashboardRedirectPage() {
     
     const checkStatus = async () => {
       try {
-        const { data } = await axios.get('/api/onboarding');
+        const result = await getOnboardingStatus();
         if (!isMounted) return;
         
-        if (data.hasWorkspace) {
+        if (result.success && result.data?.hasWorkspace) {
           router.replace('/dashboard/workspace');
         } else {
           router.replace('/onboarding');
@@ -26,11 +26,7 @@ export default function DashboardRedirectPage() {
         if (!isMounted) return;
         
         logger.error({ err }, "Error checking workspace for dashboard redirect:");
-        if (err?.response?.status === 401) {
-          router.replace('/login');
-        } else {
-          router.replace('/login');
-        }
+        router.replace('/login');
       } finally {
         if (isMounted) setChecking(false);
       }
