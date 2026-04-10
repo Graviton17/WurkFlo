@@ -5,6 +5,7 @@ import { SprintsList } from "@/components/dashboard/project/sprints/SprintsList"
 import { Loader2, AlertCircle, Plus, Timer } from "lucide-react";
 import type { Sprint, Issue } from "@/types/index";
 import { getProjectSprintsData } from "@/app/actions/sprint.actions";
+import { CreateSprintDialog } from "@/components/dashboard/project/sprints/CreateSprintDialog";
 
 interface SprintsPageProps {
   params: Promise<{ id: string }>;
@@ -18,6 +19,7 @@ export default function SprintsPage({ params }: SprintsPageProps) {
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (projectId) loadSprints(projectId);
@@ -70,7 +72,10 @@ export default function SprintsPage({ params }: SprintsPageProps) {
             {sprints.length}
           </span>
         </div>
-        <button className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all">
+        <button 
+          onClick={() => setCreateDialogOpen(true)}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
+        >
           <Plus size={14} />
           New Sprint
         </button>
@@ -84,6 +89,13 @@ export default function SprintsPage({ params }: SprintsPageProps) {
           projectIdentifier={projectIdentifier}
         />
       </div>
+
+      <CreateSprintDialog
+        projectId={projectId}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={(newSprint) => setSprints((prev) => [...prev, newSprint])}
+      />
     </div>
   );
 }

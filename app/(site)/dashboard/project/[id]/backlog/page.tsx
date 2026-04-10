@@ -6,6 +6,7 @@ import { IssueDetailModal } from "@/components/dashboard/project/issue/IssueDeta
 import { Loader2, AlertCircle, Plus, List } from "lucide-react";
 import type { IssueWithRelations } from "@/types/index";
 import { getBacklogData } from "@/app/actions/board.actions";
+import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
 interface BacklogPageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +20,7 @@ export default function BacklogPage({ params }: BacklogPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<IssueWithRelations | null>(null);
+  const { openCreateIssue } = useCreateIssue();
 
   useEffect(() => {
     if (projectId) loadBacklog(projectId);
@@ -71,7 +73,10 @@ export default function BacklogPage({ params }: BacklogPageProps) {
             {issues.length}
           </span>
         </div>
-        <button className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all">
+        <button 
+          onClick={() => openCreateIssue()}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
+        >
           <Plus size={14} />
           New Issue
         </button>

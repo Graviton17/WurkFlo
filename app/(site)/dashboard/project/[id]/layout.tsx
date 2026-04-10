@@ -1,6 +1,8 @@
 import { ProjectTabsHeader } from "@/components/dashboard/project/ProjectTabsHeader";
-import { projectService } from "@/services/index";
+import { projectService, workflowStateService } from "@/services/index";
 import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrapper";
+import { CreateIssueProvider } from "@/components/dashboard/issues/CreateIssueContext";
+import type { WorkflowState } from "@/types/index";
 
 export default async function ProjectLayout({
   children,
@@ -13,14 +15,27 @@ export default async function ProjectLayout({
 
   let projectName: string | undefined;
   let projectIdentifier: string | undefined;
+  let workspaceId: string = "";
+  let states: WorkflowState[] = [];
 
   try {
-    const { data: project } = await projectService.getProjectById(id);
-    if (project) {
-      projectName = project.name;
-      projectIdentifier = project.identifier;
+    const [projectRes, statesRes] = await Promise.all([
+      projectService.getProjectById(id),
+      workflowStateService.getStatesByProject(id),
+    ]);
+    
+    if (projectRes.data) {
+      projectName = projectRes.data.name;
+      projectIdentifier = projectRes.data.identifier;
+      workspaceId = projectRes.data.workspace_id;
     }
-  } catch (error) {}
+    
+    if (statesRes.data) {
+      states = statesRes.data;
+    }
+  } catch (error) {
+    console.error("Failed to load project layout context", error);
+  }
 
   return (
     <SidebarLayoutWrapper>
@@ -33,7 +48,9 @@ export default async function ProjectLayout({
         />
 
         {/* Main Content */}
-        <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
+        <CreateIssueProvider projectId={id} workspaceId={workspaceId} states={states}>
+          <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
+        </CreateIssueProvider>
       </div>
     </SidebarLayoutWrapper>
   );

@@ -5,6 +5,7 @@ import { EpicsList } from "@/components/dashboard/project/epics/EpicsList";
 import { Loader2, AlertCircle, Plus, Milestone } from "lucide-react";
 import type { EpicWithProgress } from "@/types/index";
 import { getEpicsData } from "@/app/actions/epic.actions";
+import { CreateEpicDialog } from "@/components/dashboard/project/epics/CreateEpicDialog";
 
 interface EpicsPageProps {
   params: Promise<{ id: string }>;
@@ -17,6 +18,7 @@ export default function EpicsPage({ params }: EpicsPageProps) {
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (projectId) loadEpics(projectId);
@@ -69,7 +71,10 @@ export default function EpicsPage({ params }: EpicsPageProps) {
             {epics.length}
           </span>
         </div>
-        <button className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all">
+        <button 
+          onClick={() => setCreateDialogOpen(true)}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
+        >
           <Plus size={14} />
           New Epic
         </button>
@@ -82,6 +87,13 @@ export default function EpicsPage({ params }: EpicsPageProps) {
           projectIdentifier={projectIdentifier}
         />
       </div>
+
+      <CreateEpicDialog
+        projectId={projectId}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={(newEpic) => setEpics((prev) => [...prev, { ...newEpic, total_issues: 0, done_issues: 0 }])}
+      />
     </div>
   );
 }

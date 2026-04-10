@@ -5,6 +5,7 @@ import { ReleasesList } from "@/components/dashboard/project/releases/ReleasesLi
 import { Loader2, AlertCircle, Plus, Tag } from "lucide-react";
 import type { Release } from "@/types/index";
 import { getReleasesData } from "@/app/actions/release.actions";
+import { CreateReleaseDialog } from "@/components/dashboard/project/releases/CreateReleaseDialog";
 
 interface ReleasesPageProps {
   params: Promise<{ id: string }>;
@@ -17,6 +18,7 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (projectId) loadReleases(projectId);
@@ -69,7 +71,10 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
             {releases.length}
           </span>
         </div>
-        <button className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all">
+        <button 
+          onClick={() => setCreateDialogOpen(true)}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
+        >
           <Plus size={14} />
           New Release
         </button>
@@ -82,6 +87,13 @@ export default function ReleasesPage({ params }: ReleasesPageProps) {
           projectIdentifier={projectIdentifier}
         />
       </div>
+
+      <CreateReleaseDialog
+        projectId={projectId}
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={(newRelease) => setReleases((prev) => [...prev, newRelease])}
+      />
     </div>
   );
 }

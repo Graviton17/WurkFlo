@@ -7,6 +7,7 @@ import { AddColumnDialog } from "@/components/dashboard/workflow-states/AddColum
 import { WorkflowKanbanBoard } from "@/components/dashboard/workflow-states/WorkflowKanbanBoard";
 import { CreateIssueDialog } from "@/components/dashboard/issues/CreateIssueDialog";
 import { getWorkflowConfigData } from "@/app/actions/workflow.actions";
+import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
 interface WorkflowStatesPageProps {
   params: Promise<{ id: string }>;
@@ -26,8 +27,7 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [createIssueOpen, setCreateIssueOpen] = useState(false);
-  const [defaultStateId, setDefaultStateId] = useState<string | undefined>();
+  const { openCreateIssue } = useCreateIssue();
   const [workspaceId, setWorkspaceId] = useState("");
 
   const fetchData = useCallback(async (pId: string) => {
@@ -60,7 +60,6 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
 
   const handleCreateIssueSuccess = (newIssue: Issue) => {
     setIssues((prev) => [...prev, newIssue]);
-    setCreateIssueOpen(false);
   };
 
   const nextPosition =
@@ -104,8 +103,7 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
             issues={issues}
             projectId={projectId}
             onCreateIssue={(stateId) => {
-              setDefaultStateId(stateId);
-              setCreateIssueOpen(true);
+              openCreateIssue(stateId);
             }}
             onAddColumn={() => setDialogOpen(true)}
           />
@@ -119,17 +117,6 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
         onSuccess={handleAdded}
         nextPosition={nextPosition}
       />
-      {projectId && (
-        <CreateIssueDialog
-          projectId={projectId}
-          workspaceId={workspaceId}
-          states={states}
-          defaultStateId={defaultStateId}
-          open={createIssueOpen}
-          onOpenChange={setCreateIssueOpen}
-          onSuccess={handleCreateIssueSuccess}
-        />
-      )}
     </div>
   );
 }

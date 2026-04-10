@@ -7,6 +7,7 @@ import { Loader2, AlertCircle, Plus, Zap } from "lucide-react";
 import type { IssueWithRelations, WorkflowState, Sprint } from "@/types/index";
 import { getSprintBoardData } from "@/app/actions/board.actions";
 import { moveIssue } from "@/app/actions/issue.actions";
+import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
 interface BoardPageProps {
   params: Promise<{ id: string }>;
@@ -23,6 +24,7 @@ export default function BoardPage({ params }: BoardPageProps) {
   const [error, setError] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<IssueWithRelations | null>(null);
   const [isPending, startTransition] = useTransition();
+  const { openCreateIssue } = useCreateIssue();
 
   useEffect(() => {
     if (projectId) loadBoardData(projectId);
@@ -99,7 +101,10 @@ export default function BoardPage({ params }: BoardPageProps) {
             </span>
           )}
         </div>
-        <button className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all">
+        <button 
+          onClick={() => openCreateIssue()}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
+        >
           <Plus size={14} />
           New Issue
         </button>

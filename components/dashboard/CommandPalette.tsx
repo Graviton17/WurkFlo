@@ -195,6 +195,14 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
   const executeAction = useCallback(
     (action: CommandAction) => {
       handleClose();
+      if (action.id === "create-issue") {
+        window.dispatchEvent(new CustomEvent("open-create-issue", { detail: {} }));
+        return;
+      }
+      if (action.action) {
+        action.action();
+        return;
+      }
       if (action.href) {
         router.push(action.href);
       }

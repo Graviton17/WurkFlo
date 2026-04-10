@@ -8,7 +8,6 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import { WorkflowState, Issue, IssuePriority, IssueType } from "@/types/index";
-import { CreateIssueDialog } from "../issues/CreateIssueDialog";
 import { EditIssueDialog } from "../issues/EditIssueDialog";
 import { moveIssue } from "@/app/actions/issue.actions";
 import { GripVertical, AlertCircle, Bug, BookOpen, CheckSquare, Layers } from "lucide-react";
