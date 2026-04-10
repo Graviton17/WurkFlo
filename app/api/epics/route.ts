@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error?.message },
         { status: 400 },
       );
     }
 
-    return NextResponse.json({ data: result.data });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },
@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error?.message },
         { status: 400 },
       );
     }
 
-    return NextResponse.json({ data: result.data }, { status: 201 });
+    return NextResponse.json({ success: true, data: result.data }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

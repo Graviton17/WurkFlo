@@ -117,7 +117,7 @@ export function OnboardingProvider({
     try {
       // If we don't have a workspace, just skip adding members
       if (!workspaceId) {
-        onFinish();
+        onFinish(null);
         return;
       }
       await axios.post("/api/onboarding", {
@@ -127,7 +127,7 @@ export function OnboardingProvider({
         membersData: overrideMembers !== undefined ? overrideMembers : membersData,
       });
 
-      onFinish();
+      onFinish(workspaceId);
     } catch (err: any) {
       throw new Error(err?.response?.data?.error || "Failed to add members.");
     }

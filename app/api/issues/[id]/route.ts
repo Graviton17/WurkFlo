@@ -11,15 +11,15 @@ export async function GET(
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error?.message },
         { status: 404 },
       );
     }
 
-    return NextResponse.json({ data: result.data });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: "Internal server error" },
       { status: 500 },
     );
   }
@@ -36,18 +36,26 @@ export async function PUT(
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error?.message },
         { status: 400 },
       );
     }
 
-    return NextResponse.json({ data: result.data });
+    return NextResponse.json({ success: true, data: result.data });
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: "Internal server error" },
       { status: 500 },
     );
   }
+}
+
+// PATCH delegates to PUT logic for partial updates
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  return PUT(request, context);
 }
 
 export async function DELETE(
@@ -60,15 +68,15 @@ export async function DELETE(
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error?.message },
         { status: 400 },
       );
     }
 
-    return NextResponse.json({ message: "Issue deleted successfully" });
+    return NextResponse.json({ success: true, message: "Issue deleted successfully" });
   } catch (error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: "Internal server error" },
       { status: 500 },
     );
   }

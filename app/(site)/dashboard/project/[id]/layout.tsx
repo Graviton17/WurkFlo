@@ -1,6 +1,6 @@
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { TopNavbar } from "@/components/dashboard/TopNavbar";
-import { projectService, workspaceService } from "@/services/index";
+import { ProjectTabsHeader } from "@/components/dashboard/project/ProjectTabsHeader";
+import { projectService } from "@/services/index";
+import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrapper";
 
 export default async function ProjectLayout({
   children,
@@ -10,46 +10,31 @@ export default async function ProjectLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  
-  let workspaceSlug = "workspace";
-  let workspaceId = "";
-  let projectName = undefined;
-  
+
+  let projectName: string | undefined;
+  let projectIdentifier: string | undefined;
+
   try {
     const { data: project } = await projectService.getProjectById(id);
     if (project) {
       projectName = project.name;
-    }
-    if (project?.workspace_id) {
-      workspaceId = project.workspace_id;
-      const { data: workspace } = await workspaceService.getWorkspaceById(project.workspace_id);
-      if (workspace?.slug) {
-        workspaceSlug = workspace.slug;
-      }
+      projectIdentifier = project.identifier;
     }
   } catch (error) {}
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] text-[#e5e7eb] selection:bg-[#ff1f1f]/30">
+    <SidebarLayoutWrapper>
+      <div className="flex flex-col w-full h-full min-h-0 bg-[#111113] text-[#e5e7eb]">
+        {/* Project Tabs Header */}
+        <ProjectTabsHeader
+          projectId={id}
+          projectName={projectName}
+          projectIdentifier={projectIdentifier}
+        />
 
-      {/* Fixed Top Navbar — spans full width */}
-      <TopNavbar workspaceSlug={workspaceSlug} projectId={id} projectName={projectName} />
-
-      {/* Fixed Sidebar — sits below navbar */}
-      <Sidebar workspaceSlug={workspaceSlug} projectId={id} workspaceId={workspaceId} />
-
-      {/* Main Content — offset to clear fixed navbar + sidebar */}
-      <main className="pt-[52px] pl-[300px] min-h-screen bg-[#1a1a1a] relative overflow-x-hidden">
-        {/* Background ambient light */}
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-1/4 translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#ff1f1f]/[0.015] rounded-full blur-[100px]" />
-        </div>
-
-        <div className="relative z-10 w-full h-full flex flex-col">
-          {children}
-        </div>
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
+      </div>
+    </SidebarLayoutWrapper>
   );
 }
