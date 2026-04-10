@@ -6,9 +6,9 @@ import { Lightbulb } from "lucide-react";
 export default async function GetStartedPage({
   params,
 }: {
-  params: Promise<{ workspace: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { workspace } = await params;
+  const { id } = await params;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto w-full">
@@ -16,7 +16,7 @@ export default async function GetStartedPage({
         icon={<Lightbulb size={16} />} 
         title="Get started" 
       />
-      <div className="p-8 md:p-12 lg:p-16 max-w-5xl w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="px-8 py-4 lg:px-12 lg:py-6 max-w-5xl w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="max-w-3xl">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-white">
           Hey there, welcome aboard! 👋

@@ -9,13 +9,12 @@ import axios from "axios";
 
 interface DraftsPageProps {
   params: Promise<{
-    workspace: string;
+    id: string;
   }>;
 }
 
 export default function DraftsPage({ params }: DraftsPageProps) {
-  const { workspace } = React.use(params);
-  const [projectId, setProjectId] = useState<string | null>(null);
+  const { id } = React.use(params);
   const [items, setItems] = useState<WorkflowState[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,35 +22,11 @@ export default function DraftsPage({ params }: DraftsPageProps) {
   // Custom dialog state to sync
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch a project ID first (we take the first one or a default user project)
   useEffect(() => {
-    const initData = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch projects for this workspace (workspace)
-        // Note: typically we need workspace ID. Alternatively, we fetch project directly if passed, but we'll fetch all projects.
-        // For Drafts, Plane usually lets you pick. We'll fetch workspace by slug first, but `workflow_states` needs project_id.
-        const { data: workspacesResponse } = await axios.get('/api/workspaces');
-        const workspaceItem = workspacesResponse.data?.find((w: any) => w.slug === workspace);
-        
-        if (workspaceItem) {
-          const { data: projectsResponse } = await axios.get(`/api/projects?workspaceId=${workspaceItem.id}`);
-          if (projectsResponse.data && projectsResponse.data.length > 0) {
-            const pId = projectsResponse.data[0].id;
-            setProjectId(pId);
-            fetchDrafts(pId);
-            return;
-          }
-        }
-        setIsLoading(false);
-      } catch (err: any) {
-        console.error(err);
-        setError("Failed to load drafts environment.");
-        setIsLoading(false);
-      }
-    };
-    initData();
-  }, [workspace]);
+    if (id) {
+      fetchDrafts(id);
+    }
+  }, [id]);
 
   const fetchDrafts = async (pId: string) => {
     setError("");
@@ -102,7 +77,7 @@ export default function DraftsPage({ params }: DraftsPageProps) {
             <AlertCircle size={20} />
             <span>{error}</span>
           </div>
-        ) : !projectId ? (
+        ) : !id ? (
           <div className="flex flex-col items-center justify-center h-full text-[#888]">
             <p className="text-lg mb-2 text-white">No active project found</p>
             <p className="text-sm">You must create a project in this workspace to draft items.</p>
@@ -112,7 +87,7 @@ export default function DraftsPage({ params }: DraftsPageProps) {
         )}
 
         {/* Empty state context text like in the background of screenshot */}
-        {!isLoading && !error && items.length === 0 && projectId && (
+        {!isLoading && !error && items.length === 0 && id && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50 z-0">
              <LayoutGrid size={48} className="mb-4 text-[#888]" />
              <p className="text-lg">Try this out, start adding a work item and leave it mid-way or</p>
@@ -121,9 +96,9 @@ export default function DraftsPage({ params }: DraftsPageProps) {
         )}
       </div>
 
-      {projectId && (
+      {id && (
         <CreateDraftDialog
-          projectId={projectId}
+          projectId={id}
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           onSuccess={handleCreateSuccess}

@@ -1,22 +1,42 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopNavbar } from "@/components/dashboard/TopNavbar";
+import { projectService, workspaceService } from "@/services/index";
 
-export default async function WorkspaceLayout({
+export default async function ProjectLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ workspace: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { workspace } = await params;
+  const { id } = await params;
+  
+  let workspaceSlug = "workspace";
+  let workspaceId = "";
+  let projectName = undefined;
+  
+  try {
+    const { data: project } = await projectService.getProjectById(id);
+    if (project) {
+      projectName = project.name;
+    }
+    if (project?.workspace_id) {
+      workspaceId = project.workspace_id;
+      const { data: workspace } = await workspaceService.getWorkspaceById(project.workspace_id);
+      if (workspace?.slug) {
+        workspaceSlug = workspace.slug;
+      }
+    }
+  } catch (error) {}
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-[#e5e7eb] selection:bg-[#ff1f1f]/30">
 
       {/* Fixed Top Navbar — spans full width */}
-      <TopNavbar workspaceSlug={workspace} />
+      <TopNavbar workspaceSlug={workspaceSlug} projectId={id} projectName={projectName} />
 
       {/* Fixed Sidebar — sits below navbar */}
-      <Sidebar workspaceSlug={workspace} />
+      <Sidebar workspaceSlug={workspaceSlug} projectId={id} workspaceId={workspaceId} />
 
       {/* Main Content — offset to clear fixed navbar + sidebar */}
       <main className="pt-[52px] pl-[300px] min-h-screen bg-[#1a1a1a] relative overflow-x-hidden">

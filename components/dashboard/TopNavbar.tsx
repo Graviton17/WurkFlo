@@ -5,9 +5,12 @@ import { ChevronDown, Search, Inbox, HelpCircle } from "lucide-react";
 
 interface TopNavbarProps {
   workspaceSlug: string;
+  projectId?: string;
+  projectName?: string;
 }
 
-export function TopNavbar({ workspaceSlug }: TopNavbarProps) {
+export function TopNavbar({ workspaceSlug, projectId, projectName }: TopNavbarProps) {
+  const displayName = projectName || workspaceSlug;
   return (
     <header className="fixed top-0 left-0 right-0 h-[52px] border-b border-white/[0.07] bg-[#131316] flex items-center justify-between px-3 z-50">
 
@@ -15,10 +18,10 @@ export function TopNavbar({ workspaceSlug }: TopNavbarProps) {
       <div className="flex items-center">
         <button className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/5 rounded-md transition-colors text-left">
           <div className="w-5 h-5 rounded bg-[#3c00ff] text-white flex items-center justify-center text-xs font-bold leading-none shrink-0">
-            {workspaceSlug.charAt(0).toUpperCase()}
+            {displayName.charAt(0).toUpperCase()}
           </div>
           <span className="text-[0.9rem] font-medium text-[#f0f0f0]">
-            {workspaceSlug}
+            {displayName}
           </span>
           <ChevronDown size={14} className="text-[#888] shrink-0" />
         </button>
@@ -39,7 +42,7 @@ export function TopNavbar({ workspaceSlug }: TopNavbarProps) {
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
         <Link
-          href={`/${workspaceSlug}/get-started`}
+          href={projectId ? `/dashboard/project/${projectId}/get-started` : `/${workspaceSlug}/get-started`}
           className="text-[0.8rem] font-medium text-[#f0f0f0] border border-white/10 hover:bg-white/5 px-2.5 py-1 rounded-md transition-colors hidden sm:block"
         >
           Get Started
