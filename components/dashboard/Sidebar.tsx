@@ -15,7 +15,9 @@ import {
   FolderOpen,
   Sparkles,
   PanelLeftClose,
-  ListFilter
+  ListFilter,
+  KanbanSquare,
+  Layers
 } from "lucide-react";
 
 interface SidebarProps {
@@ -79,9 +81,13 @@ export function Sidebar({ workspaceSlug, projectId, workspaceId }: SidebarProps)
               <LayoutGrid size={15} />
               <span>Home</span>
             </Link>
-            <Link href={projectId ? `/dashboard/project/${projectId}/drafts` : `/${workspaceSlug}/drafts`} className="flex items-center gap-2 px-2 py-1.5 text-[#888] hover:text-[#f0f0f0] hover:bg-white/5 rounded-md transition-colors text-[0.85rem]">
-              <Edit3 size={15} />
-              <span>Drafts</span>
+            <Link href={projectId ? `/dashboard/project/${projectId}/issues` : `/${workspaceSlug}/issues`} className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-[0.85rem] ${pathname?.includes('/issues') ? 'bg-white/10 text-white' : 'text-[#888] hover:bg-white/5 hover:text-[#f0f0f0]'}`}>
+              <KanbanSquare size={15} />
+              <span>Issues</span>
+            </Link>
+            <Link href={projectId ? `/dashboard/project/${projectId}/workflow-states` : `/${workspaceSlug}/workflow-states`} className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-[0.85rem] ${pathname?.includes('/workflow-states') ? 'bg-white/10 text-white' : 'text-[#888] hover:bg-white/5 hover:text-[#f0f0f0]'}`}>
+              <Layers size={15} />
+              <span>Workflow States</span>
             </Link>
             <Link href={projectId ? `/dashboard/project/${projectId}/your-work` : `/${workspaceSlug}/your-work`} className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-[0.85rem] ${pathname?.includes('/your-work') ? 'bg-white/10 text-white' : 'text-[#888] hover:bg-white/5 hover:text-[#f0f0f0]'}`}>
               <User size={15} />

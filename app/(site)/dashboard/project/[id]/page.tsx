@@ -1,6 +1,17 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  redirect(`/dashboard/project/${id}/get-started`);
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+
+export default function ProjectPage() {
+  const params = useParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (params && params.id) {
+      router.replace(`/dashboard/project/${params.id}/get-started`);
+    }
+  }, [params, router]);
+
+  return null;
 }
