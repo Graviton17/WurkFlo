@@ -16,9 +16,9 @@ export const GET = withApiSetup({
       // Fetch user profile stats
       const { data: userData } = await onboardingService.getUserProfile(user.id);
 
-      return NextResponse.json({
-        success: true,
-        hasWorkspace,
+      return NextResponse.json({ 
+        success: true, 
+        hasWorkspace, 
         fullName: userData?.full_name || "",
         userId: user.id
       });
@@ -56,21 +56,15 @@ export const POST = withApiSetup({
         );
 
         if (rpcError) {
-          let errorMessage = rpcError.message;
-          let errorCode = "UNKNOWN_ERROR";
-          if (errorMessage.includes("workspaces_slug_key")) {
-            errorMessage = "Workspace URL is already taken. Please change the URL Slug to something else (e.g., add numbers to it).";
-            errorCode = "WORKSPACE_SLUG_TAKEN";
-          }
-          return NextResponse.json({ success: false, error: errorMessage, errorCode }, { status: 400 });
+          return NextResponse.json({ success: false, error: rpcError.message }, { status: 400 });
         }
 
         return NextResponse.json({ success: true, data: { workspaceId: newWorkspaceId } });
       } else if (action === "add_members") {
         if (!workspaceId) {
-          return NextResponse.json({ success: false, error: "Workspace ID is required to add members" }, { status: 400 });
+           return NextResponse.json({ success: false, error: "Workspace ID is required to add members" }, { status: 400 });
         }
-
+        
         // Add Members
         await onboardingService.addMembers(workspaceId, membersData);
 

@@ -37,9 +37,6 @@ interface OnboardingState {
   workspaceId: string | null;
   setWorkspaceId: (id: string | null) => void;
   
-  workspaceCreateError: string | null;
-  setWorkspaceCreateError: (err: string | null) => void;
-
   goToStep: (step: OnboardingStep) => void;
   advance: () => void;
   skip: () => void;
@@ -79,7 +76,6 @@ export function OnboardingProvider({
   const [projectData, setProjectData] = useState<ProjectData | null>(null);
 
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  const [workspaceCreateError, setWorkspaceCreateError] = useState<string | null>(null);
 
   const goToStep = (step: OnboardingStep) => {
     if (step >= 1 && step <= 4) setCurrentStep(step);
@@ -113,11 +109,6 @@ export function OnboardingProvider({
       }
       return newWsId || null;
     } catch (err: any) {
-      if (err?.response?.data?.errorCode === "WORKSPACE_SLUG_TAKEN") {
-        setWorkspaceCreateError(err.response.data.error);
-        goToStep(2);
-        throw new Error("REDIRECT_TO_WORKSPACE");
-      }
       throw new Error(err?.response?.data?.error || "Failed to create workspace.");
     }
   };
@@ -157,8 +148,6 @@ export function OnboardingProvider({
         setProjectData,
         workspaceId,
         setWorkspaceId,
-        workspaceCreateError,
-        setWorkspaceCreateError,
         goToStep,
         advance,
         skip,

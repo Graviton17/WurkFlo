@@ -14,7 +14,6 @@ import { useSelectedLayoutSegments } from "next/navigation";
 
 export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?: any, workspaces?: WorkspaceWithRole[] }) {
   const [user, setUser] = useState<any>(initialUser || null);
-  const [profile, setProfile] = useState<{ full_name: string | null, avatar_url: string | null } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -40,20 +39,6 @@ export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?
       authListener.subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (user?.id) {
-      supabase.from('users')
-        .select('full_name, avatar_url')
-        .eq('id', user.id)
-        .single()
-        .then(({ data }: { data: any }) => {
-          if (data) setProfile(data);
-        });
-    } else {
-      setProfile(null);
-    }
-  }, [user]);
 
   // Fetch project context dynamically if exploring a project route
   useEffect(() => {
@@ -114,9 +99,6 @@ export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?
     router.refresh();
   };
 
-  const displayName = profile?.full_name || user?.email || "User";
-  const initials = displayName.substring(0, 2).toUpperCase();
-
   return (
     <nav className="sticky top-0 left-0 w-full z-50 bg-[#161716] border-b border-border/40">
       <div className="mx-auto w-full px-4 h-14 flex items-center justify-between">
@@ -155,22 +137,16 @@ export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?
           <div className="relative ml-2" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary hover:bg-secondary/40 overflow-hidden transition-colors focus:outline-none"
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary hover:bg-secondary/80 transition-colors focus:outline-none"
             >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="User Avatar" className="w-full h-full object-cover" />
-              ) : profile?.full_name ? (
-                <span className="text-[10px] font-semibold text-foreground/70">{initials}</span>
-              ) : (
-                <User size={14} className="text-foreground/70" />
-              )}
+              <User size={14} className="text-foreground/70" />
             </button>
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl overflow-hidden py-1 z-50">
                 <div className="px-4 py-3 border-b border-border/50">
-                  <p className="text-sm font-medium text-foreground truncate" title={displayName}>
-                    {displayName}
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {user?.email || "User"}
                   </p>
                 </div>
                 <div className="py-1">

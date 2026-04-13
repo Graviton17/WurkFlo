@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useOnboarding } from "../onboarding-context";
 import {
   OnboardingShell,
@@ -36,18 +36,11 @@ function toSlug(name: string) {
 // ---- Step 2: Workspace Creation --------------------------------------------
 
 export function Step2Workspace() {
-  const { workspaceData, setWorkspaceData, advance, workspaceCreateError, setWorkspaceCreateError } = useOnboarding();
-  const [name, setName] = useState(workspaceData?.name || "");
-  const [slug, setSlug] = useState(workspaceData?.slug || "");
-  const [slugEdited, setSlugEdited] = useState(!!workspaceData?.slug);
-  const [error, setError] = useState<string | null>(workspaceCreateError || null);
-
-  useEffect(() => {
-    if (workspaceCreateError) {
-      setError(workspaceCreateError);
-      setWorkspaceCreateError(null);
-    }
-  }, [workspaceCreateError, setWorkspaceCreateError]);
+  const { setWorkspaceData, advance } = useOnboarding();
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleNameChange = (val: string) => {
     setName(val);

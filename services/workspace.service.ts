@@ -100,10 +100,6 @@ export class WorkspaceService {
     return this.memberCurd.create({ workspace_id: workspaceId, user_id: userId, role });
   }
 
-  async updateMemberRole(workspaceId: string, userId: string, role: WorkspaceRole): Promise<DatabaseResponse<null>> {
-    return this.memberCurd.updateByCompositeKey(workspaceId, userId, { role });
-  }
-
   /**
    * Remove a member from a workspace.
    */
