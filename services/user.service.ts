@@ -31,6 +31,14 @@ export class UserService {
   async deleteUser(id: string): Promise<DatabaseResponse<null>> {
     return this.userCurd.delete(id);
   }
+
+  async getUserByEmail(email: string): Promise<DatabaseResponse<User>> {
+    const result = await this.userCurd.getByEmails([email]);
+    if (!result.success || !result.data || result.data.length === 0) {
+      return { data: null, error: result.error || new Error("User not found"), success: false };
+    }
+    return { data: result.data[0], error: null, success: true };
+  }
 }
 
 export const userService = new UserService();
