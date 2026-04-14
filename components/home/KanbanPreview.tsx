@@ -92,7 +92,7 @@ export const KanbanPreview = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    className="p-3.5 rounded-xl bg-[#141414] border border-white/5 shadow-xl cursor-grab active:cursor-grabbing hover:border-white/10 hover:bg-[#1a1a1a] transition-colors group"
+                    className="p-3.5 rounded-xl bg-[#141414] border border-white/5 shadow-xl cursor-grab active:cursor-grabbing hover:border-white/10 hover:bg-[#0d0d0f] transition-colors group"
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex space-x-1">

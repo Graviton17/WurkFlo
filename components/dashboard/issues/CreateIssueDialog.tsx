@@ -1,0 +1,271 @@
+"use client";
+
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {
+  X, Bot, User2, Tag, Calendar,
+  LayoutDashboard, Component, Link as LinkIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { createIssue } from "@/app/actions/issue.actions";
+import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
+
+interface CreateIssueDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  projectId: string;
+  workspaceId: string;
+  states: WorkflowState[];
+  defaultStateId?: string;
+  onSuccess: (issue: Issue) => void;
+}
+
+const PRIORITY_OPTIONS: { label: string; value: IssuePriority; color: string }[] = [
+  { label: "Low",    value: "low",    color: "#71717a" },
+  { label: "Medium", value: "medium", color: "#eab308" },
+  { label: "High",   value: "high",   color: "#f97316" },
+  { label: "Urgent", value: "urgent", color: "#ef4444" },
+];
+
+const TYPE_OPTIONS: { label: string; value: IssueType }[] = [
+  { label: "Task",  value: "task" },
+  { label: "Bug",   value: "bug"  },
+  { label: "Story", value: "story"},
+];
+
+export function CreateIssueDialog({
+  open,
+  onOpenChange,
+  projectId,
+  workspaceId,
+  states,
+  defaultStateId,
+  onSuccess,
+}: CreateIssueDialogProps) {
+  const [title,       setTitle]       = useState("");
+  const [description, setDescription] = useState("");
+  const [sequenceId,  setSequenceId]  = useState("");
+  const [priority,    setPriority]    = useState<IssuePriority>("medium");
+  const [issueType,   setIssueType]   = useState<IssueType>("task");
+  const [stateId,     setStateId]     = useState<string>(
+    defaultStateId ?? states[0]?.id ?? "unassigned"
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createMore,   setCreateMore]   = useState(false);
+  const [error,        setError]        = useState("");
+
+  // Sync defaultStateId when it changes (e.g. user clicks + on a different column)
+  React.useEffect(() => {
+    if (defaultStateId) setStateId(defaultStateId);
+  }, [defaultStateId]);
+
+  // Reset form on open
+  React.useEffect(() => {
+    if (open) {
+      setTitle("");
+      setDescription("");
+      setSequenceId("");
+      setPriority("medium");
+      setIssueType("task");
+      setError("");
+      setStateId(defaultStateId ?? states[0]?.id ?? "unassigned");
+    }
+  }, [open]);
+
+  const handleSubmit = async () => {
+    if (!title.trim()) { setError("Title is required"); return; }
+    if (!sequenceId || isNaN(Number(sequenceId)) || Number(sequenceId) < 1) {
+      setError("Issue ID must be a positive number");
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const result = await createIssue({
+        project_id:   projectId,
+        workspace_id: workspaceId,
+        state_id:     stateId === "unassigned" ? null : (stateId || null),
+        title:        title.trim(),
+        description:  description || null,
+        priority,
+        issue_type:   issueType,
+      });
+
+      if (result.success && result.data) {
+        onSuccess(result.data as Issue);
+        if (!createMore) {
+          onOpenChange(false);
+        } else {
+          setTitle("");
+          setDescription("");
+        }
+      } else {
+        setError(result.error || "Failed to create issue");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === priority)!;
+  const selectedState    = states.find((s) => s.id === stateId);
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content className="fixed left-[50%] top-[40%] z-50 grid w-full max-w-[800px] translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-[#161616] p-0 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-xl">
+          
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+              <DialogPrimitive.Title className="text-lg font-semibold text-white">Create an issue</DialogPrimitive.Title>
+              <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none text-white">
+                <X className="h-5 w-5" />
+                <span className="sr-only">Close</span>
+              </DialogPrimitive.Close>
+            </div>
+
+            {/* Context bar — shows selected state */}
+            <div className="flex items-center gap-2 px-6 py-3 border-b border-white/5">
+              <span className="text-xs text-[#555]">Column:</span>
+              <select
+                value={stateId}
+                onChange={(e) => setStateId(e.target.value)}
+                className="text-xs text-[#a0a0a0] bg-[#202020] border border-white/10 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
+              >
+                <option value="unassigned">Unassigned</option>
+                {states.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Inputs */}
+            <div className="flex flex-col px-6 py-4 gap-4">
+              {/* Issue ID + Title row */}
+              <div className="flex gap-3">
+                <div className="flex items-center gap-1.5 bg-[#1b1b1b] border border-white/10 rounded-lg px-3 py-3 shrink-0 w-[100px]">
+                  <span className="text-[#555] text-sm font-mono">#</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={sequenceId}
+                    onChange={(e) => setSequenceId(e.target.value)}
+                    placeholder="ID"
+                    className="w-full bg-transparent text-sm text-white placeholder:text-[#555] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                  placeholder="Issue title"
+                  autoFocus
+                  className="flex-1 bg-[#1b1b1b] border border-white/10 py-3 px-4 rounded-lg text-[15px] text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
+                />
+              </div>
+
+              <div className="relative">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Add a description…"
+                  className="w-full h-[140px] bg-[#1b1b1b] border border-white/10 py-3 px-4 rounded-lg text-sm text-[#ccc] placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all resize-none"
+                />
+                <button className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[#888] hover:text-white transition-colors">
+                  <Bot size={14} />
+                  <span className="text-xs font-medium">AI</span>
+                </button>
+              </div>
+
+              {error && <div className="text-red-400 text-sm">{error}</div>}
+
+              {/* Action tags */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Priority */}
+                <div className="flex items-center gap-1 bg-[#1b1b1b] border border-white/10 rounded-md overflow-hidden">
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setPriority(opt.value)}
+                      className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                        priority === opt.value
+                          ? "text-white"
+                          : "text-[#666] hover:text-[#aaa]"
+                      }`}
+                      style={priority === opt.value ? { color: opt.color } : {}}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Type */}
+                <div className="flex items-center gap-1 bg-[#1b1b1b] border border-white/10 rounded-md overflow-hidden">
+                  {TYPE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setIssueType(opt.value)}
+                      className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                        issueType === opt.value
+                          ? "text-white bg-white/10"
+                          : "text-[#666] hover:text-[#aaa]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mocked extras */}
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                  <User2 size={13} /> Assignees
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                  <Tag size={13} /> Labels
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                  <Calendar size={13} /> Due date
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/5 bg-[#101010] rounded-b-xl">
+              <div className="flex items-center gap-2 mr-auto">
+                <button
+                  type="button"
+                  onClick={() => setCreateMore(!createMore)}
+                  className={`w-8 h-4 rounded-full relative transition-colors ${createMore ? "bg-blue-500" : "bg-white/20"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 bg-white w-3 h-3 rounded-full transition-transform ${createMore ? "translate-x-4" : "translate-x-0"}`} />
+                </button>
+                <span className="text-xs text-[#888]">Create more</span>
+              </div>
+
+              <button
+                onClick={() => onOpenChange(false)}
+                className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-[#3f76ff] hover:bg-[#3566e5] text-white text-sm font-medium rounded-md transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isSubmitting ? "Creating…" : "Create issue"}
+              </button>
+            </div>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}

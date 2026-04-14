@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ChevronDown } from "lucide-react";
 import { Workspace } from "@/types/index";
+import { createProjectAction } from "@/app/actions/project.actions";
 
 function toIdentifier(name: string): string {
   return name
@@ -31,21 +32,15 @@ export function NewProjectForm({ workspace }: { workspace: Workspace }) {
     setError(null);
 
     try {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workspace_id: workspace.id,
-          name: name.trim(),
-          identifier,
-          ...(description.trim() && { description: description.trim() }),
-        }),
+      const result = await createProjectAction({
+        workspace_id: workspace.id,
+        name: name.trim(),
+        identifier,
+        ...(description.trim() && { description: description.trim() }),
       });
 
-      const json = await res.json();
-
-      if (!res.ok || !json.success) {
-        setError(json.error ?? "Failed to create project. Please try again.");
+      if (!result.success) {
+        setError(result.error ?? "Failed to create project. Please try again.");
         return;
       }
 

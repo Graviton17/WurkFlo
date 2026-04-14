@@ -11,6 +11,7 @@ import { WorkspaceSwitcher } from "@/components/workspace/WorkspaceSwitcher";
 import { ProjectSwitcher } from "@/components/project/ProjectSwitcher";
 import { WorkspaceWithRole, Project } from "@/types/index";
 import { useSelectedLayoutSegments } from "next/navigation";
+import { getProjectData, getWorkspaceProjectsData } from "@/app/actions/project.actions";
 
 export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?: any, workspaces?: WorkspaceWithRole[] }) {
   const [user, setUser] = useState<any>(initialUser || null);
@@ -52,18 +53,16 @@ export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?
 
       try {
         // Fetch project metadata
-        const res = await fetch(`/api/projects/${urlProjectId}`);
-        const data = await res.json();
+        const projectResult = await getProjectData(urlProjectId);
         
-        if (data.success && data.data && active) {
-          const project = data.data as Project;
+        if (projectResult.success && projectResult.data && active) {
+          const project = projectResult.data as Project;
           setActiveProject(project);
 
           // Once we have the project, fetch sibling projects for switcher
-          const siblingRes = await fetch(`/api/projects?workspaceId=${project.workspace_id}`);
-          const siblingData = await siblingRes.json();
-          if (siblingData.success && active) {
-            setWorkspaceProjects(siblingData.data);
+          const siblingResult = await getWorkspaceProjectsData(project.workspace_id);
+          if (siblingResult.success && active) {
+            setWorkspaceProjects(siblingResult.data ?? []);
           }
         }
       } catch (err) {
