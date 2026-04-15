@@ -82,3 +82,83 @@ export async function submitOnboardingMembers(workspaceId: string, membersData: 
     return { success: false, data: null, error: msg };
   }
 }
+
+import { StorageService } from "@/lib/supabase/bucket";
+
+export async function updateUserProfile(formData: FormData): Promise<ActionResult<{ avatarUrl?: string }>> {
+  try {
+    const user = await requireUser();
+    
+    const fullName = formData.get("fullName") as string | null;
+    const file = formData.get("file") as File | null;
+    
+    let avatarUrl: string | undefined = undefined;
+
+    if (file && file.size > 0) {
+      // Basic validation
+      if (!file.type.startsWith("image/")) {
+        return { success: false, data: null, error: "Only image files are allowed" };
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        return { success: false, data: null, error: "File exceeds 5MB limit" };
+      }
+
+      const avatarStorage = new StorageService("avatars");
+      
+      // Cleanup existing avatars for this user
+      const listResult = await avatarStorage.list(user.id);
+      if (listResult.success && listResult.data) {
+        const pathsToDelete = listResult.data.map((item: any) => `${user.id}/${item.name}`);
+        if (pathsToDelete.length > 0) {
+          await avatarStorage.delete(pathsToDelete);
+        }
+      }
+
+      // Safe buffer conversion for Edge compatibility
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const fileExt = file.name.split(".").pop();
+      const fileName = `avatar-${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+      
+      const uploadResult = await avatarStorage.upload(filePath, buffer as any, {
+        upsert: true,
+        contentType: file.type,
+      });
+
+      if (!uploadResult.success) {
+        const errMsg = uploadResult.error?.message || "";
+        if (errMsg.includes("Bucket not found") || errMsg.includes("row-level security")) {
+           return { success: false, data: null, error: "The 'avatars' storage bucket is missing in Supabase. Please create a public 'avatars' bucket in your dashboard." };
+        }
+        return { success: false, data: null, error: "Avatar upload failed: " + errMsg };
+      }
+      
+      avatarUrl = await avatarStorage.getPublicUrl(filePath);
+    }
+
+    // Process DB Updates
+    const updates: Partial<typeof user> = {};
+    if (fullName) updates.full_name = fullName;
+    if (avatarUrl) updates.avatar_url = avatarUrl;
+    
+    if (Object.keys(updates).length > 0) {
+      const updateResult = await userService.upsertUser({ 
+        id: user.id, 
+        email: user.email!, 
+        ...updates 
+      });
+      
+      if (!updateResult.success) {
+        return { success: false, data: null, error: updateResult.error?.message };
+      }
+    }
+    
+    return { success: true, data: { avatarUrl } };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to update profile";
+    logger.error({ err: error }, "updateUserProfile failed");
+    return { success: false, data: null, error: msg };
+  }
+}
