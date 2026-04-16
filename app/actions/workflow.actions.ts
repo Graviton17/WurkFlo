@@ -41,6 +41,23 @@ export async function getWorkflowConfigData(projectId: string): Promise<ActionRe
   }
 }
 
+export async function getWorkflowStatesAction(projectId: string): Promise<ActionResult<WorkflowState[]>> {
+  try {
+    await requireUser();
+    const result = await workflowStateService.getStatesByProject(projectId);
+    
+    if (!result.success || !result.data) {
+      return { success: false, data: null, error: result.error?.message || "Failed to fetch workflow states" };
+    }
+
+    return { success: true, data: result.data };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to fetch workflow states";
+    logger.error({ err: error }, "getWorkflowStatesAction failed");
+    return { success: false, data: null, error: msg };
+  }
+}
+
 export async function createWorkflowState(projectId: string, data: Record<string, unknown>): Promise<ActionResult<WorkflowState>> {
   try {
     await requireUser();

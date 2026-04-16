@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { projectService } from "@/services/index";
+import { getWorkspaceProjectsData } from "@/app/actions/project.actions";
 import { Project } from "@/types/index";
 import { ProjectManager } from "@/components/project";
 
@@ -15,7 +15,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
 
   const { id: workspaceId } = await params;
 
-  const result = await projectService.getProjectsByWorkspace(workspaceId);
+  const result = await getWorkspaceProjectsData(workspaceId);
 
   if (!result.success) {
     console.error("Failed to load projects:", result.error);

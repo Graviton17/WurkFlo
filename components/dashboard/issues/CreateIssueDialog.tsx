@@ -117,7 +117,7 @@ export function CreateIssueDialog({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[40%] z-50 grid w-full max-w-[800px] translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-[#161616] p-0 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-xl">
+        <DialogPrimitive.Content className="fixed left-[50%] top-[40%] z-50 grid w-full max-w-[800px] translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl p-0 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl">
           
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -135,7 +135,7 @@ export function CreateIssueDialog({
               <select
                 value={stateId}
                 onChange={(e) => setStateId(e.target.value)}
-                className="text-xs text-[#a0a0a0] bg-[#202020] border border-white/10 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
+                className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
               >
                 <option value="unassigned">Unassigned</option>
                 {states.map((s) => (
@@ -166,7 +166,7 @@ export function CreateIssueDialog({
                   onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                   placeholder="Issue title"
                   autoFocus
-                  className="flex-1 bg-[#1b1b1b] border border-white/10 py-3 px-4 rounded-lg text-[15px] text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
+                  className="flex-1 bg-white/[0.03] border border-white/10 py-3 px-4 rounded-xl text-[15px] text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
                 />
               </div>
 
@@ -175,7 +175,7 @@ export function CreateIssueDialog({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add a description…"
-                  className="w-full h-[140px] bg-[#1b1b1b] border border-white/10 py-3 px-4 rounded-lg text-sm text-[#ccc] placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all resize-none"
+                  className="w-full h-[140px] bg-white/[0.03] border border-white/10 py-3 px-4 rounded-xl text-sm text-[#ccc] placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all resize-none"
                 />
                 <button className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[#888] hover:text-white transition-colors">
                   <Bot size={14} />
@@ -188,7 +188,7 @@ export function CreateIssueDialog({
               {/* Action tags */}
               <div className="flex flex-wrap items-center gap-2">
                 {/* Priority */}
-                <div className="flex items-center gap-1 bg-[#1b1b1b] border border-white/10 rounded-md overflow-hidden">
+                <div className="flex items-center gap-1 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
                   {PRIORITY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -206,7 +206,7 @@ export function CreateIssueDialog({
                 </div>
 
                 {/* Type */}
-                <div className="flex items-center gap-1 bg-[#1b1b1b] border border-white/10 rounded-md overflow-hidden">
+                <div className="flex items-center gap-1 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
                   {TYPE_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -223,20 +223,20 @@ export function CreateIssueDialog({
                 </div>
 
                 {/* Mocked extras */}
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
                   <User2 size={13} /> Assignees
                 </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
                   <Tag size={13} /> Labels
                 </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1b] hover:bg-[#252525] border border-white/10 rounded-md text-xs text-[#a0a0a0] transition-colors">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
                   <Calendar size={13} /> Due date
                 </button>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/5 bg-[#101010] rounded-b-xl">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/[0.06] bg-[#0a0a0a]/60 rounded-b-2xl">
               <div className="flex items-center gap-2 mr-auto">
                 <button
                   type="button"
@@ -258,7 +258,7 @@ export function CreateIssueDialog({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-[#3f76ff] hover:bg-[#3566e5] text-white text-sm font-medium rounded-md transition-colors shadow-sm disabled:opacity-50"
+                className="px-4 py-2 bg-[#009b65] hover:bg-[#009b65]/90 text-white text-sm font-medium rounded-full transition-all shadow-[0_0_20px_-6px_rgba(0,155,101,0.4)] disabled:opacity-50"
               >
                 {isSubmitting ? "Creating…" : "Create issue"}
               </button>

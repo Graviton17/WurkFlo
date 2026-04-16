@@ -24,12 +24,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // If user is already logged in, redirect to onboarding
+  // If user is already logged in, redirect to dashboard (server-side redirect handles routing)
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
-        router.replace("/onboarding");
+        router.replace("/dashboard");
       }
     };
     checkSession();
@@ -47,7 +47,7 @@ export default function LoginPage() {
         setError(result.error || "Failed to sign in");
         setLoading(false);
       } else {
-        router.push("/onboarding");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch (err: any) {

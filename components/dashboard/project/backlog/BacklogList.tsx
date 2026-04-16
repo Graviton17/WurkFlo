@@ -42,7 +42,7 @@ export function BacklogList({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter issues..."
-            className="w-full bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] focus:border-indigo-500/30 focus:ring-1 focus:ring-indigo-500/20 rounded-lg pl-9 pr-3 py-[7px] text-[12.5px] text-[#ccc] placeholder:text-[#444] outline-none transition-all"
+            className="w-full bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] focus:border-white/20 focus:ring-1 focus:ring-white/10 rounded-lg pl-9 pr-3 py-[7px] text-[12.5px] text-[#ccc] placeholder:text-[#444] outline-none transition-all"
           />
         </div>
         <button className="flex items-center gap-1.5 text-[12px] text-[#666] hover:text-[#aaa] bg-white/[0.03] hover:bg-white/[0.06] px-3 py-[7px] rounded-lg border border-white/[0.06] transition-all">
@@ -125,7 +125,7 @@ export function BacklogList({
                       issue.issue_type === "bug"
                         ? "text-red-400"
                         : issue.issue_type === "story"
-                          ? "text-indigo-400"
+                          ? "text-purple-400"
                           : "text-[#666]"
                     }`}
                   >
@@ -133,7 +133,7 @@ export function BacklogList({
                   </span>
                 </div>
                 <div className="w-16 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500/60 to-purple-600/60 flex items-center justify-center border border-white/10">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#ff1f1f]/60 to-[#3c00ff]/60 flex items-center justify-center border border-white/10">
                     <User size={10} className="text-white" />
                   </div>
                 </div>

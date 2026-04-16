@@ -99,7 +99,7 @@ export function SprintsList({
         return (
           <div
             key={sprint.id}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden hover:border-white/[0.1] transition-colors"
+            className="bg-[#0a0a0a]/50 backdrop-blur-md border border-white/[0.08] rounded-xl overflow-hidden hover:border-white/[0.12] transition-colors"
           >
             {/* Sprint Header */}
             <button

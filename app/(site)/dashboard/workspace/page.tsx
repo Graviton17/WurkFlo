@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { workspaceService } from "@/services/index";
-import { WorkspaceWithRole } from "@/types/index";
+import { getUserWorkspacesAction } from "@/app/actions/workspace.actions";
 import { WorkspaceManager } from "@/components/workspace";
 
 export const dynamic = "force-dynamic";
@@ -13,17 +12,13 @@ export default async function WorkspacePage() {
     redirect("/login");
   }
 
-  const result = await workspaceService.getAllWorkspacesByUserId(user.id);
+  const result = await getUserWorkspacesAction();
 
   if (!result.success) {
-    // Basic error handling for server component
     console.error("Failed to load workspaces:", result.error);
   }
 
-  const workspaces: WorkspaceWithRole[] = (result.data || []).map((ws: any) => ({
-    ...ws,
-    role: ws.role ?? "member",
-  }));
+  const workspaces = result.data || [];
 
   return <WorkspaceManager workspaces={workspaces} />;
 }

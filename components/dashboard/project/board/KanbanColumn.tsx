@@ -61,7 +61,7 @@ export function KanbanColumn({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={`flex-1 overflow-y-auto p-2.5 space-y-2 min-h-[120px] transition-colors duration-200 ${
-              snapshot.isDraggingOver ? "bg-indigo-500/[0.04]" : ""
+              snapshot.isDraggingOver ? "bg-[#ff1f1f]/[0.04]" : ""
             }`}
           >
             {issues.map((issue, index) => (

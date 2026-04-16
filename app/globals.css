@@ -122,4 +122,42 @@ body {
         transparent 44px),
       linear-gradient(135deg, #060b15 0%, #050a13 48%, #040812 100%);
   }
+
+  /* Glass surface — matches Home/Onboarding card aesthetic */
+  .glass-surface {
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+  }
+
+  .glass-surface-xl {
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+  }
+
+  /* Glow effects */
+  .glow-red {
+    box-shadow: 0 0 40px -10px #ff1f1f;
+  }
+
+  .glow-red-subtle {
+    box-shadow: 0 0 20px -8px rgba(255, 31, 31, 0.4);
+  }
+
+  /* Decorative gradient line (top of cards like OnboardingShell) */
+  .gradient-line-top::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+    opacity: 0.5;
+  }
 }

@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Component } from "lucide-react";
 import { WorkspaceWithRole } from "@/types/index";
+import { staggerItem } from "@/lib/motion";
 
 interface WorkspaceCardProps {
   workspace: WorkspaceWithRole;
@@ -11,24 +15,26 @@ export function WorkspaceCard({ workspace }: WorkspaceCardProps) {
   const projectLabel = projectCount === 1 ? "1 project" : `${projectCount} projects`;
 
   return (
-    <Link
-      href={`/dashboard/workspace/${workspace.id}`}
-      className="group flex items-center gap-3.5 rounded-lg border border-border/50 bg-[#1f1e1e]/60 px-4 py-3.5 transition-all duration-150 hover:border-border hover:bg-[#1f1e1e] cursor-pointer"
-    >
-      {/* Icon Avatar */}
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1c1c1e] border border-border/60 text-muted-foreground group-hover:text-foreground transition-colors">
-        <Component size={14} />
-      </div>
+    <motion.div variants={staggerItem}>
+      <Link
+        href={`/dashboard/workspace/${workspace.id}`}
+        className="group flex items-center gap-3.5 rounded-xl border border-white/[0.08] bg-[#0a0a0a]/60 backdrop-blur-md px-4 py-3.5 transition-all duration-200 hover:border-white/[0.15] hover:bg-[#0a0a0a]/80 hover:shadow-lg hover:shadow-black/20 cursor-pointer"
+      >
+        {/* Icon Avatar */}
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#ff1f1f]/20 to-[#3c00ff]/20 border border-[#ff1f1f]/10 text-[#ff1f1f]/70 group-hover:text-[#ff1f1f] transition-colors">
+          <Component size={14} />
+        </div>
 
-      {/* Info */}
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-white transition-colors">
-          {workspace.name}
-        </p>
-        <p className="text-xs text-muted-foreground/80 mt-0.5">
-          {projectLabel}
-        </p>
-      </div>
-    </Link>
+        {/* Info */}
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-white/90 group-hover:text-white transition-colors">
+            {workspace.name}
+          </p>
+          <p className="text-xs text-white/40 mt-0.5">
+            {projectLabel}
+          </p>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

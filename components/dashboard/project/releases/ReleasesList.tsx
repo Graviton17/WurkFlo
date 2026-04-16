@@ -72,7 +72,7 @@ export function ReleasesList({
         return (
           <div
             key={release.id}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden hover:border-white/[0.1] transition-colors"
+            className="bg-[#0a0a0a]/50 backdrop-blur-md border border-white/[0.08] rounded-xl overflow-hidden hover:border-white/[0.12] transition-colors"
           >
             {/* Release Header */}
             <button
@@ -91,13 +91,13 @@ export function ReleasesList({
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     isReleased
                       ? "bg-emerald-500/10 border border-emerald-500/20"
-                      : "bg-indigo-500/10 border border-indigo-500/20"
+                      : "bg-[#ff1f1f]/10 border border-[#ff1f1f]/20"
                   }`}
                 >
                   <Tag
                     size={15}
                     className={
-                      isReleased ? "text-emerald-400" : "text-indigo-400"
+                      isReleased ? "text-emerald-400" : "text-[#ff1f1f]"
                     }
                   />
                 </div>

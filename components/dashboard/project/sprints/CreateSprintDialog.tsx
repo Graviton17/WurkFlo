@@ -76,12 +76,12 @@ export function CreateSprintDialog({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content className="fixed left-[50%] top-[40%] z-50 grid w-full max-w-[500px] translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-[#161616] p-0 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-xl">
+        <DialogPrimitive.Content className="fixed left-[50%] top-[40%] z-50 grid w-full max-w-[500px] translate-x-[-50%] translate-y-[-50%] gap-4 border border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl p-0 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl">
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <Timer size={18} className="text-blue-400" />
+                <Timer size={18} className="text-[#ff1f1f]" />
                 <DialogPrimitive.Title className="text-lg font-semibold text-white">
                   Create a sprint
                 </DialogPrimitive.Title>
@@ -102,7 +102,7 @@ export function CreateSprintDialog({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Sprint 1, Q3 Optimization..."
                   autoFocus
-                  className="w-full bg-[#1b1b1b] border border-white/10 py-2.5 px-3 rounded-lg text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all"
+                  className="w-full bg-white/[0.03] border border-white/10 py-2.5 px-3 rounded-xl text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
                 />
               </div>
 
@@ -113,7 +113,7 @@ export function CreateSprintDialog({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-[#1b1b1b] border border-white/10 py-2.5 px-3 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all [color-scheme:dark]"
+                    className="w-full bg-white/[0.03] border border-white/10 py-2.5 px-3 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all [color-scheme:dark]"
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
@@ -122,7 +122,7 @@ export function CreateSprintDialog({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-[#1b1b1b] border border-white/10 py-2.5 px-3 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all [color-scheme:dark]"
+                    className="w-full bg-white/[0.03] border border-white/10 py-2.5 px-3 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all [color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -150,17 +150,17 @@ export function CreateSprintDialog({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/5 bg-[#101010] rounded-b-xl">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/[0.06] bg-[#0a0a0a]/60 rounded-b-2xl">
               <button
                 onClick={() => onOpenChange(false)}
-                className="px-4 py-2 text-sm font-medium text-white hover:bg-white/5 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] rounded-full transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-md transition-colors shadow-sm disabled:opacity-50"
+                className="px-4 py-2 bg-[#009b65] hover:bg-[#009b65]/90 text-white text-sm font-medium rounded-full transition-all shadow-[0_0_20px_-6px_rgba(0,155,101,0.4)] disabled:opacity-50"
               >
                 {isSubmitting ? "Creating..." : "Create sprint"}
               </button>

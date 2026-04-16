@@ -308,7 +308,7 @@ export class Auth {
         // Check workspace membership to decide redirect
         const { workspaceService } = await import("@/services");
         const workspaces = await workspaceService.getAllWorkspacesByUserId(sessionData.user.id);
-        redirectPath = (workspaces.data && workspaces.data.length > 0) ? "/dashboard" : "/onboarding";
+        redirectPath = (workspaces.data && workspaces.data.length > 0) ? "/dashboard/workspace" : "/onboarding";
       }
       
       return redirectPath;

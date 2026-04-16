@@ -1,26 +1,22 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 
 interface WorkspaceSearchBarProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (v: string) => void;
 }
 
 export function WorkspaceSearchBar({ value, onChange }: WorkspaceSearchBarProps) {
   return (
-    <div className="relative w-full max-w-xs">
-      <Search
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-        size={14}
-      />
-      <Input
+    <div className="relative max-w-sm flex-1">
+      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
+      <input
         type="text"
-        placeholder="Search for a workspace"
+        placeholder="Search workspaces..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-9 h-8 text-sm bg-secondary border-border/60 placeholder:text-muted-foreground/60"
+        className="w-full bg-white/[0.03] border border-white/10 text-white rounded-xl py-2 pr-3 pl-10 outline-none transition-all duration-200 text-[13px] focus:border-white/20 focus:ring-2 focus:ring-white/10 focus:bg-white/[0.05] placeholder:text-white/30"
       />
     </div>
   );

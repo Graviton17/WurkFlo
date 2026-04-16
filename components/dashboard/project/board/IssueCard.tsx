@@ -53,7 +53,7 @@ export function IssueCard({
       {...provided?.draggableProps}
       {...provided?.dragHandleProps}
       onClick={() => onClick?.(issue)}
-      className="bg-[#161618] border border-white/[0.06] hover:border-white/[0.12] rounded-xl p-3.5 cursor-pointer transition-all duration-200 group hover:shadow-lg hover:shadow-black/20 active:scale-[0.98]"
+      className="bg-[#0a0a0a]/60 backdrop-blur-md border border-white/[0.06] hover:border-white/[0.12] rounded-xl p-3.5 cursor-pointer transition-all duration-200 group hover:shadow-lg hover:shadow-black/20 active:scale-[0.98]"
     >
       {/* Top: Identifier + Type */}
       <div className="flex items-center justify-between mb-2">
@@ -87,7 +87,7 @@ export function IssueCard({
             </span>
           )}
         </div>
-        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500/80 to-purple-600/80 flex items-center justify-center border border-white/10 shadow-sm">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#ff1f1f]/80 to-[#3c00ff]/80 flex items-center justify-center border border-white/10 shadow-sm">
           <User size={12} className="text-white" />
         </div>
       </div>
