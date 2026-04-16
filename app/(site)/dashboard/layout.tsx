@@ -1,7 +1,8 @@
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
 import { auth } from "@/lib/auth";
-import { workspaceService } from "@/services/index";
+import { redirect } from "next/navigation";
+import { getUserWorkspacesAction } from "@/app/actions/workspace.actions";
 
 export default async function DashboardLayout({
   children,
@@ -9,9 +10,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await auth.getUser();
-  const result = user
-    ? await workspaceService.getAllWorkspacesByUserId(user.id)
-    : { data: [] };
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const result = await getUserWorkspacesAction();
   const workspaces = result.data || [];
   const activeWorkspaceId = workspaces.length > 0 ? workspaces[0].id : null;
 

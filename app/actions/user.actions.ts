@@ -11,7 +11,7 @@ export async function getOnboardingStatus(): Promise<ActionResult<{ hasWorkspace
     
     // Check if user belongs to any workspace
     const { data: memberData } = await onboardingService.getMemberWorkspace(user.id);
-    const hasWorkspace = !!memberData?.workspace_id;
+    const hasWorkspace = !!memberData?.id;
 
     // Fetch user profile stats
     const { data: userData } = await onboardingService.getUserProfile(user.id);

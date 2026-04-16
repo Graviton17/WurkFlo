@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { workspaceService } from "@/services/index";
+import { auth } from "@/lib/auth";
+import { getWorkspaceByIdAction } from "@/app/actions/workspace.actions";
 import { NewProjectForm } from "@/components/project/index";
 
 export default async function NewProjectPage({
@@ -7,8 +8,14 @@ export default async function NewProjectPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   const { id } = await params;
-  const result = await workspaceService.getWorkspaceById(id);
+  const result = await getWorkspaceByIdAction(id);
 
   if (!result.success || !result.data) {
     redirect("/dashboard/workspace");

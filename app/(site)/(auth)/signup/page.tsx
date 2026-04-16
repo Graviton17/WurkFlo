@@ -29,7 +29,7 @@ export default function SignupPage() {
     const checkSession = async () => {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
-        router.replace("/onboarding");
+        router.replace("/dashboard");
       }
     };
     checkSession();

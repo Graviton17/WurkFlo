@@ -1,7 +1,10 @@
 import { ProjectTabsHeader } from "@/components/dashboard/project/ProjectTabsHeader";
-import { projectService, workflowStateService } from "@/services/index";
+import { getProjectData } from "@/app/actions/project.actions";
+import { getWorkflowStatesAction } from "@/app/actions/workflow.actions";
 import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrapper";
 import { CreateIssueProvider } from "@/components/dashboard/issues/CreateIssueContext";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import type { WorkflowState } from "@/types/index";
 
 export default async function ProjectLayout({
@@ -11,6 +14,12 @@ export default async function ProjectLayout({
   children: React.ReactNode;
   params: Promise<{ id: string }>;
 }) {
+  const user = await auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   const { id } = await params;
 
   let projectName: string | undefined;
@@ -20,8 +29,8 @@ export default async function ProjectLayout({
 
   try {
     const [projectRes, statesRes] = await Promise.all([
-      projectService.getProjectById(id),
-      workflowStateService.getStatesByProject(id),
+      getProjectData(id),
+      getWorkflowStatesAction(id),
     ]);
     
     if (projectRes.data) {

@@ -133,7 +133,7 @@ export default function OnboardingPage() {
         }
 
         if (data?.hasWorkspace) {
-          router.replace("/dashboard");
+          router.replace("/dashboard/workspace");
           return;
         }
 
@@ -171,9 +171,8 @@ export default function OnboardingPage() {
             initialStep={initialStep}
             initialFullName={initialFullName}
             onFinish={async () => {
-              // The global /dashboard endpoint handled by Next.js Server Components
-              // will resolve the newly created or existing workspace and redirect appropriately.
-              router.push("/dashboard");
+              // Redirect directly to workspace dashboard after completing onboarding
+              router.push("/dashboard/workspace");
             }}
           >
             {/* Background glowing effects */}

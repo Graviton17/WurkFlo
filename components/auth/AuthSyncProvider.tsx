@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { syncUserAction } from "@/app/actions/auth.actions";
+import { getOnboardingStatus } from "@/app/actions/user.actions";
 import { useRouter } from "next/navigation";
 
 export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
@@ -22,7 +23,13 @@ export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
           await syncUserAction();
           
           if (hasCode) {
-            router.push("/onboarding");
+            // Check workspace status to decide redirect target
+            const status = await getOnboardingStatus();
+            if (status.success && status.data?.hasWorkspace) {
+              router.push("/dashboard/workspace");
+            } else {
+              router.push("/onboarding");
+            }
           }
         } catch (err) {
           console.error("Global auth sync failed:", err);
