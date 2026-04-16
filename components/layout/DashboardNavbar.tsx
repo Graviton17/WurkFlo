@@ -12,8 +12,9 @@ import { ProjectSwitcher } from "@/components/project/ProjectSwitcher";
 import { WorkspaceWithRole, Project } from "@/types/index";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { getProjectData, getWorkspaceProjectsData } from "@/app/actions/project.actions";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?: any, workspaces?: WorkspaceWithRole[] }) {
+export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: { initialUser?: any, userProfile?: any, workspaces?: WorkspaceWithRole[] }) {
   const [user, setUser] = useState<any>(initialUser || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -136,9 +137,14 @@ export function DashboardNavbar({ initialUser, workspaces = [] }: { initialUser?
           <div className="relative ml-2" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary hover:bg-secondary/80 transition-colors focus:outline-none"
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary hover:bg-secondary/80 transition-colors focus:outline-none"
             >
-              <User size={14} className="text-foreground/70" />
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={userProfile?.avatar_url || ""} />
+                <AvatarFallback>
+                  <User size={14} className="text-foreground/70" />
+                </AvatarFallback>
+              </Avatar>
             </button>
 
             {dropdownOpen && (
