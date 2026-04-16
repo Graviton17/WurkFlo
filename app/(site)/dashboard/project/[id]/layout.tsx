@@ -48,7 +48,7 @@ export default async function ProjectLayout({
 
   return (
     <SidebarLayoutWrapper>
-      <div className="flex flex-col w-full h-full min-h-0 bg-[#111113] text-[#e5e7eb]">
+      <div className="flex flex-col w-full h-full min-h-0 bg-[#0c0c0d] text-[#e5e7eb]">
         {/* Project Tabs Header */}
         <ProjectTabsHeader
           projectId={id}

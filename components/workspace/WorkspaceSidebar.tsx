@@ -17,7 +17,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
 
   return (
     <aside 
-      className={`group transition-[width] duration-200 ease-in-out border-r border-border/40 bg-[#161716] flex flex-col z-20 shrink-0 absolute bottom-0 sm:relative min-h-[calc(100vh-3.5rem)] ${isExpanded ? 'w-[260px]' : 'w-[64px] hover:w-[260px]'}`}
+      className={`group transition-[width] duration-200 ease-in-out border-r border-white/[0.06] bg-[#0a0a0a]/70 backdrop-blur-xl flex flex-col z-20 shrink-0 absolute bottom-0 sm:relative min-h-[calc(100vh-3.5rem)] ${isExpanded ? 'w-[260px]' : 'w-[64px] hover:w-[260px]'}`}
     >
       {/* Top Nav Items */}
       <div className="flex flex-col gap-2 p-3 mt-1 flex-1">
@@ -29,7 +29,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-2 py-2 rounded-md transition-colors whitespace-nowrap overflow-hidden
-                ${isActive ? "bg-[#252525] text-foreground" : "text-muted-foreground hover:bg-[#252525] hover:text-foreground"}
+                ${isActive ? "bg-[#ff1f1f]/10 text-[#ff1f1f]" : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"}
               `}
               title={!isExpanded ? item.name : undefined}
             >
@@ -48,7 +48,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
       <div className="p-3 mb-1">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-3 px-2 py-2 rounded-md transition-colors whitespace-nowrap overflow-hidden text-muted-foreground hover:bg-[#252525] hover:text-foreground w-full"
+          className="flex items-center gap-3 px-2 py-2 rounded-md transition-colors whitespace-nowrap overflow-hidden text-white/50 hover:bg-white/[0.04] hover:text-white/80 w-full"
           title={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
         >
           <div className="shrink-0 flex items-center justify-center w-5">

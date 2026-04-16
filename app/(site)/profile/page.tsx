@@ -10,9 +10,13 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col p-8 text-left bg-[#161716] overflow-y-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Profile Settings</h1>
-      <ProfileForm user={result.data} />
+    <div className="flex h-full w-full flex-col p-8 text-left bg-[#0c0c0d] overflow-y-auto relative">
+      {/* Decorative glow */}
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-[#ff1f1f]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-[#3c00ff]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="relative z-10">
+        <ProfileForm user={result.data} />
+      </div>
     </div>
   );
 }

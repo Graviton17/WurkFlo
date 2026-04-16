@@ -285,7 +285,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="relative w-full max-w-[560px] bg-[#131315] border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden ring-1 ring-white/[0.03]"
+            className="relative w-full max-w-[560px] bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden ring-1 ring-white/[0.03]"
           >
             {/* Search Input */}
             <div className="flex items-center px-4 py-3.5 border-b border-white/[0.06]">
@@ -335,7 +335,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                           onMouseEnter={() => setSelectedIndex(idx)}
                           className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] transition-all text-left group ${
                             idx === selectedIndex
-                              ? "bg-indigo-500/10 text-indigo-200 ring-1 ring-indigo-500/20"
+                              ? "bg-[#ff1f1f]/10 text-[#ff1f1f] ring-1 ring-[#ff1f1f]/20"
                               : "text-[#888] hover:bg-white/[0.04] hover:text-[#ccc]"
                           }`}
                         >
@@ -343,7 +343,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                             <div
                               className={`p-1.5 rounded-lg shrink-0 ${
                                 idx === selectedIndex
-                                  ? "bg-indigo-500/20 text-indigo-400"
+                                  ? "bg-[#ff1f1f]/20 text-[#ff1f1f]"
                                   : "bg-white/[0.04] text-[#666] group-hover:text-[#aaa]"
                               }`}
                             >
@@ -363,7 +363,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                           {idx === selectedIndex && (
                             <CornerDownLeft
                               size={14}
-                              className="text-indigo-400/50 shrink-0"
+                              className="text-[#ff1f1f]/50 shrink-0"
                             />
                           )}
                         </button>

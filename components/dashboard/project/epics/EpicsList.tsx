@@ -52,7 +52,7 @@ export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
         return (
           <div
             key={epic.id}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden hover:border-white/[0.1] transition-colors"
+            className="bg-[#0a0a0a]/50 backdrop-blur-md border border-white/[0.08] rounded-xl overflow-hidden hover:border-white/[0.12] transition-colors"
           >
             {/* Epic Header */}
             <button
@@ -69,7 +69,7 @@ export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5 mb-1.5">
-                  <Target size={14} className="text-indigo-400 shrink-0" />
+                  <Target size={14} className="text-[#ff1f1f]/80 shrink-0" />
                   <h3 className="text-[14px] font-semibold text-[#ddd] truncate group-hover:text-white transition-colors">
                     {epic.name}
                   </h3>
@@ -79,7 +79,7 @@ export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
                 <div className="flex items-center gap-3">
                   <div className="flex-1 max-w-[200px] h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[#ff1f1f] to-[#ff1f1f]/60 rounded-full transition-all duration-500"
                       style={{ width: `${progress}%` }}
                     />
                   </div>

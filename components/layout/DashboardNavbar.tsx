@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, HelpCircle, Lightbulb, User, LogOut, Settings } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
@@ -100,7 +101,9 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
   };
 
   return (
-    <nav className="sticky top-0 left-0 w-full z-50 bg-[#161716] border-b border-border/40">
+    <nav className="sticky top-0 left-0 w-full z-50 bg-[#0c0c0d]/80 backdrop-blur-md border-b border-white/[0.06]">
+      {/* Decorative red gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#ff1f1f]/30 to-transparent" />
       <div className="mx-auto w-full px-4 h-14 flex items-center justify-between">
         
         {/* Left Side: Logo & Workspace Switcher & Project Switcher */}
@@ -147,34 +150,42 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
               </Avatar>
             </button>
 
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl overflow-hidden py-1 z-50">
-                <div className="px-4 py-3 border-b border-border/50">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {user?.email || "User"}
-                  </p>
-                </div>
-                <div className="py-1">
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      router.push("/profile");
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                  >
-                    <Settings size={16} />
-                    Profile
-                  </button>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
-                  >
-                    <LogOut size={16} />
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 mt-2 w-48 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden py-1 z-50"
+                >
+                  <div className="px-4 py-3 border-b border-white/[0.06]">
+                    <p className="text-sm font-medium text-white truncate">
+                      {user?.email || "User"}
+                    </p>
+                  </div>
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        router.push("/profile");
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors flex items-center gap-2"
+                    >
+                      <Settings size={16} />
+                      Profile
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/[0.06] transition-colors flex items-center gap-2"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

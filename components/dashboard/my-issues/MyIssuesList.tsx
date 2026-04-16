@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   ListChecks,
   Loader2,
   AlertCircle,
-  User,
   Circle,
-  Hash,
 } from "lucide-react";
+import { staggerContainer, staggerItem, fadeIn } from "@/lib/motion";
 import type { Issue } from "@/types/index";
-import axios from "axios";
 
 interface IssueGroup {
   label: string;
@@ -29,9 +28,6 @@ export function MyIssuesList() {
 
   const loadMyIssues = async () => {
     try {
-      // For now, we just show the empty state since we don't have a way to
-      // query all issues across projects by assignee yet.
-      // In future: GET /api/issues?assigneeId={userId}
       setIssues([]);
     } catch (err) {
       setError("Failed to load your issues");
@@ -42,9 +38,9 @@ export function MyIssuesList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-[#555]" size={28} />
-      </div>
+      <motion.div variants={fadeIn} initial="hidden" animate="visible" className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-[#ff1f1f]/40" size={28} />
+      </motion.div>
     );
   }
 
@@ -59,11 +55,17 @@ export function MyIssuesList() {
 
   if (issues.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-[#555] gap-4 px-6">
-        <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        animate="visible"
+        className="flex flex-col items-center justify-center h-full text-[#555] gap-4 px-6 relative"
+      >
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#ff1f1f]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="relative w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
           <ListChecks size={28} className="text-[#444]" />
         </div>
-        <div className="text-center max-w-sm">
+        <div className="text-center max-w-sm relative">
           <h2 className="text-[16px] font-semibold text-[#999] mb-1.5">
             No issues assigned
           </h2>
@@ -72,36 +74,19 @@ export function MyIssuesList() {
             grouped by status.
           </p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
-  // Group by priority
   const groups: IssueGroup[] = [
-    {
-      label: "Urgent",
-      dot: "bg-red-400",
-      issues: issues.filter((i) => i.priority === "urgent"),
-    },
-    {
-      label: "High",
-      dot: "bg-orange-400",
-      issues: issues.filter((i) => i.priority === "high"),
-    },
-    {
-      label: "Medium",
-      dot: "bg-amber-400",
-      issues: issues.filter((i) => i.priority === "medium"),
-    },
-    {
-      label: "Low",
-      dot: "bg-zinc-500",
-      issues: issues.filter((i) => i.priority === "low"),
-    },
+    { label: "Urgent", dot: "bg-red-400", issues: issues.filter((i) => i.priority === "urgent") },
+    { label: "High", dot: "bg-orange-400", issues: issues.filter((i) => i.priority === "high") },
+    { label: "Medium", dot: "bg-amber-400", issues: issues.filter((i) => i.priority === "medium") },
+    { label: "Low", dot: "bg-zinc-500", issues: issues.filter((i) => i.priority === "low") },
   ].filter((g) => g.issues.length > 0);
 
   return (
-    <div className="p-4 space-y-6">
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="p-4 space-y-6">
       {groups.map((group) => (
         <div key={group.label}>
           <div className="flex items-center gap-2 px-2 mb-2">
@@ -116,8 +101,9 @@ export function MyIssuesList() {
 
           <div className="space-y-0.5">
             {group.issues.map((issue) => (
-              <div
+              <motion.div
                 key={issue.id}
+                variants={staggerItem}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer group"
               >
                 <Circle size={14} className="text-[#444] shrink-0" />
@@ -136,11 +122,11 @@ export function MyIssuesList() {
                 >
                   {issue.issue_type}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 }

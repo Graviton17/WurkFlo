@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   const userProfile = profileResult.success ? profileResult.data : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#111113]">
+    <div className="flex min-h-screen flex-col bg-[#0c0c0d]">
       <DashboardNavbar initialUser={user} userProfile={userProfile} workspaces={workspaces} />
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

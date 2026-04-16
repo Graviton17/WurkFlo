@@ -21,11 +21,11 @@ export default async function InboxPage() {
 
   return (
     <SidebarLayoutWrapper>
-      <div className="flex flex-col w-full h-full bg-[#111113] text-[#e5e7eb]">
+      <div className="flex flex-col w-full h-full bg-[#0c0c0d] text-[#e5e7eb]">
         {/* Header */}
         <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/[0.06] shrink-0">
-          <Inbox size={18} className="text-[#666]" />
-          <h1 className="text-[15px] font-semibold text-[#ddd] tracking-tight">
+          <Inbox size={18} className="text-[#ff1f1f]/60" />
+          <h1 className="text-[15px] font-semibold text-white tracking-tight">
             Inbox
           </h1>
         </div>

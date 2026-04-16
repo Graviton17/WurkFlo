@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Inbox,
@@ -54,7 +55,7 @@ export function AppSidebar({
 
   if (collapsed) {
     return (
-      <aside className="w-[52px] h-full flex flex-col items-center py-3 bg-[#0c0c0e] border-r border-white/[0.06] shrink-0 transition-all duration-200">
+      <aside className="w-[52px] h-full flex flex-col items-center py-3 bg-[#0a0a0a]/70 backdrop-blur-xl border-r border-white/[0.06] shrink-0 transition-all duration-200">
         <button
           onClick={() => setCollapsed(false)}
           className="p-2 text-[#666] hover:text-[#aaa] hover:bg-white/5 rounded-lg transition-colors mb-4"
@@ -68,7 +69,7 @@ export function AppSidebar({
             href="/dashboard/inbox"
             className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
               isActive("/dashboard/inbox")
-                ? "bg-white/10 text-white"
+                ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
                 : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
             }`}
             title="Inbox"
@@ -79,7 +80,7 @@ export function AppSidebar({
             href="/dashboard/my-issues"
             className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
               isActive("/dashboard/my-issues")
-                ? "bg-white/10 text-white"
+                ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
                 : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
             }`}
             title="My Issues"
@@ -102,7 +103,7 @@ export function AppSidebar({
   }
 
   return (
-    <aside className="w-[260px] h-full flex flex-col bg-[#0c0c0e] border-r border-white/[0.06] shrink-0 transition-all duration-200 overflow-hidden">
+    <aside className="w-[260px] h-full flex flex-col bg-[#0a0a0a]/70 backdrop-blur-xl border-r border-white/[0.06] shrink-0 transition-all duration-200 overflow-hidden">
       {/* Workspace Switcher */}
       <div className="px-3 pt-3 pb-1">
         <div className="relative">
@@ -110,7 +111,7 @@ export function AppSidebar({
             onClick={() => setWorkspaceSwitcherOpen(!workspaceSwitcherOpen)}
             className="w-full flex items-center gap-2.5 px-2.5 py-2 hover:bg-white/[0.04] rounded-lg transition-colors text-left group"
           >
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[11px] font-bold leading-none shrink-0 shadow-sm">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#ff1f1f] to-[#3c00ff] text-white flex items-center justify-center text-[11px] font-bold leading-none shrink-0 shadow-sm">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <span className="text-[13.5px] font-semibold text-[#e0e0e0] truncate flex-1">
@@ -123,41 +124,49 @@ export function AppSidebar({
           </button>
 
           {/* Workspace Dropdown */}
-          {workspaceSwitcherOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#18181b] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/60 z-50 py-1.5 max-h-[300px] overflow-y-auto">
-              {workspaces.map((ws) => (
-                <button
-                  key={ws.id}
-                  onClick={() => {
-                    router.push(`/dashboard/workspace/${ws.id}`);
-                    setWorkspaceSwitcherOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors ${
-                    ws.id === activeWorkspaceId
-                      ? "text-white bg-white/[0.04]"
-                      : "text-[#999]"
-                  }`}
-                >
-                  <div className="w-5 h-5 rounded bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                    {ws.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-[13px] font-medium truncate">
-                    {ws.name}
-                  </span>
-                </button>
-              ))}
-              <div className="border-t border-white/[0.06] mt-1.5 pt-1.5">
-                <Link
-                  href="/dashboard/new"
-                  onClick={() => setWorkspaceSwitcherOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 text-[#777] hover:text-[#ccc] hover:bg-white/[0.04] transition-colors text-[13px]"
-                >
-                  <Plus size={14} />
-                  <span>Create workspace</span>
-                </Link>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {workspaceSwitcherOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute top-full left-0 right-0 mt-1 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/60 z-50 py-1.5 max-h-[300px] overflow-y-auto"
+              >
+                {workspaces.map((ws) => (
+                  <button
+                    key={ws.id}
+                    onClick={() => {
+                      router.push(`/dashboard/workspace/${ws.id}`);
+                      setWorkspaceSwitcherOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors ${
+                      ws.id === activeWorkspaceId
+                        ? "text-white bg-white/[0.04]"
+                        : "text-[#999]"
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded bg-gradient-to-br from-[#ff1f1f] to-[#3c00ff] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {ws.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[13px] font-medium truncate">
+                      {ws.name}
+                    </span>
+                  </button>
+                ))}
+                <div className="border-t border-white/[0.06] mt-1.5 pt-1.5">
+                  <Link
+                    href="/dashboard/new"
+                    onClick={() => setWorkspaceSwitcherOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 text-[#777] hover:text-[#ccc] hover:bg-white/[0.04] transition-colors text-[13px]"
+                  >
+                    <Plus size={14} />
+                    <span>Create workspace</span>
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -195,7 +204,7 @@ export function AppSidebar({
           href="/dashboard/inbox"
           className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${
             isActive("/dashboard/inbox")
-              ? "bg-white/[0.08] text-white"
+              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
               : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
           }`}
         >
@@ -207,7 +216,7 @@ export function AppSidebar({
           href="/dashboard/my-issues"
           className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${
             isActive("/dashboard/my-issues")
-              ? "bg-white/[0.08] text-white"
+              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
               : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
           }`}
         >
@@ -259,7 +268,7 @@ export function AppSidebar({
                   href={`/dashboard/project/${project.id}/board`}
                   className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] group ${
                     isActivePrefix(`/dashboard/project/${project.id}`)
-                      ? "bg-white/[0.08] text-white font-medium"
+                      ? "bg-[#ff1f1f]/10 text-[#ff1f1f] font-medium"
                       : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
                   }`}
                 >
