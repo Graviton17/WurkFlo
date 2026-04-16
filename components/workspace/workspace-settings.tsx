@@ -1,51 +1,28 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, Trash2, AlertTriangle } from "lucide-react";
-import { updateWorkspaceAction, deleteWorkspaceAction } from "@/app/actions/workspace.actions";
+import { useWorkspaceSettings } from "@/hooks/use-workspace-settings";
 import { Workspace } from "@/types/index";
 
 export function WorkspaceSettings({ workspace }: { workspace: Workspace }) {
-  const router = useRouter();
-  const [name, setName] = useState(workspace.name);
-  const [slug, setSlug] = useState(workspace.slug);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [statusMsg, setStatusMsg] = useState({ text: "", type: "" });
-
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatusMsg({ text: "", type: "" });
-    startTransition(async () => {
-      const res = await updateWorkspaceAction(workspace.id, { name, slug });
-      if (res.success) {
-        setStatusMsg({ text: "Workspace updated successfully!", type: "success" });
-        router.refresh();
-      } else {
-        setStatusMsg({ text: res.error || "Failed to update workspace", type: "error" });
-      }
-    });
-  };
-
-  const handleDelete = () => {
-    if (deleteConfirm !== workspace.name) return;
-
-    setStatusMsg({ text: "", type: "" });
-    startTransition(async () => {
-      const res = await deleteWorkspaceAction(workspace.id);
-      if (res.success) {
-        router.push("/dashboard");
-      } else {
-        setStatusMsg({ text: res.error || "Failed to delete workspace", type: "error" });
-      }
-    });
-  };
-
-  const hasChanges = name !== workspace.name || slug !== workspace.slug;
+  const {
+    name,
+    setName,
+    slug,
+    setSlug,
+    deleteConfirm,
+    setDeleteConfirm,
+    hasChanges,
+    isPending,
+    updateStatus,
+    deleteStatus,
+    handleUpdate,
+    handleDelete,
+  } = useWorkspaceSettings(workspace);
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-12">
@@ -91,9 +68,9 @@ export function WorkspaceSettings({ workspace }: { workspace: Workspace }) {
 
           <div className="pt-4 flex items-center justify-between">
             <div className="text-sm">
-              {statusMsg.text && !statusMsg.text.includes("Only") && (
-                <span className={statusMsg.type === "error" ? "text-[#ec7c8a]" : "text-green-500"}>
-                  {statusMsg.text}
+              {updateStatus.text && (
+                <span className={updateStatus.type === "error" ? "text-[#ec7c8a]" : "text-green-500"}>
+                  {updateStatus.text}
                 </span>
               )}
             </div>
@@ -140,8 +117,8 @@ export function WorkspaceSettings({ workspace }: { workspace: Workspace }) {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                {statusMsg.text && statusMsg.text.includes("Only") && (
-                  <span className="text-[#ec7c8a]">{statusMsg.text}</span>
+                {deleteStatus.text && (
+                  <span className="text-[#ec7c8a]">{deleteStatus.text}</span>
                 )}
               </div>
               <Button

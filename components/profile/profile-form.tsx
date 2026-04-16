@@ -1,62 +1,26 @@
 "use client";
 
-import React, { useState, useRef, useTransition } from "react";
+import React from "react";
 import { User } from "@/types/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Camera, Loader2, Save } from "lucide-react";
-import { updateUserProfile } from "@/app/actions/user.actions";
+import { useProfileForm } from "@/hooks/use-profile-form";
 
 export function ProfileForm({ user }: { user: User }) {
-  const [fullName, setFullName] = useState(user.full_name || "");
-  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || "");
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  
-  const [isPending, startTransition] = useTransition();
-  const [statusMsg, setStatusMsg] = useState({ text: "", type: "" });
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Locally preview the image
-    const objectUrl = URL.createObjectURL(file);
-    setAvatarUrl(objectUrl);
-    setPendingFile(file);
-    setStatusMsg({ text: "Unsaved changes...", type: "info" });
-  };
-
-  const handleSave = () => {
-    setStatusMsg({ text: "", type: "" });
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("fullName", fullName);
-      if (pendingFile) {
-        formData.append("file", pendingFile);
-      }
-
-      const res = await updateUserProfile(formData);
-      
-      if (res.success) {
-        setStatusMsg({ text: "Profile automatically updated!", type: "success" });
-        if (res.data?.avatarUrl) {
-           setAvatarUrl(res.data.avatarUrl);
-        }
-        setPendingFile(null);
-      } else {
-        setStatusMsg({ text: res.error || "Failed to update profile", type: "error" });
-      }
-    });
-  };
-
-  const hasChanges = fullName !== (user.full_name || "") || pendingFile !== null;
+  const {
+    fullName,
+    setFullName,
+    avatarUrl,
+    fileInputRef,
+    isPending,
+    status,
+    hasChanges,
+    handleAvatarClick,
+    handleFileChange,
+    handleSave,
+  } = useProfileForm(user);
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
@@ -117,12 +81,7 @@ export function ProfileForm({ user }: { user: User }) {
               <Input
                 id="fullName"
                 value={fullName}
-                onChange={(e) => {
-                  setFullName(e.target.value);
-                  if (!statusMsg.text.includes("Unsaved")) {
-                    setStatusMsg({ text: "Unsaved changes...", type: "info" });
-                  }
-                }}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Enter your full name"
                 className="bg-[#0e0e10] border-white/10 text-[#e7e4ec] placeholder:text-[#565457] focus-visible:ring-[#c6c6c7]/50"
               />
@@ -133,9 +92,9 @@ export function ProfileForm({ user }: { user: User }) {
         {/* Footer actions */}
         <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
           <div className="text-sm">
-            {statusMsg.text && (
-              <span className={statusMsg.type === "error" ? "text-[#ec7c8a]" : statusMsg.type === "success" ? "text-green-500" : "text-[#acaab1]"}>
-                {statusMsg.text}
+            {status.text && (
+              <span className={status.type === "error" ? "text-[#ec7c8a]" : status.type === "success" ? "text-green-500" : "text-[#acaab1]"}>
+                {status.text}
               </span>
             )}
           </div>

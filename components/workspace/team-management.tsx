@@ -1,15 +1,11 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, UserPlus, ShieldAlert, Trash2 } from "lucide-react";
-import {
-  addWorkspaceMemberAction,
-  removeWorkspaceMemberAction,
-  updateWorkspaceMemberRoleAction
-} from "@/app/actions/workspace.actions";
+import { Loader2, UserPlus, Trash2 } from "lucide-react";
+import { useTeamManagement } from "@/hooks/use-team-management";
 
 type MemberWithUser = {
   workspace_id: string;
@@ -31,56 +27,18 @@ export function TeamManagement({
   workspaceId: string;
   initialMembers: MemberWithUser[];
 }) {
-  const [members, setMembers] = useState<MemberWithUser[]>(initialMembers || []);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("member");
-  const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState({ text: "", type: "" });
-
-  const handleInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail.trim()) return;
-
-    setMessage({ text: "", type: "" });
-    startTransition(async () => {
-      const res = await addWorkspaceMemberAction(workspaceId, inviteEmail, inviteRole);
-      if (res.success) {
-        setMessage({ text: "Member added successfully! Refresh to see them in the list.", type: "success" });
-        setInviteEmail("");
-        // In a real app we'd push the new member to state, 
-        // but since we only have email, we wait for an automated refresh or just show success.
-      } else {
-        setMessage({ text: res.error || "Failed to invite member", type: "error" });
-      }
-    });
-  };
-
-  const handleRoleChange = (userId: string, newRole: string) => {
-    startTransition(async () => {
-      const res = await updateWorkspaceMemberRoleAction(workspaceId, userId, newRole);
-      if (res.success) {
-        setMembers((prev) =>
-          prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m))
-        );
-      } else {
-        setMessage({ text: res.error || "Failed to update role", type: "error" });
-      }
-    });
-  };
-
-  const handleRemove = (userId: string) => {
-    const confirmRemove = window.confirm("Are you sure you want to remove this member?");
-    if (!confirmRemove) return;
-
-    startTransition(async () => {
-      const res = await removeWorkspaceMemberAction(workspaceId, userId);
-      if (res.success) {
-        setMembers((prev) => prev.filter((m) => m.user_id !== userId));
-      } else {
-        setMessage({ text: res.error || "Failed to remove member", type: "error" });
-      }
-    });
-  };
+  const {
+    members,
+    inviteEmail,
+    setInviteEmail,
+    inviteRole,
+    setInviteRole,
+    isPending,
+    message,
+    handleInvite,
+    handleRoleChange,
+    handleRemove,
+  } = useTeamManagement(workspaceId, initialMembers);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-10 group">
