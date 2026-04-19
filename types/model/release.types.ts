@@ -12,3 +12,9 @@ export interface Release {
 export interface ReleaseWithIssues extends Release {
   issues: IssueWithRelations[];
 }
+
+/** Release with aggregated issue progress */
+export interface ReleaseWithProgress extends Release {
+  total_issues: number;
+  completed_issues: number;
+}

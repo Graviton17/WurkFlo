@@ -15,6 +15,7 @@ export async function getSprintBoardData(projectId: string): Promise<
     workflowStates: WorkflowState[];
     issues: IssueWithRelations[];
     projectIdentifier: string;
+    workspaceId: string;
   }>
 > {
   try {
@@ -42,7 +43,7 @@ export async function getSprintBoardData(projectId: string): Promise<
 
     return {
       success: true,
-      data: { activeSprint, workflowStates, issues, projectIdentifier },
+      data: { activeSprint, workflowStates, issues, projectIdentifier, workspaceId: projectRes.data?.workspace_id ?? "" },
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to load board data";
@@ -52,27 +53,37 @@ export async function getSprintBoardData(projectId: string): Promise<
 }
 
 /**
- * Fetch backlog data: issues with no sprint assigned + project identifier.
+ * Fetch backlog data: issues with no sprint or in planned sprints,
+ * plus list of planned sprints for DnD drop zones.
  */
 export async function getBacklogData(projectId: string): Promise<
   ActionResult<{
     issues: IssueWithRelations[];
     projectIdentifier: string;
+    plannedSprints: Sprint[];
+    workspaceId: string;
   }>
 > {
   try {
     await requireUser();
 
-    const [projectRes, issuesRes] = await Promise.all([
+    const [projectRes, issuesRes, sprintsRes] = await Promise.all([
       projectService.getProjectById(projectId),
       issueService.getBacklog(projectId),
+      sprintService.getSprintsByProject(projectId),
     ]);
+
+    // Filter to only planned sprints
+    const allSprints = sprintsRes.data ?? [];
+    const plannedSprints = allSprints.filter((s) => s.status === "planned");
 
     return {
       success: true,
       data: {
         issues: issuesRes.data ?? [],
         projectIdentifier: projectRes.data?.identifier ?? "",
+        plannedSprints,
+        workspaceId: projectRes.data?.workspace_id ?? "",
       },
     };
   } catch (error) {

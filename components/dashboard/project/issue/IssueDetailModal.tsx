@@ -1,59 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useTransition } from "react";
 import {
   X,
   User,
   Tag,
   Milestone,
   Kanban,
-  Bug,
   AlertCircle,
   GitBranch,
   GitPullRequest,
   CheckCircle,
-  XCircle,
   Hash,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Issue } from "@/types/index";
+import type { IssueWithRelations, WorkflowState } from "@/types/index";
+import { updateIssueProperty } from "@/app/actions/issue.actions";
+import { AssigneePicker } from "@/components/dashboard/issues/AssigneePicker";
 
 interface IssueDetailModalProps {
-  issue: Issue | null;
+  issue: IssueWithRelations;
   projectIdentifier?: string;
+  workflowStates?: WorkflowState[];
+  workspaceId?: string;
   onClose: () => void;
+  onUpdate?: (updated: IssueWithRelations) => void;
 }
 
 const PRIORITY_OPTIONS = [
-  { value: "urgent", label: "Urgent", color: "text-red-400" },
-  { value: "high", label: "High", color: "text-orange-400" },
-  { value: "medium", label: "Medium", color: "text-amber-400" },
-  { value: "low", label: "Low", color: "text-zinc-400" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "todo", label: "Todo", dot: "bg-zinc-400" },
-  { value: "in_progress", label: "In Progress", dot: "bg-amber-400" },
-  { value: "done", label: "Done", dot: "bg-emerald-400" },
+  { value: "urgent", label: "Urgent", color: "text-red-400", bg: "bg-red-500/10 border-red-500/15" },
+  { value: "high", label: "High", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/15" },
+  { value: "medium", label: "Medium", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/15" },
+  { value: "low", label: "Low", color: "text-zinc-400", bg: "bg-zinc-500/10 border-zinc-500/15" },
 ];
 
 export function IssueDetailModal({
   issue,
   projectIdentifier,
+  workflowStates = [],
+  workspaceId,
   onClose,
+  onUpdate,
 }: IssueDetailModalProps) {
   const [description, setDescription] = useState(
     typeof issue?.description === "string" ? issue.description : ""
   );
+  const [estimate, setEstimate] = useState(
+    issue.estimate != null ? String(issue.estimate) : ""
+  );
+  const [editingEstimate, setEditingEstimate] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   if (!issue) return null;
 
   const identifier = projectIdentifier
     ? `${projectIdentifier}-${issue.sequence_id}`
     : `#${issue.sequence_id}`;
-  const priority =
+  const currentPriority =
     PRIORITY_OPTIONS.find((p) => p.value === issue.priority) ||
     PRIORITY_OPTIONS[2];
+  const currentState = workflowStates.find((s) => s.id === issue.state_id);
+
+  // Generic property updater with optimistic update
+  const saveProperty = useCallback(
+    (field: string, value: unknown) => {
+      startTransition(async () => {
+        const result = await updateIssueProperty(issue.id, { [field]: value });
+        if (result.success && result.data) {
+          onUpdate?.({ ...issue, ...result.data } as IssueWithRelations);
+        }
+      });
+    },
+    [issue, onUpdate],
+  );
+
+  const handleDescriptionBlur = () => {
+    const current =
+      typeof issue.description === "string" ? issue.description : "";
+    if (description !== current) {
+      saveProperty("description", description || null);
+    }
+  };
+
+  const handleEstimateSubmit = () => {
+    setEditingEstimate(false);
+    const num = estimate.trim() ? parseInt(estimate, 10) : null;
+    if (isNaN(num as any) && num !== null) return;
+    if (num !== issue.estimate) {
+      saveProperty("estimate", num);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -87,6 +123,11 @@ export function IssueDetailModal({
                   Bug
                 </span>
               )}
+              {isPending && (
+                <span className="text-[10px] text-[#555] animate-pulse">
+                  Saving...
+                </span>
+              )}
             </div>
             <button
               onClick={onClose}
@@ -105,7 +146,7 @@ export function IssueDetailModal({
                 {issue.title}
               </h2>
 
-              {/* Description */}
+              {/* Description — saves on blur */}
               <div className="mb-8">
                 <label className="block text-[11px] font-semibold text-[#555] uppercase tracking-wider mb-2.5">
                   Description
@@ -113,6 +154,7 @@ export function IssueDetailModal({
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  onBlur={handleDescriptionBlur}
                   placeholder="Add a description..."
                   rows={6}
                   className="w-full bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.1] focus:border-indigo-500/30 focus:ring-1 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-[13.5px] text-[#ccc] placeholder:text-[#444] outline-none transition-all resize-none leading-relaxed"
@@ -126,7 +168,7 @@ export function IssueDetailModal({
                     Reproduction Steps
                   </label>
                   <textarea
-                    placeholder="1. Navigate to the page&#10;2. Click the button&#10;3. Observe the error"
+                    placeholder={"1. Navigate to the page\n2. Click the button\n3. Observe the error"}
                     rows={4}
                     className="w-full bg-red-500/[0.02] border border-red-500/[0.08] hover:border-red-500/[0.15] focus:border-red-500/30 focus:ring-1 focus:ring-red-500/20 rounded-xl px-4 py-3 text-[13.5px] text-[#ccc] placeholder:text-[#444] outline-none transition-all resize-none leading-relaxed"
                   />
@@ -139,14 +181,12 @@ export function IssueDetailModal({
                   DevOps
                 </label>
                 <div className="space-y-2.5">
-                  {/* Git Branch */}
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
                     <GitBranch size={15} className="text-[#666] shrink-0" />
                     <span className="text-[12.5px] text-[#777] font-mono">
                       No linked branches
                     </span>
                   </div>
-                  {/* Pull Request */}
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
                     <GitPullRequest
                       size={15}
@@ -156,7 +196,6 @@ export function IssueDetailModal({
                       No pull requests
                     </span>
                   </div>
-                  {/* CI/CD */}
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
                     <CheckCircle size={15} className="text-[#666] shrink-0" />
                     <span className="text-[12.5px] text-[#777]">
@@ -174,51 +213,100 @@ export function IssueDetailModal({
               </h3>
 
               <div className="space-y-4">
-                {/* Status */}
+                {/* Status — real workflow states */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Status
                   </label>
-                  <select className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer">
-                    {STATUS_OPTIONS.map((s) => (
-                      <option key={s.value} value={s.value}>
-                        {s.label}
+                  {workflowStates.length > 0 ? (
+                    <select
+                      value={issue.state_id || ""}
+                      onChange={(e) =>
+                        saveProperty("state_id", e.target.value || null)
+                      }
+                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="">Unassigned</option>
+                      {workflowStates.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888]">
+                      {currentState?.name || issue.workflow_state?.name || "—"}
+                    </div>
+                  )}
+                </div>
+
+                {/* Priority — clickable */}
+                <div>
+                  <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
+                    Priority
+                  </label>
+                  <select
+                    value={issue.priority}
+                    onChange={(e) => saveProperty("priority", e.target.value)}
+                    className={`w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer ${currentPriority.color}`}
+                  >
+                    {PRIORITY_OPTIONS.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Priority */}
-                <div>
-                  <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
-                    Priority
-                  </label>
-                  <div
-                    className={`px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] ${priority.color}`}
-                  >
-                    {priority.label}
-                  </div>
-                </div>
-
-                {/* Assignee */}
+                {/* Assignee — functional picker */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Assignee
                   </label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888]">
-                    <User size={13} />
-                    <span>{issue.assignee_id ? "Assigned" : "Unassigned"}</span>
-                  </div>
+                  {workspaceId ? (
+                    <AssigneePicker
+                      workspaceId={workspaceId}
+                      selectedUserId={issue.assignee_id}
+                      onSelect={(userId) => saveProperty("assignee_id", userId)}
+                      compact
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888]">
+                      <User size={13} />
+                      <span>
+                        {issue.assignee?.full_name ||
+                          (issue.assignee_id ? "Assigned" : "Unassigned")}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Story Points */}
+                {/* Story Points — inline edit */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Story Points
                   </label>
-                  <div className="px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888] font-mono">
-                    {issue.estimate || "—"}
-                  </div>
+                  {editingEstimate ? (
+                    <input
+                      type="number"
+                      autoFocus
+                      value={estimate}
+                      onChange={(e) => setEstimate(e.target.value)}
+                      onBlur={handleEstimateSubmit}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleEstimateSubmit();
+                        if (e.key === "Escape") setEditingEstimate(false);
+                      }}
+                      className="w-full bg-white/[0.06] border border-white/20 rounded-lg px-3 py-2 text-[12.5px] text-white font-mono outline-none focus:ring-1 focus:ring-indigo-500/30"
+                    />
+                  ) : (
+                    <div
+                      onClick={() => setEditingEstimate(true)}
+                      className="px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888] font-mono cursor-pointer hover:border-white/[0.12] hover:text-white transition-all"
+                    >
+                      {issue.estimate || "—"}
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t border-white/[0.04] pt-4 mt-4" />
@@ -230,7 +318,9 @@ export function IssueDetailModal({
                   </label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                     <Milestone size={13} />
-                    <span>{issue.epic_id ? "Linked" : "None"}</span>
+                    <span>
+                      {issue.epic?.name || (issue.epic_id ? "Linked" : "None")}
+                    </span>
                   </div>
                 </div>
 
@@ -241,7 +331,10 @@ export function IssueDetailModal({
                   </label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                     <Kanban size={13} />
-                    <span>{issue.sprint_id ? "Active" : "No sprint"}</span>
+                    <span>
+                      {issue.sprint?.name ||
+                        (issue.sprint_id ? "Active" : "No sprint")}
+                    </span>
                   </div>
                 </div>
 
@@ -252,7 +345,10 @@ export function IssueDetailModal({
                   </label>
                   <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                     <Tag size={13} />
-                    <span>{issue.release_id ? "Linked" : "None"}</span>
+                    <span>
+                      {issue.release?.version ||
+                        (issue.release_id ? "Linked" : "None")}
+                    </span>
                   </div>
                 </div>
               </div>

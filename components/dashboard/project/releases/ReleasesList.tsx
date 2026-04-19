@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState } from "react";
 import {
   Calendar,
   CheckCircle2,
@@ -9,14 +9,21 @@ import {
   Package,
   Tag,
   Loader2,
+  Clock,
 } from "lucide-react";
-import type { Release, IssueWithRelations } from "@/types/index";
+import type { ReleaseWithProgress, IssueWithRelations } from "@/types/index";
 import { getReleaseChangelog } from "@/app/actions/release.actions";
 
 interface ReleasesListProps {
-  releases: Release[];
+  releases: ReleaseWithProgress[];
   projectIdentifier?: string;
 }
+
+const STATE_DOT: Record<string, string> = {
+  todo: "bg-zinc-400",
+  in_progress: "bg-amber-400",
+  done: "bg-emerald-400",
+};
 
 export function ReleasesList({
   releases,
@@ -59,15 +66,38 @@ export function ReleasesList({
     );
   }
 
+  // Sort: upcoming first, then released (by date descending)
+  const sorted = [...releases].sort((a, b) => {
+    const aReleased = a.release_date
+      ? new Date(a.release_date) <= new Date()
+      : false;
+    const bReleased = b.release_date
+      ? new Date(b.release_date) <= new Date()
+      : false;
+
+    if (aReleased !== bReleased) return aReleased ? 1 : -1;
+    // Within same group, sort by date descending
+    const aDate = a.release_date ? new Date(a.release_date).getTime() : 0;
+    const bDate = b.release_date ? new Date(b.release_date).getTime() : 0;
+    return bDate - aDate;
+  });
+
   return (
     <div className="space-y-4 p-6">
-      {releases.map((release) => {
+      {sorted.map((release) => {
         const isReleased = release.release_date
           ? new Date(release.release_date) <= new Date()
           : false;
         const isExpanded = expandedId === release.id;
         const releaseIssues = changelogMap[release.id] || [];
         const isLoading = loadingId === release.id;
+
+        const progress =
+          release.total_issues > 0
+            ? Math.round(
+                (release.completed_issues / release.total_issues) * 100,
+              )
+            : 0;
 
         return (
           <div
@@ -104,9 +134,13 @@ export function ReleasesList({
                 <div>
                   <h3 className="text-[14px] font-semibold text-[#ddd] flex items-center gap-2">
                     {release.version}
-                    {isReleased && (
+                    {isReleased ? (
                       <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/15">
                         Released
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/15">
+                        Upcoming
                       </span>
                     )}
                   </h3>
@@ -120,6 +154,30 @@ export function ReleasesList({
                     </span>
                   )}
                 </div>
+              </div>
+
+              {/* Issue count + progress */}
+              <div className="flex items-center gap-3">
+                {release.total_issues > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isReleased
+                            ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
+                            : "bg-gradient-to-r from-[#ff1f1f] to-[#ff1f1f]/60"
+                        }`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] text-[#555] font-mono">
+                      {progress}%
+                    </span>
+                  </div>
+                )}
+                <span className="text-[11px] text-[#555] font-mono bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/[0.04]">
+                  {release.total_issues} issues
+                </span>
               </div>
             </button>
 
@@ -142,6 +200,12 @@ export function ReleasesList({
                     const identifier = projectIdentifier
                       ? `${projectIdentifier}-${issue.sequence_id}`
                       : `#${issue.sequence_id}`;
+                    const stateCategory =
+                      issue.workflow_state?.category || "todo";
+                    const stateName = issue.workflow_state?.name || "—";
+                    const stateDot =
+                      STATE_DOT[stateCategory] || STATE_DOT.todo;
+
                     return (
                       <div
                         key={issue.id}
@@ -151,15 +215,18 @@ export function ReleasesList({
                             : ""
                         }`}
                       >
-                        <CheckCircle2
-                          size={14}
-                          className="text-emerald-500/60 shrink-0"
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${stateDot}`}
                         />
                         <span className="text-[11px] font-mono text-[#555] w-20">
                           {identifier}
                         </span>
                         <span className="text-[13px] text-[#bbb] flex-1 truncate">
                           {issue.title}
+                        </span>
+                        {/* Workflow state badge */}
+                        <span className="text-[10px] text-[#555] bg-white/[0.03] px-1.5 py-0.5 rounded border border-white/[0.04]">
+                          {stateName}
                         </span>
                         <span
                           className={`text-[10px] font-medium uppercase ${

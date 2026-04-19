@@ -1,32 +1,25 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./KanbanColumn";
-import type { Issue, WorkflowState } from "@/types/index";
+import type { IssueWithRelations, WorkflowState } from "@/types/index";
 
 interface KanbanBoardProps {
   workflowStates: WorkflowState[];
-  issues: Issue[];
+  issues: IssueWithRelations[];
   projectIdentifier?: string;
-  onIssueClick?: (issue: Issue) => void;
+  onIssueClick?: (issue: IssueWithRelations) => void;
   onIssueMoved?: (issueId: string, newStateId: string) => void;
 }
 
 export function KanbanBoard({
   workflowStates,
-  issues: initialIssues,
+  issues,
   projectIdentifier,
   onIssueClick,
   onIssueMoved,
 }: KanbanBoardProps) {
-  const [issues, setIssues] = useState<Issue[]>(initialIssues);
-
-  // Keep local state in sync when the parent updates issues (e.g. after error revert)
-  useEffect(() => {
-    setIssues(initialIssues);
-  }, [initialIssues]);
-
   // Sort workflow states by position
   const sortedStates = [...workflowStates].sort(
     (a, b) => a.position - b.position
@@ -48,16 +41,7 @@ export function KanbanBoard({
       )
         return;
 
-      // Optimistic update
-      setIssues((prev) =>
-        prev.map((issue) =>
-          issue.id === draggableId
-            ? { ...issue, state_id: destination.droppableId }
-            : issue
-        )
-      );
-
-      // Notify parent to persist
+      // Notify parent to persist (parent handles optimistic state)
       onIssueMoved?.(draggableId, destination.droppableId);
     },
     [onIssueMoved]
@@ -79,3 +63,4 @@ export function KanbanBoard({
     </DragDropContext>
   );
 }
+

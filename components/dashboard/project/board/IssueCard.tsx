@@ -1,12 +1,12 @@
 "use client";
 
 import { User, AlertCircle } from "lucide-react";
-import type { Issue } from "@/types/index";
+import type { IssueWithRelations } from "@/types/index";
 
 interface IssueCardProps {
-  issue: Issue;
+  issue: IssueWithRelations;
   projectIdentifier?: string;
-  onClick?: (issue: Issue) => void;
+  onClick?: (issue: IssueWithRelations) => void;
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
@@ -31,10 +31,6 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
   },
 };
 
-const TYPE_ICON: Record<string, React.ReactNode> = {
-  bug: <AlertCircle size={12} className="text-red-400" />,
-};
-
 export function IssueCard({
   issue,
   projectIdentifier,
@@ -44,6 +40,16 @@ export function IssueCard({
   const identifier = projectIdentifier
     ? `${projectIdentifier}-${issue.sequence_id}`
     : `#${issue.sequence_id}`;
+
+  const assignee = issue.assignee;
+  const initials = assignee?.full_name
+    ? assignee.full_name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : null;
 
   return (
     <div
@@ -82,9 +88,21 @@ export function IssueCard({
             </span>
           )}
         </div>
-        <div className="w-6 h-6 rounded-full bg-[#111] flex items-center justify-center border border-white/20 ring-1 ring-white/10">
-          <User size={12} className="text-white" />
-        </div>
+        {/* Assignee avatar */}
+        {assignee && initials ? (
+          <div
+            className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center border border-white/20 ring-1 ring-white/10"
+            title={assignee.full_name || ""}
+          >
+            <span className="text-[9px] font-bold text-white/80">
+              {initials}
+            </span>
+          </div>
+        ) : (
+          <div className="w-6 h-6 rounded-full bg-[#111] flex items-center justify-center border border-white/20 ring-1 ring-white/10">
+            <User size={12} className="text-white/50" />
+          </div>
+        )}
       </div>
     </div>
   );

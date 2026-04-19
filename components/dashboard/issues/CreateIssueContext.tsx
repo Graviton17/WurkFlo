@@ -64,8 +64,6 @@ export function CreateIssueProvider({
         states={states}
         defaultStateId={defaultStateId}
         onSuccess={(issue) => {
-          // You might trigger a project reload or global issue re-fetch here if necessary.
-          // For now, refreshing the router ensures the active page's async fetch picks up the new issue.
           router.refresh();
         }}
       />

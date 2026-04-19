@@ -159,3 +159,34 @@ export async function getMyIssues(workspaceId: string): Promise<
     return { success: false, data: null, error: msg };
   }
 }
+
+/**
+ * Assign an issue to a sprint (or remove from sprint by passing null).
+ * Used by the backlog DnD to move issues between sprint zones.
+ */
+export async function assignIssueToSprint(
+  issueId: string,
+  sprintId: string | null,
+): Promise<ActionResult<Issue>> {
+  try {
+    await requireUser();
+    const result = await issueService.updateIssue(issueId, {
+      sprint_id: sprintId,
+    } as Partial<Issue>);
+
+    if (!result.success) {
+      return {
+        success: false,
+        data: null,
+        error: result.error?.message || "Failed to assign issue to sprint",
+      };
+    }
+
+    return { success: true, data: result.data };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to assign issue to sprint";
+    logger.error({ err: error }, "assignIssueToSprint failed");
+    return { success: false, data: null, error: msg };
+  }
+}

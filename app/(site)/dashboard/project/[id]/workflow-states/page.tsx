@@ -102,6 +102,7 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
             states={states}
             issues={issues}
             projectId={projectId}
+            workspaceId={workspaceId}
             onCreateIssue={(stateId) => {
               openCreateIssue(stateId);
             }}

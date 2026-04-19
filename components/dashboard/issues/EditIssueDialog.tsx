@@ -3,18 +3,19 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  X, Bot, User2, Tag, Calendar,
-  LayoutDashboard, Component, Link as LinkIcon,
+  X, Bot, Tag, Calendar,
 } from "lucide-react";
 import { useState } from "react";
 import { updateIssueProperty } from "@/app/actions/issue.actions";
 import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
+import { AssigneePicker } from "./AssigneePicker";
 
 interface EditIssueDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   issue: Issue;
   states: WorkflowState[];
+  workspaceId: string;
   onSuccess: (issue: Issue) => void;
 }
 
@@ -36,13 +37,14 @@ export function EditIssueDialog({
   onOpenChange,
   issue,
   states,
+  workspaceId,
   onSuccess,
 }: EditIssueDialogProps) {
   const [title,       setTitle]       = useState(issue.title);
   const [description, setDescription] = useState(issue.description || "");
-  const [sequenceId,  setSequenceId]  = useState(issue.sequence_id.toString());
   const [priority,    setPriority]    = useState<IssuePriority>(issue.priority || "medium");
   const [issueType,   setIssueType]   = useState<IssueType>(issue.issue_type || "task");
+  const [assigneeId,  setAssigneeId]  = useState<string | null>(issue.assignee_id);
   const [stateId,     setStateId]     = useState<string>(
     issue.state_id || "unassigned"
   );
@@ -53,20 +55,14 @@ export function EditIssueDialog({
   React.useEffect(() => {
     setTitle(issue.title);
     setDescription(issue.description || "");
-    setSequenceId(issue.sequence_id.toString());
     setPriority(issue.priority || "medium");
     setIssueType(issue.issue_type || "task");
+    setAssigneeId(issue.assignee_id);
     setStateId(issue.state_id || "unassigned");
   }, [issue, open]);
 
-
-
   const handleSubmit = async () => {
     if (!title.trim()) { setError("Title is required"); return; }
-    if (!sequenceId || isNaN(Number(sequenceId)) || Number(sequenceId) < 1) {
-      setError("Issue ID must be a positive number");
-      return;
-    }
     setIsSubmitting(true);
     setError("");
 
@@ -77,6 +73,7 @@ export function EditIssueDialog({
         description:  description || null,
         priority,
         issue_type:   issueType,
+        assignee_id:  assigneeId,
       });
 
       if (result.success && result.data) {
@@ -92,9 +89,6 @@ export function EditIssueDialog({
     }
   };
 
-  const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === priority)!;
-  const selectedState    = states.find((s) => s.id === stateId);
-
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -104,7 +98,12 @@ export function EditIssueDialog({
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-              <DialogPrimitive.Title className="text-lg font-semibold text-white">Edit issue</DialogPrimitive.Title>
+              <div className="flex items-center gap-3">
+                <DialogPrimitive.Title className="text-lg font-semibold text-white">Edit issue</DialogPrimitive.Title>
+                <span className="text-[11px] font-mono text-[#555] bg-white/[0.04] px-2 py-0.5 rounded-lg border border-white/[0.06]">
+                  #{issue.sequence_id}
+                </span>
+              </div>
               <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none text-white">
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>
@@ -128,29 +127,16 @@ export function EditIssueDialog({
 
             {/* Inputs */}
             <div className="flex flex-col px-6 py-4 gap-4">
-              {/* Issue ID + Title row */}
-              <div className="flex gap-3">
-                <div className="flex items-center gap-1.5 bg-[#1b1b1b] border border-white/10 rounded-lg px-3 py-3 shrink-0 w-[100px]">
-                  <span className="text-[#555] text-sm font-mono">#</span>
-                  <input
-                    type="number"
-                    min={1}
-                    value={sequenceId}
-                    onChange={(e) => setSequenceId(e.target.value)}
-                    placeholder="ID"
-                    className="w-full bg-transparent text-sm text-white placeholder:text-[#555] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                  placeholder="Issue title"
-                  autoFocus
-                  className="flex-1 bg-white/[0.03] border border-white/10 py-3 px-4 rounded-xl text-[15px] text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
-                />
-              </div>
+              {/* Title only — ID is read-only in header */}
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                placeholder="Issue title"
+                autoFocus
+                className="w-full bg-white/[0.03] border border-white/10 py-3 px-4 rounded-xl text-[15px] text-white placeholder:text-[#555] focus:outline-none focus:ring-1 focus:ring-white/20 transition-all font-medium"
+              />
 
               <div className="relative">
                 <textarea
@@ -204,22 +190,43 @@ export function EditIssueDialog({
                   ))}
                 </div>
 
-                {/* Mocked extras */}
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
-                  <User2 size={13} /> Assignees
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
-                  <Tag size={13} /> Labels
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 rounded-xl text-xs text-[#a0a0a0] transition-colors">
-                  <Calendar size={13} /> Due date
-                </button>
+                {/* Assignee — functional */}
+                <AssigneePicker
+                  workspaceId={workspaceId}
+                  selectedUserId={assigneeId}
+                  onSelect={setAssigneeId}
+                />
+
+                {/* Labels — coming soon */}
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-[#a0a0a0] opacity-50 cursor-not-allowed"
+                  >
+                    <Tag size={13} /> Labels
+                  </button>
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-[#222] text-[10px] text-[#aaa] px-2 py-1 rounded-lg border border-white/10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    Coming soon
+                  </div>
+                </div>
+
+                {/* Due date — coming soon */}
+                <div className="relative group">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-[#a0a0a0] opacity-50 cursor-not-allowed"
+                  >
+                    <Calendar size={13} /> Due date
+                  </button>
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-[#222] text-[10px] text-[#aaa] px-2 py-1 rounded-lg border border-white/10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    Coming soon
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Footer */}
             <div className="flex items-center justify-end gap-3 px-6 py-4 mt-2 border-t border-white/[0.06] bg-[#0a0a0a]/60 rounded-b-2xl">
-
 
               <button
                 onClick={() => onOpenChange(false)}

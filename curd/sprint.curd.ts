@@ -35,4 +35,23 @@ export class SprintCURD extends BaseCURD<Sprint> {
       };
     }
   }
+
+  /**
+   * Check whether a project has any sprint with status = 'active'.
+   */
+  async hasActiveSprint(projectId: string): Promise<boolean> {
+    try {
+      const db = await this.getClient();
+      const { data, error } = await db
+        .from(this.tableName)
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      return !error && data !== null;
+    } catch {
+      return false;
+    }
+  }
 }
