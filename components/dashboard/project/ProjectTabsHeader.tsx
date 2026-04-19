@@ -53,16 +53,17 @@ export function ProjectTabsHeader({
   return (
     <div className="sticky top-0 z-30 bg-[#0c0c0d]/95 backdrop-blur-md border-b border-white/[0.06]">
       {/* Project Name Row */}
-      <div className="flex items-center gap-2.5 px-6 pt-4 pb-2">
-        <div className="w-6 h-6 rounded flex items-center justify-center bg-[#111] border border-white/20 ring-1 ring-white/10 shrink-0">
-          <Hash size={13} className="text-white/70" strokeWidth={2.5} />
+      <div className="flex items-center gap-2.5 px-6 pt-3.5 pb-1.5">
+        <div className="w-5 h-5 rounded flex items-center justify-center bg-[#111] border border-white/20 ring-1 ring-white/10 shrink-0">
+          <Hash size={11} className="text-white/70" strokeWidth={2.5} />
         </div>
         {projectIdentifier && (
-          <span className="text-[12px] font-mono text-[#555] uppercase tracking-wide">
+          <span className="text-[11px] font-mono text-white/30 uppercase tracking-wide">
             {projectIdentifier}
           </span>
         )}
-        <h1 className="text-[15px] font-semibold text-[#e8e8e8] tracking-tight">
+        {projectIdentifier && <span className="text-white/[0.12] font-light text-xs">/</span>}
+        <h1 className="text-[14px] font-semibold text-white/80 tracking-tight">
           {projectName || "Project"}
         </h1>
       </div>
@@ -75,16 +76,16 @@ export function ProjectTabsHeader({
             <Link
               key={tab.id}
               href={tab.path(projectId)}
-              className={`flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium rounded-t-lg transition-all relative ${
+              className={`relative flex items-center gap-2 px-3.5 py-3 text-[13px] font-medium transition-all ${
                 isActive
                   ? "text-white"
-                  : "text-[#666] hover:text-[#aaa] hover:bg-white/[0.03]"
+                  : "text-white/40 hover:text-white/70"
               }`}
             >
-              <tab.icon size={15} className="shrink-0" />
+              <tab.icon size={15} className="shrink-0" strokeWidth={isActive ? 2.5 : 2} />
               <span>{tab.label}</span>
               {isActive && (
-                <div className="absolute bottom-0 left-3 right-3 h-[2px] bg-white rounded-full" />
+                <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-white rounded-full" />
               )}
             </Link>
           );

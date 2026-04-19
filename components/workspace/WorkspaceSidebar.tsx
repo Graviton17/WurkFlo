@@ -16,7 +16,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
   ];
 
   return (
-    <aside 
+    <aside
       className={`group transition-[width] duration-200 ease-in-out border-r border-white/[0.06] bg-[#0a0a0a]/70 backdrop-blur-xl flex flex-col z-20 shrink-0 absolute bottom-0 sm:relative min-h-[calc(100vh-3.5rem)] ${isExpanded ? 'w-[260px]' : 'w-[64px] hover:w-[260px]'}`}
     >
       {/* Top Nav Items */}
@@ -52,7 +52,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
           title={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
         >
           <div className="shrink-0 flex items-center justify-center w-5">
-             <Sidebar size={18} />
+            <Sidebar size={18} />
           </div>
           <span className={`text-[13px] font-medium transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-0' : 'opacity-0 group-hover:opacity-100 group-hover:delay-100'}`}>
             Collapse Sidebar
