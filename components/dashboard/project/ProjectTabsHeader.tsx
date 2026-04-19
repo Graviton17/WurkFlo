@@ -54,8 +54,8 @@ export function ProjectTabsHeader({
     <div className="sticky top-0 z-30 bg-[#0c0c0d]/95 backdrop-blur-md border-b border-white/[0.06]">
       {/* Project Name Row */}
       <div className="flex items-center gap-2.5 px-6 pt-4 pb-2">
-        <div className="w-6 h-6 rounded-md flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/10">
-          <Hash size={13} className="text-amber-400/80" strokeWidth={2.5} />
+        <div className="w-6 h-6 rounded flex items-center justify-center bg-[#111] border border-white/20 ring-1 ring-white/10 shrink-0">
+          <Hash size={13} className="text-white/70" strokeWidth={2.5} />
         </div>
         {projectIdentifier && (
           <span className="text-[12px] font-mono text-[#555] uppercase tracking-wide">
@@ -84,7 +84,7 @@ export function ProjectTabsHeader({
               <tab.icon size={15} className="shrink-0" />
               <span>{tab.label}</span>
               {isActive && (
-                <div className="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff1f1f] rounded-full" />
+                <div className="absolute bottom-0 left-3 right-3 h-[2px] bg-white rounded-full" />
               )}
             </Link>
           );

@@ -68,7 +68,7 @@ export function AppSidebar({
           <Link
             href="/dashboard/inbox"
             className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${isActive("/dashboard/inbox")
-              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
+              ? "bg-white/[0.08] text-white"
               : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
               }`}
             title="Inbox"
@@ -78,7 +78,7 @@ export function AppSidebar({
           <Link
             href="/dashboard/my-issues"
             className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${isActive("/dashboard/my-issues")
-              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
+              ? "bg-white/[0.08] text-white"
               : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
               }`}
             title="My Issues"
@@ -200,7 +200,7 @@ export function AppSidebar({
         <Link
           href="/dashboard/inbox"
           className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${isActive("/dashboard/inbox")
-            ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
+            ? "bg-white/[0.08] text-white"
             : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
             }`}
         >
@@ -211,7 +211,7 @@ export function AppSidebar({
         <Link
           href="/dashboard/my-issues"
           className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${isActive("/dashboard/my-issues")
-            ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
+            ? "bg-white/[0.08] text-white"
             : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
             }`}
         >
@@ -262,14 +262,14 @@ export function AppSidebar({
                   key={project.id}
                   href={`/dashboard/project/${project.id}/board`}
                   className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] group ${isActivePrefix(`/dashboard/project/${project.id}`)
-                    ? "bg-[#ff1f1f]/10 text-[#ff1f1f] font-medium"
+                    ? "bg-white/[0.08] text-white font-medium"
                     : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
                     }`}
                 >
-                  <div className="w-5 h-5 rounded flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/10 shrink-0">
+                  <div className="w-5 h-5 rounded flex items-center justify-center bg-[#111] border border-white/20 ring-1 ring-white/10 shrink-0">
                     <Hash
                       size={11}
-                      className="text-amber-400/80"
+                      className="text-white/70"
                       strokeWidth={2.5}
                     />
                   </div>
