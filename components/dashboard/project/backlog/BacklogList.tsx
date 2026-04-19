@@ -24,6 +24,7 @@ import { assignIssueToSprint, updateIssueProperty } from "@/app/actions/issue.ac
 interface BacklogListProps {
   issues: IssueWithRelations[];
   plannedSprints: Sprint[];
+  projectId?: string;
   projectIdentifier?: string;
   onIssueClick?: (issue: IssueWithRelations) => void;
   onRefresh?: () => void;
@@ -41,6 +42,7 @@ const BACKLOG_DROPPABLE = "backlog-unassigned";
 export function BacklogList({
   issues,
   plannedSprints,
+  projectId,
   projectIdentifier,
   onIssueClick,
   onRefresh,
@@ -110,7 +112,7 @@ export function BacklogList({
 
       // Persist
       startTransition(async () => {
-        const result = await assignIssueToSprint(draggableId, newSprintId);
+        const result = await assignIssueToSprint(draggableId, newSprintId, projectId);
         if (!result.success) {
           // Revert
           setLocalIssues(issues);

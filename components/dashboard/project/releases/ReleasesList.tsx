@@ -19,11 +19,7 @@ interface ReleasesListProps {
   projectIdentifier?: string;
 }
 
-const STATE_DOT: Record<string, string> = {
-  todo: "bg-zinc-400",
-  in_progress: "bg-amber-400",
-  done: "bg-emerald-400",
-};
+
 
 export function ReleasesList({
   releases,
@@ -181,7 +177,7 @@ export function ReleasesList({
               </div>
             </button>
 
-            {/* Expanded Changelog */}
+            {/* Expanded Changelog — grouped by issue type */}
             {isExpanded && (
               <div className="border-t border-white/[0.04]">
                 {isLoading ? (
@@ -196,50 +192,108 @@ export function ReleasesList({
                     No issues linked to this release
                   </div>
                 ) : (
-                  releaseIssues.map((issue, idx) => {
-                    const identifier = projectIdentifier
-                      ? `${projectIdentifier}-${issue.sequence_id}`
-                      : `#${issue.sequence_id}`;
-                    const stateCategory =
-                      issue.workflow_state?.category || "todo";
-                    const stateName = issue.workflow_state?.name || "—";
-                    const stateDot =
-                      STATE_DOT[stateCategory] || STATE_DOT.todo;
-
-                    return (
-                      <div
-                        key={issue.id}
-                        className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors ${
-                          idx !== releaseIssues.length - 1
-                            ? "border-b border-white/[0.03]"
-                            : ""
-                        }`}
-                      >
-                        <div
-                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${stateDot}`}
-                        />
-                        <span className="text-[11px] font-mono text-[#555] w-20">
-                          {identifier}
-                        </span>
-                        <span className="text-[13px] text-[#bbb] flex-1 truncate">
-                          {issue.title}
-                        </span>
-                        {/* Workflow state badge */}
-                        <span className="text-[10px] text-[#555] bg-white/[0.03] px-1.5 py-0.5 rounded border border-white/[0.04]">
-                          {stateName}
-                        </span>
-                        <span
-                          className={`text-[10px] font-medium uppercase ${
-                            issue.issue_type === "bug"
-                              ? "text-red-400"
-                              : "text-[#555]"
-                          }`}
-                        >
-                          {issue.issue_type}
-                        </span>
-                      </div>
+                  (() => {
+                    // Group issues by type for a proper changelog view
+                    const features = releaseIssues.filter(
+                      (i) => i.issue_type === "story",
                     );
-                  })
+                    const bugs = releaseIssues.filter(
+                      (i) => i.issue_type === "bug",
+                    );
+                    const tasks = releaseIssues.filter(
+                      (i) => i.issue_type === "task",
+                    );
+
+                    const groups = [
+                      {
+                        label: "Features",
+                        icon: "✨",
+                        issues: features,
+                        color: "text-purple-400",
+                      },
+                      {
+                        label: "Bug Fixes",
+                        icon: "🐛",
+                        issues: bugs,
+                        color: "text-red-400",
+                      },
+                      {
+                        label: "Tasks",
+                        icon: "📋",
+                        issues: tasks,
+                        color: "text-[#888]",
+                      },
+                    ].filter((g) => g.issues.length > 0);
+
+                    return groups.map((group, gIdx) => (
+                      <div key={group.label}>
+                        {/* Group header */}
+                        <div className="flex items-center gap-2 px-5 py-2 bg-white/[0.01] border-b border-white/[0.04]">
+                          <span className="text-[12px]">{group.icon}</span>
+                          <span
+                            className={`text-[11px] font-semibold uppercase tracking-wider ${group.color}`}
+                          >
+                            {group.label}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#444] bg-white/[0.03] px-1.5 py-0.5 rounded-full border border-white/[0.04]">
+                            {group.issues.length}
+                          </span>
+                        </div>
+                        {/* Group issues */}
+                        {group.issues.map((issue, idx) => {
+                          const identifier = projectIdentifier
+                            ? `${projectIdentifier}-${issue.sequence_id}`
+                            : `#${issue.sequence_id}`;
+                          const stateCategory =
+                            issue.workflow_state?.category || "todo";
+                          const isDone = stateCategory === "done";
+
+                          return (
+                            <div
+                              key={issue.id}
+                              className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors ${
+                                idx !== group.issues.length - 1 ||
+                                gIdx !== groups.length - 1
+                                  ? "border-b border-white/[0.03]"
+                                  : ""
+                              }`}
+                            >
+                              {/* Completion indicator */}
+                              {isDone ? (
+                                <CheckCircle2
+                                  size={14}
+                                  className="text-emerald-400 shrink-0"
+                                />
+                              ) : (
+                                <Clock
+                                  size={14}
+                                  className="text-amber-400/60 shrink-0"
+                                />
+                              )}
+                              <span className="text-[11px] font-mono text-[#555] w-20">
+                                {identifier}
+                              </span>
+                              <span
+                                className={`text-[13px] flex-1 truncate ${isDone ? "text-[#bbb]" : "text-[#888]"}`}
+                              >
+                                {issue.title}
+                              </span>
+                              {/* Completion badge */}
+                              <span
+                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+                                  isDone
+                                    ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/15"
+                                    : "text-amber-400 bg-amber-500/10 border-amber-500/15"
+                                }`}
+                              >
+                                {isDone ? "Done" : issue.workflow_state?.name || "In progress"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ));
+                  })()
                 )}
               </div>
             )}

@@ -33,10 +33,6 @@ export function AppSidebar({
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [projectsExpanded, setProjectsExpanded] = useState(true);
-  const [workspaceSwitcherOpen, setWorkspaceSwitcherOpen] = useState(false);
-
-  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
-  const displayName = activeWorkspace?.name || "Workspace";
 
   // Keyboard shortcut to toggle sidebar
   useEffect(() => {
@@ -102,71 +98,6 @@ export function AppSidebar({
 
   return (
     <aside className="w-[260px] h-full flex flex-col bg-[#0a0a0a]/70 backdrop-blur-xl border-r border-white/[0.06] shrink-0 transition-all duration-200 overflow-hidden">
-      {/* Workspace Switcher */}
-      <div className="px-3 pt-3 pb-1">
-        <div className="relative">
-          <button
-            onClick={() => setWorkspaceSwitcherOpen(!workspaceSwitcherOpen)}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 hover:bg-white/[0.04] rounded-lg transition-colors text-left group"
-          >
-            <div className="w-6 h-6 rounded-md bg-[#111] border border-white/20 ring-1 ring-white/10 text-white flex items-center justify-center text-[11px] font-bold leading-none shrink-0">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-            <span className="text-[13.5px] font-semibold text-[#e0e0e0] truncate flex-1">
-              {displayName}
-            </span>
-            <ChevronDown
-              size={14}
-              className="text-[#555] group-hover:text-[#888] shrink-0 transition-colors"
-            />
-          </button>
-
-          {/* Workspace Dropdown */}
-          <AnimatePresence>
-            {workspaceSwitcherOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute top-full left-0 right-0 mt-1 bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black/60 z-50 py-1.5 max-h-[300px] overflow-y-auto"
-              >
-                {workspaces.map((ws) => (
-                  <button
-                    key={ws.id}
-                    onClick={() => {
-                      router.push(`/dashboard/workspace/${ws.id}`);
-                      setWorkspaceSwitcherOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors ${ws.id === activeWorkspaceId
-                      ? "text-white bg-white/[0.04]"
-                      : "text-[#999]"
-                      }`}
-                  >
-                    <div className="w-5 h-5 rounded-md bg-[#111] border border-white/20 ring-1 ring-white/10 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {ws.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-[13px] font-medium truncate">
-                      {ws.name}
-                    </span>
-                  </button>
-                ))}
-                <div className="border-t border-white/[0.06] mt-1.5 pt-1.5">
-                  <Link
-                    href="/dashboard/new"
-                    onClick={() => setWorkspaceSwitcherOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-[#777] hover:text-[#ccc] hover:bg-white/[0.04] transition-colors text-[13px]"
-                  >
-                    <Plus size={14} />
-                    <span>Create workspace</span>
-                  </Link>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
       {/* Search trigger */}
       <div className="px-3 mt-1">
         <button

@@ -3,11 +3,11 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  X, Bot, Tag, Calendar,
+  X, Bot, Tag, Calendar, Timer, Milestone, Package,
 } from "lucide-react";
 import { useState } from "react";
 import { updateIssueProperty } from "@/app/actions/issue.actions";
-import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
+import { Issue, IssuePriority, IssueType, WorkflowState, Sprint, Epic, Release } from "@/types/index";
 import { AssigneePicker } from "./AssigneePicker";
 
 interface EditIssueDialogProps {
@@ -16,6 +16,9 @@ interface EditIssueDialogProps {
   issue: Issue;
   states: WorkflowState[];
   workspaceId: string;
+  sprints?: Sprint[];
+  epics?: Epic[];
+  releases?: Release[];
   onSuccess: (issue: Issue) => void;
 }
 
@@ -38,6 +41,9 @@ export function EditIssueDialog({
   issue,
   states,
   workspaceId,
+  sprints = [],
+  epics = [],
+  releases = [],
   onSuccess,
 }: EditIssueDialogProps) {
   const [title,       setTitle]       = useState(issue.title);
@@ -48,6 +54,9 @@ export function EditIssueDialog({
   const [stateId,     setStateId]     = useState<string>(
     issue.state_id || "unassigned"
   );
+  const [sprintId,   setSprintId]   = useState<string>(issue.sprint_id || "");
+  const [epicId,     setEpicId]     = useState<string>(issue.epic_id || "");
+  const [releaseId,  setReleaseId]  = useState<string>(issue.release_id || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error,        setError]        = useState("");
 
@@ -59,6 +68,9 @@ export function EditIssueDialog({
     setIssueType(issue.issue_type || "task");
     setAssigneeId(issue.assignee_id);
     setStateId(issue.state_id || "unassigned");
+    setSprintId(issue.sprint_id || "");
+    setEpicId(issue.epic_id || "");
+    setReleaseId(issue.release_id || "");
   }, [issue, open]);
 
   const handleSubmit = async () => {
@@ -74,6 +86,9 @@ export function EditIssueDialog({
         priority,
         issue_type:   issueType,
         assignee_id:  assigneeId,
+        sprint_id:    sprintId || null,
+        epic_id:      epicId || null,
+        release_id:   releaseId || null,
       });
 
       if (result.success && result.data) {
@@ -221,6 +236,56 @@ export function EditIssueDialog({
                   <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-[#222] text-[10px] text-[#aaa] px-2 py-1 rounded-lg border border-white/10 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     Coming soon
                   </div>
+                </div>
+              </div>
+
+              {/* Sprint / Epic / Release Pickers */}
+              <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-white/[0.04]">
+                {/* Sprint picker */}
+                <div className="flex items-center gap-1.5">
+                  <Timer size={13} className="text-blue-400/70" />
+                  <select
+                    value={sprintId}
+                    onChange={(e) => setSprintId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No sprint</option>
+                    {sprints.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} {s.status === "active" ? "●" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Epic picker */}
+                <div className="flex items-center gap-1.5">
+                  <Milestone size={13} className="text-[#ff1f1f]/70" />
+                  <select
+                    value={epicId}
+                    onChange={(e) => setEpicId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No epic</option>
+                    {epics.map((e) => (
+                      <option key={e.id} value={e.id}>{e.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Release picker */}
+                <div className="flex items-center gap-1.5">
+                  <Package size={13} className="text-emerald-400/70" />
+                  <select
+                    value={releaseId}
+                    onChange={(e) => setReleaseId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No release</option>
+                    {releases.map((r) => (
+                      <option key={r.id} value={r.id}>{r.version}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

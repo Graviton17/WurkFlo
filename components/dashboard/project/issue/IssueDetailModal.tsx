@@ -12,9 +12,11 @@ import {
   GitPullRequest,
   CheckCircle,
   Hash,
+  Timer,
+  Package,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { IssueWithRelations, WorkflowState } from "@/types/index";
+import type { IssueWithRelations, WorkflowState, Sprint, Epic, Release } from "@/types/index";
 import { updateIssueProperty } from "@/app/actions/issue.actions";
 import { AssigneePicker } from "@/components/dashboard/issues/AssigneePicker";
 
@@ -23,6 +25,9 @@ interface IssueDetailModalProps {
   projectIdentifier?: string;
   workflowStates?: WorkflowState[];
   workspaceId?: string;
+  sprints?: Sprint[];
+  epics?: Epic[];
+  releases?: Release[];
   onClose: () => void;
   onUpdate?: (updated: IssueWithRelations) => void;
 }
@@ -39,6 +44,9 @@ export function IssueDetailModal({
   projectIdentifier,
   workflowStates = [],
   workspaceId,
+  sprints = [],
+  epics = [],
+  releases = [],
   onClose,
   onUpdate,
 }: IssueDetailModalProps) {
@@ -311,45 +319,101 @@ export function IssueDetailModal({
 
                 <div className="border-t border-white/[0.04] pt-4 mt-4" />
 
-                {/* Epic */}
-                <div>
-                  <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
-                    Epic
-                  </label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
-                    <Milestone size={13} />
-                    <span>
-                      {issue.epic?.name || (issue.epic_id ? "Linked" : "None")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Sprint */}
+                {/* Sprint — editable dropdown */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Sprint
                   </label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
-                    <Kanban size={13} />
-                    <span>
-                      {issue.sprint?.name ||
-                        (issue.sprint_id ? "Active" : "No sprint")}
-                    </span>
-                  </div>
+                  {sprints.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Timer size={13} className="text-blue-400/70 shrink-0" />
+                      <select
+                        value={issue.sprint_id || ""}
+                        onChange={(e) =>
+                          saveProperty("sprint_id", e.target.value || null)
+                        }
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
+                      >
+                        <option value="">No sprint</option>
+                        {sprints.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} {s.status === "active" ? "●" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
+                      <Kanban size={13} />
+                      <span>
+                        {issue.sprint?.name ||
+                          (issue.sprint_id ? "Active" : "No sprint")}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Release */}
+                {/* Epic — editable dropdown */}
+                <div>
+                  <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
+                    Epic
+                  </label>
+                  {epics.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Milestone size={13} className="text-[#ff1f1f]/70 shrink-0" />
+                      <select
+                        value={issue.epic_id || ""}
+                        onChange={(e) =>
+                          saveProperty("epic_id", e.target.value || null)
+                        }
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
+                      >
+                        <option value="">No epic</option>
+                        {epics.map((e) => (
+                          <option key={e.id} value={e.id}>{e.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
+                      <Milestone size={13} />
+                      <span>
+                        {issue.epic?.name || (issue.epic_id ? "Linked" : "None")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Release — editable dropdown */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Release
                   </label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
-                    <Tag size={13} />
-                    <span>
-                      {issue.release?.version ||
-                        (issue.release_id ? "Linked" : "None")}
-                    </span>
-                  </div>
+                  {releases.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Package size={13} className="text-emerald-400/70 shrink-0" />
+                      <select
+                        value={issue.release_id || ""}
+                        onChange={(e) =>
+                          saveProperty("release_id", e.target.value || null)
+                        }
+                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
+                      >
+                        <option value="">No release</option>
+                        {releases.map((r) => (
+                          <option key={r.id} value={r.id}>{r.version}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
+                      <Tag size={13} />
+                      <span>
+                        {issue.release?.version ||
+                          (issue.release_id ? "Linked" : "None")}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 

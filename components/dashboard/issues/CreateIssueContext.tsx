@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CreateIssueDialog } from "./CreateIssueDialog";
-import type { WorkflowState, Issue } from "@/types/index";
+import type { WorkflowState, Issue, Sprint, Epic, Release } from "@/types/index";
 import { useRouter } from "next/navigation";
 
 interface CreateIssueContextType {
@@ -24,6 +24,9 @@ interface CreateIssueProviderProps {
   projectId: string;
   workspaceId: string;
   states: WorkflowState[];
+  sprints: Sprint[];
+  epics: Epic[];
+  releases: Release[];
 }
 
 export function CreateIssueProvider({
@@ -31,6 +34,9 @@ export function CreateIssueProvider({
   projectId,
   workspaceId,
   states,
+  sprints,
+  epics,
+  releases,
 }: CreateIssueProviderProps) {
   const [open, setOpen] = useState(false);
   const [defaultStateId, setDefaultStateId] = useState<string | undefined>();
@@ -62,6 +68,9 @@ export function CreateIssueProvider({
         projectId={projectId}
         workspaceId={workspaceId}
         states={states}
+        sprints={sprints}
+        epics={epics}
+        releases={releases}
         defaultStateId={defaultStateId}
         onSuccess={(issue) => {
           router.refresh();

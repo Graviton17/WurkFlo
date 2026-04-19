@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./KanbanColumn";
+import { Plus } from "lucide-react";
 import type { IssueWithRelations, WorkflowState } from "@/types/index";
 
 interface KanbanBoardProps {
@@ -11,6 +12,7 @@ interface KanbanBoardProps {
   projectIdentifier?: string;
   onIssueClick?: (issue: IssueWithRelations) => void;
   onIssueMoved?: (issueId: string, newStateId: string) => void;
+  onAddColumn?: () => void;
 }
 
 export function KanbanBoard({
@@ -19,6 +21,7 @@ export function KanbanBoard({
   projectIdentifier,
   onIssueClick,
   onIssueMoved,
+  onAddColumn,
 }: KanbanBoardProps) {
   // Sort workflow states by position
   const sortedStates = [...workflowStates].sort(
@@ -59,6 +62,19 @@ export function KanbanBoard({
             onIssueClick={onIssueClick}
           />
         ))}
+
+        {/* Add Column Button */}
+        {onAddColumn && (
+          <div className="flex-shrink-0 w-[300px]">
+            <button
+              onClick={onAddColumn}
+              className="flex items-center gap-2 px-4 py-3 w-full text-sm font-medium text-[#888] bg-white/[0.02] border border-dashed border-white/10 rounded-xl hover:text-white hover:bg-white/[0.04] hover:border-white/20 transition-all"
+            >
+              <Plus size={16} />
+              Add Column
+            </button>
+          </div>
+        )}
       </div>
     </DragDropContext>
   );

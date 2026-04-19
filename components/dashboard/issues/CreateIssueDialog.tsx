@@ -3,11 +3,11 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  X, Bot, Tag, Calendar,
+  X, Bot, Tag, Calendar, AlertCircle, Timer, Milestone, Package,
 } from "lucide-react";
 import { useState } from "react";
 import { createIssue } from "@/app/actions/issue.actions";
-import { Issue, IssuePriority, IssueType, WorkflowState } from "@/types/index";
+import { Issue, IssuePriority, IssueType, WorkflowState, Sprint, Epic, Release } from "@/types/index";
 import { AssigneePicker } from "./AssigneePicker";
 
 interface CreateIssueDialogProps {
@@ -16,6 +16,9 @@ interface CreateIssueDialogProps {
   projectId: string;
   workspaceId: string;
   states: WorkflowState[];
+  sprints: Sprint[];
+  epics: Epic[];
+  releases: Release[];
   defaultStateId?: string;
   onSuccess: (issue: Issue) => void;
 }
@@ -39,6 +42,9 @@ export function CreateIssueDialog({
   projectId,
   workspaceId,
   states,
+  sprints,
+  epics,
+  releases,
   defaultStateId,
   onSuccess,
 }: CreateIssueDialogProps) {
@@ -47,9 +53,16 @@ export function CreateIssueDialog({
   const [priority,    setPriority]    = useState<IssuePriority>("medium");
   const [issueType,   setIssueType]   = useState<IssueType>("task");
   const [assigneeId,  setAssigneeId]  = useState<string | null>(null);
-  const [stateId,     setStateId]     = useState<string>(
-    defaultStateId ?? states[0]?.id ?? "unassigned"
-  );
+  const [stateId,     setStateId]     = useState<string>(() => {
+    // Auto-select the first 'todo'-category state, or fall back to first state by position
+    if (defaultStateId) return defaultStateId;
+    const sorted = [...states].sort((a, b) => a.position - b.position);
+    const todoState = sorted.find((s) => s.category === "todo");
+    return todoState?.id ?? sorted[0]?.id ?? "";
+  });
+  const [sprintId,   setSprintId]   = useState<string>("");
+  const [epicId,     setEpicId]     = useState<string>("");
+  const [releaseId,  setReleaseId]  = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createMore,   setCreateMore]   = useState(false);
   const [error,        setError]        = useState("");
@@ -67,8 +80,18 @@ export function CreateIssueDialog({
       setPriority("medium");
       setIssueType("task");
       setAssigneeId(null);
+      setSprintId("");
+      setEpicId("");
+      setReleaseId("");
       setError("");
-      setStateId(defaultStateId ?? states[0]?.id ?? "unassigned");
+      // Auto-select proper default state
+      if (defaultStateId) {
+        setStateId(defaultStateId);
+      } else {
+        const sorted = [...states].sort((a, b) => a.position - b.position);
+        const todoState = sorted.find((s) => s.category === "todo");
+        setStateId(todoState?.id ?? sorted[0]?.id ?? "");
+      }
     }
   }, [open]);
 
@@ -81,12 +104,15 @@ export function CreateIssueDialog({
       const result = await createIssue({
         project_id:   projectId,
         workspace_id: workspaceId,
-        state_id:     stateId === "unassigned" ? null : (stateId || null),
+        state_id:     stateId || null,
         title:        title.trim(),
         description:  description || null,
         priority,
         issue_type:   issueType,
         assignee_id:  assigneeId,
+        sprint_id:    sprintId || null,
+        epic_id:      epicId || null,
+        release_id:   releaseId || null,
       });
 
       if (result.success && result.data) {
@@ -124,20 +150,34 @@ export function CreateIssueDialog({
               </DialogPrimitive.Close>
             </div>
 
-            {/* Context bar — shows selected state */}
-            <div className="flex items-center gap-2 px-6 py-3 border-b border-white/5">
-              <span className="text-xs text-[#555]">Column:</span>
-              <select
-                value={stateId}
-                onChange={(e) => setStateId(e.target.value)}
-                className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
-              >
-                <option value="unassigned">Unassigned</option>
-                {states.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+            {/* Context bar — shows selected state or setup prompt */}
+            {states.length > 0 ? (
+              <div className="flex items-center gap-2 px-6 py-3 border-b border-white/5">
+                <span className="text-xs text-[#555]">Column:</span>
+                <select
+                  value={stateId}
+                  onChange={(e) => setStateId(e.target.value)}
+                  className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
+                >
+                  {states.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 px-6 py-3 border-b border-amber-500/10 bg-amber-500/[0.03]">
+                <AlertCircle size={14} className="text-amber-400 shrink-0" />
+                <span className="text-[12px] text-amber-300/90 flex-1">
+                  Workflow states must be configured before creating issues.
+                </span>
+                <a
+                  href={`/dashboard/project/${projectId}/workflow-states`}
+                  className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/15 px-3 py-1 rounded-lg border border-amber-500/20 transition-all whitespace-nowrap"
+                >
+                  Set up states →
+                </a>
+              </div>
+            )}
 
             {/* Inputs */}
             <div className="flex flex-col px-6 py-4 gap-4">
@@ -237,6 +277,56 @@ export function CreateIssueDialog({
                   </div>
                 </div>
               </div>
+
+              {/* Sprint / Epic / Release Pickers */}
+              <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-white/[0.04]">
+                {/* Sprint picker */}
+                <div className="flex items-center gap-1.5">
+                  <Timer size={13} className="text-blue-400/70" />
+                  <select
+                    value={sprintId}
+                    onChange={(e) => setSprintId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No sprint</option>
+                    {sprints.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} {s.status === "active" ? "●" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Epic picker */}
+                <div className="flex items-center gap-1.5">
+                  <Milestone size={13} className="text-[#ff1f1f]/70" />
+                  <select
+                    value={epicId}
+                    onChange={(e) => setEpicId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No epic</option>
+                    {epics.map((e) => (
+                      <option key={e.id} value={e.id}>{e.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Release picker */}
+                <div className="flex items-center gap-1.5">
+                  <Package size={13} className="text-emerald-400/70" />
+                  <select
+                    value={releaseId}
+                    onChange={(e) => setReleaseId(e.target.value)}
+                    className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
+                  >
+                    <option value="">No release</option>
+                    {releases.map((r) => (
+                      <option key={r.id} value={r.id}>{r.version}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Footer */}
@@ -261,7 +351,7 @@ export function CreateIssueDialog({
 
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || states.length === 0}
                 className="px-4 py-2 bg-[#009b65] hover:bg-[#009b65]/90 text-white text-sm font-medium rounded-full transition-all shadow-[0_0_20px_-6px_rgba(0,155,101,0.4)] disabled:opacity-50"
               >
                 {isSubmitting ? "Creating…" : "Create issue"}

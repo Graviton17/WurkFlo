@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { BacklogList } from "@/components/dashboard/project/backlog/BacklogList";
 import { IssueDetailModal } from "@/components/dashboard/project/issue/IssueDetailModal";
 import { Loader2, AlertCircle, Plus, List } from "lucide-react";
-import type { IssueWithRelations, Sprint } from "@/types/index";
+import type { IssueWithRelations, Sprint, Epic, Release } from "@/types/index";
 import { getBacklogData } from "@/app/actions/board.actions";
 import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
@@ -19,6 +19,9 @@ export default function BacklogPage({ params }: BacklogPageProps) {
   const [plannedSprints, setPlannedSprints] = useState<Sprint[]>([]);
   const [projectIdentifier, setProjectIdentifier] = useState("");
   const [workspaceId, setWorkspaceId] = useState("");
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [epics, setEpics] = useState<Epic[]>([]);
+  const [releases, setReleases] = useState<Release[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedIssue, setSelectedIssue] =
@@ -43,6 +46,9 @@ export default function BacklogPage({ params }: BacklogPageProps) {
       setProjectIdentifier(result.data.projectIdentifier);
       setPlannedSprints(result.data.plannedSprints);
       setWorkspaceId(result.data.workspaceId);
+      setSprints(result.data.sprints);
+      setEpics(result.data.epics);
+      setReleases(result.data.releases);
     } catch (err) {
       setError("Failed to load backlog");
     } finally {
@@ -92,6 +98,7 @@ export default function BacklogPage({ params }: BacklogPageProps) {
         <BacklogList
           issues={issues}
           plannedSprints={plannedSprints}
+          projectId={projectId}
           projectIdentifier={projectIdentifier}
           onIssueClick={setSelectedIssue}
           onRefresh={() => loadBacklog(projectId)}
@@ -104,6 +111,9 @@ export default function BacklogPage({ params }: BacklogPageProps) {
           issue={selectedIssue}
           projectIdentifier={projectIdentifier}
           workspaceId={workspaceId}
+          sprints={sprints}
+          epics={epics}
+          releases={releases}
           onClose={() => setSelectedIssue(null)}
           onUpdate={(updated) => {
             setIssues((prev) => prev.map((i) => i.id === updated.id ? updated : i));

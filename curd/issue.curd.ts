@@ -69,6 +69,8 @@ export class IssueCURD extends BaseCURD<Issue> {
         .from(this.tableName)
         .select(ISSUE_WITH_RELATIONS_SELECT)
         .eq("project_id", projectId)
+        // Order by priority (urgent first) then by creation date as tiebreaker
+        .order("priority", { ascending: true })
         .order("created_at", { ascending: false });
 
       if (plannedSprintIds.length > 0) {
@@ -83,8 +85,20 @@ export class IssueCURD extends BaseCURD<Issue> {
 
       const { data, error } = await query;
 
+      // Re-sort by priority rank in-memory (Supabase alphabetical sort doesn't match our desired rank)
+      const PRIORITY_RANK: Record<string, number> = {
+        urgent: 0,
+        high: 1,
+        medium: 2,
+        low: 3,
+      };
+      const sorted = (data as IssueWithRelations[] | null)?.sort(
+        (a, b) =>
+          (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9),
+      );
+
       return {
-        data: data as IssueWithRelations[] | null,
+        data: sorted ?? null,
         error,
         success: !error,
       };
