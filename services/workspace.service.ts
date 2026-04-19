@@ -106,6 +106,20 @@ export class WorkspaceService {
   async removeMember(workspaceId: string, userId: string): Promise<DatabaseResponse<null>> {
     return this.memberCurd.deleteByCompositeKey(workspaceId, userId);
   }
+
+  /**
+   * Get all members with joined user profiles (name, email, avatar).
+   */
+  async getWorkspaceMembersWithProfiles(workspaceId: string) {
+    return this.memberCurd.getMembersWithProfiles(workspaceId);
+  }
+
+  /**
+   * Update a member's role.
+   */
+  async updateMemberRole(workspaceId: string, userId: string, role: string) {
+    return this.memberCurd.updateRoleByCompositeKey(workspaceId, userId, role);
+  }
 }
 
 export const workspaceService = new WorkspaceService();

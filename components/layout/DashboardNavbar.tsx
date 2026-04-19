@@ -161,7 +161,7 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
                 >
                   <div className="px-4 py-3 border-b border-white/[0.06]">
                     <p className="text-sm font-medium text-white truncate">
-                      {user?.email || "User"}
+                      {userProfile?.full_name || user?.email?.split("@")[0] || "User"}
                     </p>
                   </div>
                   <div className="py-1">

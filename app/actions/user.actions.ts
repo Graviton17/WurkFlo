@@ -114,7 +114,7 @@ export async function updateUserAction(data: { fullName?: string; avatarUrl?: st
     }
 
     const { revalidatePath } = await import("next/cache");
-    revalidatePath(`/profile`);
+    revalidatePath("/", "layout");
 
     return { success: true, data: result.data };
   } catch (error) {
@@ -151,5 +151,33 @@ export async function uploadAvatarAction(formData: FormData): Promise<ActionResu
   } catch (error) {
     logger.error({ err: error }, "uploadAvatarAction failed");
     return { success: false, data: null, error: error instanceof Error ? error.message : "Failed to upload avatar" };
+  }
+}
+
+export async function deleteAccountAction(): Promise<ActionResult<null>> {
+  try {
+    const user = await requireUser();
+
+    // Remove user from all workspaces they belong to (cleanup memberships)
+    const { workspaceService } = await import("@/services/index");
+    const workspaceResult = await workspaceService.getAllWorkspacesByUserId(user.id);
+    
+    if (workspaceResult.success && workspaceResult.data) {
+      for (const ws of workspaceResult.data) {
+        await workspaceService.removeMember(ws.id, user.id);
+      }
+    }
+
+    // Delete the user profile row
+    const deleteResult = await userService.deleteUser(user.id);
+    if (!deleteResult.success) {
+      return { success: false, data: null, error: deleteResult.error?.message || "Failed to delete account" };
+    }
+
+    return { success: true, data: null };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to delete account";
+    logger.error({ err: error }, "deleteAccountAction failed");
+    return { success: false, data: null, error: msg };
   }
 }

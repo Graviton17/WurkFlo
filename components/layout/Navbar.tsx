@@ -227,10 +227,20 @@ export const Navbar = ({ initialUser }: { initialUser?: any }) => {
                   <div className="absolute right-0 mt-2 w-48 bg-black/90 border border-white/10 backdrop-blur-xl rounded-xl shadow-xl overflow-hidden py-1 z-50">
                     <div className="px-4 py-3 border-b border-white/10">
                       <p className="text-sm font-medium text-white truncate">
-                        {user.email || "User"}
+                        {user.user_metadata?.full_name || user.email?.split("@")[0] || "User"}
                       </p>
                     </div>
                     <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          router.push("/profile");
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <User size={16} />
+                        Profile
+                      </button>
                       <button
                         onClick={() => {
                           setDropdownOpen(false);
