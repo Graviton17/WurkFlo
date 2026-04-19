@@ -67,22 +67,20 @@ export function AppSidebar({
         <div className="flex flex-col items-center gap-1 mt-2 w-full px-1.5">
           <Link
             href="/dashboard/inbox"
-            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
-              isActive("/dashboard/inbox")
-                ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
-                : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
-            }`}
+            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${isActive("/dashboard/inbox")
+              ? "bg-white/[0.08] text-white"
+              : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
+              }`}
             title="Inbox"
           >
             <Inbox size={18} />
           </Link>
           <Link
             href="/dashboard/my-issues"
-            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${
-              isActive("/dashboard/my-issues")
-                ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
-                : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
-            }`}
+            className={`w-full flex items-center justify-center p-2 rounded-lg transition-colors ${isActive("/dashboard/my-issues")
+              ? "bg-white/[0.08] text-white"
+              : "text-[#666] hover:text-[#aaa] hover:bg-white/5"
+              }`}
             title="My Issues"
           >
             <ListChecks size={18} />
@@ -111,7 +109,7 @@ export function AppSidebar({
             onClick={() => setWorkspaceSwitcherOpen(!workspaceSwitcherOpen)}
             className="w-full flex items-center gap-2.5 px-2.5 py-2 hover:bg-white/[0.04] rounded-lg transition-colors text-left group"
           >
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#ff1f1f] to-[#3c00ff] text-white flex items-center justify-center text-[11px] font-bold leading-none shrink-0 shadow-sm">
+            <div className="w-6 h-6 rounded-md bg-[#111] border border-white/20 ring-1 ring-white/10 text-white flex items-center justify-center text-[11px] font-bold leading-none shrink-0">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <span className="text-[13.5px] font-semibold text-[#e0e0e0] truncate flex-1">
@@ -140,13 +138,12 @@ export function AppSidebar({
                       router.push(`/dashboard/workspace/${ws.id}`);
                       setWorkspaceSwitcherOpen(false);
                     }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors ${
-                      ws.id === activeWorkspaceId
-                        ? "text-white bg-white/[0.04]"
-                        : "text-[#999]"
-                    }`}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-white/[0.05] transition-colors ${ws.id === activeWorkspaceId
+                      ? "text-white bg-white/[0.04]"
+                      : "text-[#999]"
+                      }`}
                   >
-                    <div className="w-5 h-5 rounded bg-gradient-to-br from-[#ff1f1f] to-[#3c00ff] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                    <div className="w-5 h-5 rounded-md bg-[#111] border border-white/20 ring-1 ring-white/10 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                       {ws.name.charAt(0).toUpperCase()}
                     </div>
                     <span className="text-[13px] font-medium truncate">
@@ -202,11 +199,10 @@ export function AppSidebar({
       <div className="px-3 mt-3 space-y-0.5">
         <Link
           href="/dashboard/inbox"
-          className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${
-            isActive("/dashboard/inbox")
-              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
-              : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
-          }`}
+          className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${isActive("/dashboard/inbox")
+            ? "bg-white/[0.08] text-white"
+            : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
+            }`}
         >
           <Inbox size={16} className="shrink-0" />
           <span>Inbox</span>
@@ -214,11 +210,10 @@ export function AppSidebar({
 
         <Link
           href="/dashboard/my-issues"
-          className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${
-            isActive("/dashboard/my-issues")
-              ? "bg-[#ff1f1f]/10 text-[#ff1f1f]"
-              : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
-          }`}
+          className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] font-medium ${isActive("/dashboard/my-issues")
+            ? "bg-white/[0.08] text-white"
+            : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
+            }`}
         >
           <ListChecks size={16} className="shrink-0" />
           <span>My Issues</span>
@@ -266,16 +261,15 @@ export function AppSidebar({
                 <Link
                   key={project.id}
                   href={`/dashboard/project/${project.id}/board`}
-                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] group ${
-                    isActivePrefix(`/dashboard/project/${project.id}`)
-                      ? "bg-[#ff1f1f]/10 text-[#ff1f1f] font-medium"
-                      : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
-                  }`}
+                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg transition-all text-[13px] group ${isActivePrefix(`/dashboard/project/${project.id}`)
+                    ? "bg-white/[0.08] text-white font-medium"
+                    : "text-[#777] hover:bg-white/[0.04] hover:text-[#ccc]"
+                    }`}
                 >
-                  <div className="w-5 h-5 rounded flex items-center justify-center bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/10 shrink-0">
+                  <div className="w-5 h-5 rounded flex items-center justify-center bg-[#111] border border-white/20 ring-1 ring-white/10 shrink-0">
                     <Hash
                       size={11}
-                      className="text-amber-400/80"
+                      className="text-white/70"
                       strokeWidth={2.5}
                     />
                   </div>

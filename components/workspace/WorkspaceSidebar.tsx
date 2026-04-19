@@ -29,7 +29,7 @@ export function WorkspaceSidebar({ workspaceId }: { workspaceId: string }) {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-2 py-2 rounded-md transition-colors whitespace-nowrap overflow-hidden
-                ${isActive ? "bg-[#ff1f1f]/10 text-[#ff1f1f]" : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"}
+                ${isActive ? "bg-white/[0.08] text-white" : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"}
               `}
               title={!isExpanded ? item.name : undefined}
             >

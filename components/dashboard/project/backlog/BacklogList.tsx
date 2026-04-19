@@ -133,8 +133,8 @@ export function BacklogList({
                   </span>
                 </div>
                 <div className="w-16 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#ff1f1f]/60 to-[#3c00ff]/60 flex items-center justify-center border border-white/10">
-                    <User size={10} className="text-white" />
+                  <div className="w-5 h-5 rounded-full bg-[#111] border border-white/20 ring-1 ring-white/10 flex items-center justify-center">
+                    <User size={10} className="text-white/70" />
                   </div>
                 </div>
               </div>

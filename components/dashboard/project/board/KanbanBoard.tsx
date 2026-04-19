@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { KanbanColumn } from "./KanbanColumn";
 import type { Issue, WorkflowState } from "@/types/index";
@@ -21,6 +21,11 @@ export function KanbanBoard({
   onIssueMoved,
 }: KanbanBoardProps) {
   const [issues, setIssues] = useState<Issue[]>(initialIssues);
+
+  // Keep local state in sync when the parent updates issues (e.g. after error revert)
+  useEffect(() => {
+    setIssues(initialIssues);
+  }, [initialIssues]);
 
   // Sort workflow states by position
   const sortedStates = [...workflowStates].sort(

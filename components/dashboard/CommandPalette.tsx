@@ -335,7 +335,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                           onMouseEnter={() => setSelectedIndex(idx)}
                           className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] transition-all text-left group ${
                             idx === selectedIndex
-                              ? "bg-[#ff1f1f]/10 text-[#ff1f1f] ring-1 ring-[#ff1f1f]/20"
+                              ? "bg-white/[0.08] text-white ring-1 ring-white/10"
                               : "text-[#888] hover:bg-white/[0.04] hover:text-[#ccc]"
                           }`}
                         >
@@ -343,7 +343,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                             <div
                               className={`p-1.5 rounded-lg shrink-0 ${
                                 idx === selectedIndex
-                                  ? "bg-[#ff1f1f]/20 text-[#ff1f1f]"
+                                  ? "bg-white/[0.1] text-white"
                                   : "bg-white/[0.04] text-[#666] group-hover:text-[#aaa]"
                               }`}
                             >
@@ -363,7 +363,7 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
                           {idx === selectedIndex && (
                             <CornerDownLeft
                               size={14}
-                              className="text-[#ff1f1f]/50 shrink-0"
+                              className="text-white/30 shrink-0"
                             />
                           )}
                         </button>
