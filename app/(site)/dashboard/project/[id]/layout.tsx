@@ -5,7 +5,8 @@ import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrappe
 import { CreateIssueProvider } from "@/components/dashboard/issues/CreateIssueContext";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import type { WorkflowState } from "@/types/index";
+import type { WorkflowState, Sprint, Epic, Release } from "@/types/index";
+import { sprintService, epicService, releaseService } from "@/services/index";
 
 export default async function ProjectLayout({
   children,
@@ -26,11 +27,17 @@ export default async function ProjectLayout({
   let projectIdentifier: string | undefined;
   let workspaceId: string = "";
   let states: WorkflowState[] = [];
+  let sprints: Sprint[] = [];
+  let epics: Epic[] = [];
+  let releases: Release[] = [];
 
   try {
-    const [projectRes, statesRes] = await Promise.all([
+    const [projectRes, statesRes, sprintsRes, epicsRes, releasesRes] = await Promise.all([
       getProjectData(id),
       getWorkflowStatesAction(id),
+      sprintService.getSprintsByProject(id),
+      epicService.getEpicsByProject(id),
+      releaseService.getReleasesByProject(id),
     ]);
     
     if (projectRes.data) {
@@ -42,12 +49,18 @@ export default async function ProjectLayout({
     if (statesRes.data) {
       states = statesRes.data;
     }
+
+    // Only show planned + active sprints for assignment
+    const allSprints = sprintsRes.data ?? [];
+    sprints = allSprints.filter((s) => s.status === "planned" || s.status === "active");
+    epics = epicsRes.data ?? [];
+    releases = releasesRes.data ?? [];
   } catch (error) {
     console.error("Failed to load project layout context", error);
   }
 
   return (
-    <SidebarLayoutWrapper>
+    <SidebarLayoutWrapper activeWorkspaceId={workspaceId}>
       <div className="flex flex-col w-full h-full min-h-0 bg-[#0c0c0d] text-[#e5e7eb]">
         {/* Project Tabs Header */}
         <ProjectTabsHeader
@@ -57,7 +70,14 @@ export default async function ProjectLayout({
         />
 
         {/* Main Content */}
-        <CreateIssueProvider projectId={id} workspaceId={workspaceId} states={states}>
+        <CreateIssueProvider
+          projectId={id}
+          workspaceId={workspaceId}
+          states={states}
+          sprints={sprints}
+          epics={epics}
+          releases={releases}
+        >
           <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
         </CreateIssueProvider>
       </div>

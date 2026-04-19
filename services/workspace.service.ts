@@ -106,6 +106,13 @@ export class WorkspaceService {
   async removeMember(workspaceId: string, userId: string): Promise<DatabaseResponse<null>> {
     return this.memberCurd.deleteByCompositeKey(workspaceId, userId);
   }
+
+  /**
+   * Get all members for a workspace with user profile info (name, avatar, email).
+   */
+  async getWorkspaceMembersWithInfo(workspaceId: string) {
+    return this.memberCurd.getMembersWithUserInfo(workspaceId);
+  }
 }
 
 export const workspaceService = new WorkspaceService();

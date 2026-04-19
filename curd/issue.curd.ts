@@ -46,18 +46,69 @@ export class IssueCURD extends BaseCURD<Issue> {
   }
 
   /**
-   * Get backlog issues: sprint_id IS NULL.
+   * Get backlog issues: sprint_id IS NULL OR sprint status is 'planned'.
+   * This requires fetching planned sprint IDs first, then querying issues.
    */
   async getBacklogByProject(
     projectId: string,
   ): Promise<DatabaseResponse<IssueWithRelations[]>> {
-    return this.customQuery<IssueWithRelations[]>((table) =>
-      table
+    try {
+      const db = await this.getClient();
+
+      // 1. Get IDs of planned sprints for this project
+      const { data: plannedSprints } = await db
+        .from("sprints")
+        .select("id")
+        .eq("project_id", projectId)
+        .eq("status", "planned");
+
+      const plannedSprintIds = (plannedSprints || []).map((s: any) => s.id);
+
+      // 2. Query issues: sprint_id IS NULL or in planned sprint IDs
+      let query = db
+        .from(this.tableName)
         .select(ISSUE_WITH_RELATIONS_SELECT)
         .eq("project_id", projectId)
-        .is("sprint_id", null)
-        .order("created_at", { ascending: false }),
-    );
+        // Order by priority (urgent first) then by creation date as tiebreaker
+        .order("priority", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      if (plannedSprintIds.length > 0) {
+        // Use OR: sprint_id is null OR sprint_id is in the planned list
+        query = query.or(
+          `sprint_id.is.null,sprint_id.in.(${plannedSprintIds.join(",")})`,
+        );
+      } else {
+        // No planned sprints, just get null sprint issues
+        query = query.is("sprint_id", null);
+      }
+
+      const { data, error } = await query;
+
+      // Re-sort by priority rank in-memory (Supabase alphabetical sort doesn't match our desired rank)
+      const PRIORITY_RANK: Record<string, number> = {
+        urgent: 0,
+        high: 1,
+        medium: 2,
+        low: 3,
+      };
+      const sorted = (data as IssueWithRelations[] | null)?.sort(
+        (a, b) =>
+          (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9),
+      );
+
+      return {
+        data: sorted ?? null,
+        error,
+        success: !error,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error as Error,
+        success: false,
+      };
+    }
   }
 
   /**

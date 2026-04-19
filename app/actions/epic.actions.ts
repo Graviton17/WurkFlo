@@ -1,9 +1,9 @@
 "use server";
 
-import { epicService, projectService } from "@/services/index";
+import { epicService, projectService, issueService } from "@/services/index";
 import { logger } from "@/lib/logger";
 import { requireUser } from "./utils";
-import type { ActionResult, Epic, EpicWithProgress } from "@/types/index";
+import type { ActionResult, Epic, EpicWithProgress, IssueWithRelations } from "@/types/index";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -75,6 +75,23 @@ export async function createEpic(
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to create epic";
     logger.error({ err: error }, "createEpic failed");
+    return { success: false, data: null, error: msg };
+  }
+}
+
+/**
+ * Get all issues belonging to a specific epic (lazy-load on expand).
+ */
+export async function getEpicIssues(epicId: string): Promise<
+  ActionResult<IssueWithRelations[]>
+> {
+  try {
+    await requireUser();
+    const result = await issueService.getIssuesByEpic(epicId);
+    return { success: true, data: result.data ?? [] };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to load epic issues";
+    logger.error({ err: error }, "getEpicIssues failed");
     return { success: false, data: null, error: msg };
   }
 }

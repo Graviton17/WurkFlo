@@ -6,26 +6,56 @@ import {
   ChevronDown,
   ChevronRight,
   Calendar,
-  Circle,
   Target,
+  Loader2,
+  User,
 } from "lucide-react";
-import type { EpicWithProgress } from "@/types/index";
+import type { EpicWithProgress, IssueWithRelations } from "@/types/index";
+import { getEpicIssues } from "@/app/actions/epic.actions";
 
 interface EpicsListProps {
   epics: EpicWithProgress[];
   projectIdentifier?: string;
 }
 
+const STATE_DOT: Record<string, string> = {
+  todo: "bg-zinc-400",
+  in_progress: "bg-amber-400",
+  done: "bg-emerald-400",
+};
+
 export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [issueMap, setIssueMap] = useState<
+    Record<string, IssueWithRelations[]>
+  >({});
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = async (epicId: string) => {
+    if (expandedIds.has(epicId)) {
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(epicId);
+        return next;
+      });
+      return;
+    }
+
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      next.add(epicId);
       return next;
     });
+
+    // Fetch issues if not already loaded
+    if (!issueMap[epicId]) {
+      setLoadingId(epicId);
+      const result = await getEpicIssues(epicId);
+      if (result.success && result.data) {
+        setIssueMap((prev) => ({ ...prev, [epicId]: result.data! }));
+      }
+      setLoadingId(null);
+    }
   };
 
   if (epics.length === 0) {
@@ -48,6 +78,8 @@ export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
             ? Math.round((epic.done_issues / epic.total_issues) * 100)
             : 0;
         const isExpanded = expandedIds.has(epic.id);
+        const epicIssues = issueMap[epic.id] || [];
+        const isLoading = loadingId === epic.id;
 
         return (
           <div
@@ -104,6 +136,101 @@ export function EpicsList({ epics, projectIdentifier }: EpicsListProps) {
                 )}
               </div>
             </button>
+
+            {/* Expanded Issues */}
+            {isExpanded && (
+              <div className="border-t border-white/[0.04]">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2
+                      size={18}
+                      className="animate-spin text-[#555]"
+                    />
+                  </div>
+                ) : epicIssues.length === 0 ? (
+                  <div className="px-5 py-6 text-[12px] text-[#555] text-center">
+                    No issues linked to this epic
+                  </div>
+                ) : (
+                  epicIssues.map((issue, idx) => {
+                    const identifier = projectIdentifier
+                      ? `${projectIdentifier}-${issue.sequence_id}`
+                      : `#${issue.sequence_id}`;
+                    const stateCategory =
+                      issue.workflow_state?.category || "todo";
+                    const stateName = issue.workflow_state?.name || "—";
+                    const stateDot =
+                      STATE_DOT[stateCategory] || STATE_DOT.todo;
+
+                    return (
+                      <div
+                        key={issue.id}
+                        className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors cursor-pointer ${
+                          idx !== epicIssues.length - 1
+                            ? "border-b border-white/[0.03]"
+                            : ""
+                        }`}
+                      >
+                        <div className="pl-7">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${stateDot}`}
+                          />
+                        </div>
+                        <span className="text-[11px] font-mono text-[#555] w-20">
+                          {identifier}
+                        </span>
+                        <span className="text-[13px] text-[#bbb] flex-1 truncate">
+                          {issue.title}
+                        </span>
+                        {/* Workflow state badge */}
+                        <span className="text-[10px] text-[#555] bg-white/[0.03] px-1.5 py-0.5 rounded border border-white/[0.04]">
+                          {stateName}
+                        </span>
+                        {/* Priority */}
+                        <span
+                          className={`text-[10px] font-medium uppercase ${
+                            issue.priority === "urgent"
+                              ? "text-red-400"
+                              : issue.priority === "high"
+                                ? "text-orange-400"
+                                : "text-[#555]"
+                          }`}
+                        >
+                          {issue.priority}
+                        </span>
+                        {/* Issue type */}
+                        <span
+                          className={`text-[10px] font-medium uppercase ${
+                            issue.issue_type === "bug"
+                              ? "text-red-400"
+                              : "text-[#555]"
+                          }`}
+                        >
+                          {issue.issue_type}
+                        </span>
+                        {/* Assignee */}
+                        <div className="w-5 h-5 shrink-0">
+                          {issue.assignee ? (
+                            <div
+                              className="w-5 h-5 rounded-full bg-gradient-to-br from-[#333] to-[#222] border border-white/20 flex items-center justify-center text-[9px] font-bold text-white/70"
+                              title={issue.assignee.full_name || ""}
+                            >
+                              {(
+                                issue.assignee.full_name || "?"
+                              )[0].toUpperCase()}
+                            </div>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-[#111] border border-white/20 ring-1 ring-white/10 flex items-center justify-center">
+                              <User size={9} className="text-white/50" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
         );
       })}

@@ -1,7 +1,7 @@
 "use server";
 
 import { requireUser } from "./utils";
-import { projectService } from "@/services/index";
+import { projectService, workflowStateService } from "@/services/index";
 import { CreateProjectSchema } from "@/types/validation";
 import { logger } from "@/lib/logger";
 import type { ActionResult, Project } from "@/types/index";
@@ -21,7 +21,19 @@ export async function createProjectAction(data: Record<string, unknown>): Promis
       return { success: false, data: null, error: result.error?.message || "Failed to create project" };
     }
 
-    return { success: true, data: result.data };
+    const newProject = result.data;
+
+    // Create default workflow states
+    await Promise.all([
+      workflowStateService.createState({ project_id: newProject.id, name: "Todo", category: "todo", position: 1 }),
+      workflowStateService.createState({ project_id: newProject.id, name: "In Progress", category: "in_progress", position: 2 }),
+      workflowStateService.createState({ project_id: newProject.id, name: "Done", category: "done", position: 3 })
+    ]).catch(err => {
+      // Log but don't fail the project creation if this partially fails
+      logger.error({ err }, "Failed to auto-create default workflow states");
+    });
+
+    return { success: true, data: newProject };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to create project";
     logger.error({ err: error }, "createProjectAction failed");

@@ -64,4 +64,47 @@ export class WorkspaceMemberCURD extends BaseCURD<WorkspaceMember> {
     return { data: null, error, success: !error };
   }
 
+  /**
+   * Get all members for a workspace with their user profile info (name, avatar, email).
+   */
+  async getMembersWithUserInfo(workspaceId: string) {
+    try {
+      const db = await this.getClient();
+      const { data, error } = await db
+        .from(this.tableName)
+        .select(`
+          user_id,
+          role,
+          created_at,
+          users!inner (
+            id,
+            full_name,
+            avatar_url,
+            email
+          )
+        `)
+        .eq("workspace_id", workspaceId);
+
+      if (error || !data) {
+        return { data: null, error, success: false };
+      }
+
+      // Flatten the result to a simpler format
+      const members = data.map((item: any) => {
+        const user = Array.isArray(item.users) ? item.users[0] : item.users;
+        return {
+          user_id: item.user_id,
+          role: item.role,
+          full_name: user?.full_name || null,
+          avatar_url: user?.avatar_url || null,
+          email: user?.email || null,
+        };
+      });
+
+      return { data: members, error: null, success: true };
+    } catch (error) {
+      return { data: null, error: error as Error, success: false };
+    }
+  }
+
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { BacklogList } from "@/components/dashboard/project/backlog/BacklogList";
 import { IssueDetailModal } from "@/components/dashboard/project/issue/IssueDetailModal";
 import { Loader2, AlertCircle, Plus, List } from "lucide-react";
-import type { IssueWithRelations } from "@/types/index";
+import type { IssueWithRelations, Sprint, Epic, Release } from "@/types/index";
 import { getBacklogData } from "@/app/actions/board.actions";
 import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
@@ -16,10 +16,16 @@ export default function BacklogPage({ params }: BacklogPageProps) {
   const { id: projectId } = React.use(params);
 
   const [issues, setIssues] = useState<IssueWithRelations[]>([]);
+  const [plannedSprints, setPlannedSprints] = useState<Sprint[]>([]);
   const [projectIdentifier, setProjectIdentifier] = useState("");
+  const [workspaceId, setWorkspaceId] = useState("");
+  const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [epics, setEpics] = useState<Epic[]>([]);
+  const [releases, setReleases] = useState<Release[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedIssue, setSelectedIssue] = useState<IssueWithRelations | null>(null);
+  const [selectedIssue, setSelectedIssue] =
+    useState<IssueWithRelations | null>(null);
   const { openCreateIssue } = useCreateIssue();
 
   useEffect(() => {
@@ -38,6 +44,11 @@ export default function BacklogPage({ params }: BacklogPageProps) {
 
       setIssues(result.data.issues);
       setProjectIdentifier(result.data.projectIdentifier);
+      setPlannedSprints(result.data.plannedSprints);
+      setWorkspaceId(result.data.workspaceId);
+      setSprints(result.data.sprints);
+      setEpics(result.data.epics);
+      setReleases(result.data.releases);
     } catch (err) {
       setError("Failed to load backlog");
     } finally {
@@ -73,7 +84,7 @@ export default function BacklogPage({ params }: BacklogPageProps) {
             {issues.length}
           </span>
         </div>
-        <button 
+        <button
           onClick={() => openCreateIssue()}
           className="flex items-center gap-1.5 text-[12px] font-medium text-[#888] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-lg border border-white/[0.06] transition-all"
         >
@@ -82,12 +93,15 @@ export default function BacklogPage({ params }: BacklogPageProps) {
         </button>
       </div>
 
-      {/* Backlog List */}
+      {/* Backlog List with DnD */}
       <div className="flex-1 overflow-hidden">
         <BacklogList
           issues={issues}
+          plannedSprints={plannedSprints}
+          projectId={projectId}
           projectIdentifier={projectIdentifier}
           onIssueClick={setSelectedIssue}
+          onRefresh={() => loadBacklog(projectId)}
         />
       </div>
 
@@ -96,7 +110,15 @@ export default function BacklogPage({ params }: BacklogPageProps) {
         <IssueDetailModal
           issue={selectedIssue}
           projectIdentifier={projectIdentifier}
+          workspaceId={workspaceId}
+          sprints={sprints}
+          epics={epics}
+          releases={releases}
           onClose={() => setSelectedIssue(null)}
+          onUpdate={(updated) => {
+            setIssues((prev) => prev.map((i) => i.id === updated.id ? updated : i));
+            setSelectedIssue(updated);
+          }}
         />
       )}
     </div>

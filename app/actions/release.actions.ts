@@ -3,7 +3,7 @@
 import { releaseService, projectService } from "@/services/index";
 import { logger } from "@/lib/logger";
 import { requireUser } from "./utils";
-import type { ActionResult, Release, IssueWithRelations } from "@/types/index";
+import type { ActionResult, Release, ReleaseWithProgress, IssueWithRelations } from "@/types/index";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -17,7 +17,7 @@ const ReleaseSchema = z.object({
  */
 export async function getReleasesData(projectId: string): Promise<
   ActionResult<{
-    releases: Release[];
+    releases: ReleaseWithProgress[];
     projectIdentifier: string;
   }>
 > {
@@ -26,7 +26,7 @@ export async function getReleasesData(projectId: string): Promise<
 
     const [projectRes, releasesRes] = await Promise.all([
       projectService.getProjectById(projectId),
-      releaseService.getReleasesByProject(projectId),
+      releaseService.getReleasesWithProgress(projectId),
     ]);
 
     return {

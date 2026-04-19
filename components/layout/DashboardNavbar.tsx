@@ -9,7 +9,6 @@ import { Search, HelpCircle, Lightbulb, User, LogOut, Settings } from "lucide-re
 import { supabase } from "@/lib/supabase/client";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { WorkspaceSwitcher } from "@/components/workspace/WorkspaceSwitcher";
-import { ProjectSwitcher } from "@/components/project/ProjectSwitcher";
 import { WorkspaceWithRole, Project } from "@/types/index";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { getProjectData, getWorkspaceProjectsData } from "@/app/actions/project.actions";
@@ -123,15 +122,6 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
             activeWorkspaceId={activeProject ? activeProject.workspace_id : urlWorkspaceId} 
           />
           
-          {isProjectRoute && activeProject && (
-            <>
-              <span className="text-muted-foreground/40 font-light">/</span>
-              <ProjectSwitcher 
-                projects={workspaceProjects} 
-                activeProjectId={activeProject.id} 
-              />
-            </>
-          )}
         </div>
 
         {/* Right Side: Tools & Avatar */}
