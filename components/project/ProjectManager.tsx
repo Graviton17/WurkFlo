@@ -25,23 +25,25 @@ export function ProjectManager({ projects, workspaceId }: ProjectManagerProps) {
       className="mx-auto w-full max-w-7xl px-6 py-16 relative"
     >
       {/* Decorative glow */}
-      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-[#3c00ff]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-white/[0.015] rounded-full blur-[120px] pointer-events-none" />
 
-      <motion.div variants={fadeInUp} className="mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff1f1f]/10 border border-[#ff1f1f]/20 text-[#ff1f1f] text-xs font-bold tracking-wider uppercase mb-4">
+      <motion.div variants={fadeInUp} className="mb-10">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-5 text-sm text-white/60">
           <FolderKanban className="w-3.5 h-3.5" />
-          Projects
+          <span>Projects</span>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Your Projects</h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight">
+          Your Projects
+        </h1>
         <p className="text-white/50 mt-2 text-[15px]">Manage and organize your team projects.</p>
       </motion.div>
 
       {/* Controls row */}
-      <motion.div variants={fadeInUp} className="mb-6 flex items-center justify-between gap-4">
+      <motion.div variants={fadeInUp} className="mb-8 flex items-center justify-between gap-4">
         <ProjectSearchBar value={searchQuery} onChange={setSearchQuery} />
         <Link
           href={`/dashboard/new/${workspaceId}`}
-          className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-sm transition-all h-9 px-4 bg-[#009b65] hover:bg-[#009b65]/90 text-white border-0 font-medium shrink-0 shadow-[0_0_20px_-6px_rgba(0,155,101,0.4)] hover:shadow-[0_0_30px_-6px_rgba(0,155,101,0.5)]"
+          className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-sm transition-all h-9 px-4 bg-white/[0.06] hover:bg-white/[0.10] text-white border border-white/10 hover:border-white/20 font-medium shrink-0"
         >
           <Plus size={14} />
           New project

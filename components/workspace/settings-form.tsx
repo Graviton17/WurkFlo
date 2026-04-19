@@ -32,11 +32,11 @@ export function SettingsForm({ workspace }: { workspace: any }) {
   }
 
   return (
-    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-xl mx-auto">
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-xl mx-auto px-6 py-16">
       <motion.div variants={fadeInUp}>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff1f1f]/10 border border-[#ff1f1f]/20 text-[#ff1f1f] text-xs font-bold tracking-wider uppercase mb-4">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 text-sm text-white/60">
           <Settings className="w-3.5 h-3.5" />
-          Settings
+          <span>Settings</span>
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Workspace Settings</h1>
         <p className="text-white/50 text-[15px] mb-8">Configure your workspace name and URL slug.</p>

@@ -24,7 +24,7 @@ export function WorkspaceGrid({ workspaces, searchQuery }: WorkspaceGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {filtered.map((workspace) => (
         <WorkspaceCard key={workspace.id} workspace={workspace} />
       ))}
