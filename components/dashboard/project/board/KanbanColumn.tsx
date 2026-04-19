@@ -68,6 +68,9 @@ export function KanbanColumn({
               <Draggable key={issue.id} draggableId={issue.id} index={index}>
                 {(dragProvided, dragSnapshot) => (
                   <div
+                    ref={dragProvided.innerRef}
+                    {...dragProvided.draggableProps}
+                    {...dragProvided.dragHandleProps}
                     className={`${
                       dragSnapshot.isDragging
                         ? "opacity-90 rotate-1 shadow-xl"
@@ -78,7 +81,6 @@ export function KanbanColumn({
                       issue={issue}
                       projectIdentifier={projectIdentifier}
                       onClick={onIssueClick}
-                      provided={dragProvided}
                     />
                   </div>
                 )}

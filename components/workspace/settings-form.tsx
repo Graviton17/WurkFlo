@@ -32,7 +32,7 @@ export function SettingsForm({ workspace }: { workspace: any }) {
   }
 
   return (
-    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-xl">
+    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-xl mx-auto">
       <motion.div variants={fadeInUp}>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ff1f1f]/10 border border-[#ff1f1f]/20 text-[#ff1f1f] text-xs font-bold tracking-wider uppercase mb-4">
           <Settings className="w-3.5 h-3.5" />

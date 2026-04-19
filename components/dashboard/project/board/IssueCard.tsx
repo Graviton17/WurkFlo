@@ -7,7 +7,6 @@ interface IssueCardProps {
   issue: Issue;
   projectIdentifier?: string;
   onClick?: (issue: Issue) => void;
-  provided?: any; // DnD provided
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
@@ -40,7 +39,6 @@ export function IssueCard({
   issue,
   projectIdentifier,
   onClick,
-  provided,
 }: IssueCardProps) {
   const priority = PRIORITY_CONFIG[issue.priority] || PRIORITY_CONFIG.medium;
   const identifier = projectIdentifier
@@ -49,9 +47,6 @@ export function IssueCard({
 
   return (
     <div
-      ref={provided?.innerRef}
-      {...provided?.draggableProps}
-      {...provided?.dragHandleProps}
       onClick={() => onClick?.(issue)}
       className="bg-[#0a0a0a]/60 backdrop-blur-md border border-white/[0.06] hover:border-white/[0.12] rounded-xl p-3.5 cursor-pointer transition-all duration-200 group hover:shadow-lg hover:shadow-black/20 active:scale-[0.98]"
     >
@@ -87,7 +82,7 @@ export function IssueCard({
             </span>
           )}
         </div>
-        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#ff1f1f]/80 to-[#3c00ff]/80 flex items-center justify-center border border-white/10 shadow-sm">
+        <div className="w-6 h-6 rounded-full bg-[#111] flex items-center justify-center border border-white/20 ring-1 ring-white/10">
           <User size={12} className="text-white" />
         </div>
       </div>
