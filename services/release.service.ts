@@ -1,5 +1,5 @@
 import { ReleaseCURD } from "@/curd/index";
-import { Release, DatabaseResponse } from "@/types/index";
+import { Release, ReleaseWithProgress, DatabaseResponse } from "@/types/index";
 import { issueService } from "./issue.service";
 import type { IssueWithRelations } from "@/types/index";
 
@@ -44,6 +44,15 @@ export class ReleaseService {
     releaseId: string,
   ): Promise<DatabaseResponse<IssueWithRelations[]>> {
     return issueService.getIssuesByRelease(releaseId);
+  }
+
+  /**
+   * Get releases with aggregated issue progress counts.
+   */
+  async getReleasesWithProgress(
+    projectId: string,
+  ): Promise<DatabaseResponse<ReleaseWithProgress[]>> {
+    return this.releaseCurd.getByProjectWithIssueCounts(projectId);
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState } from "react";
 import {
   Calendar,
   CheckCircle2,
@@ -9,14 +9,17 @@ import {
   Package,
   Tag,
   Loader2,
+  Clock,
 } from "lucide-react";
-import type { Release, IssueWithRelations } from "@/types/index";
+import type { ReleaseWithProgress, IssueWithRelations } from "@/types/index";
 import { getReleaseChangelog } from "@/app/actions/release.actions";
 
 interface ReleasesListProps {
-  releases: Release[];
+  releases: ReleaseWithProgress[];
   projectIdentifier?: string;
 }
+
+
 
 export function ReleasesList({
   releases,
@@ -59,15 +62,38 @@ export function ReleasesList({
     );
   }
 
+  // Sort: upcoming first, then released (by date descending)
+  const sorted = [...releases].sort((a, b) => {
+    const aReleased = a.release_date
+      ? new Date(a.release_date) <= new Date()
+      : false;
+    const bReleased = b.release_date
+      ? new Date(b.release_date) <= new Date()
+      : false;
+
+    if (aReleased !== bReleased) return aReleased ? 1 : -1;
+    // Within same group, sort by date descending
+    const aDate = a.release_date ? new Date(a.release_date).getTime() : 0;
+    const bDate = b.release_date ? new Date(b.release_date).getTime() : 0;
+    return bDate - aDate;
+  });
+
   return (
     <div className="space-y-4 p-6">
-      {releases.map((release) => {
+      {sorted.map((release) => {
         const isReleased = release.release_date
           ? new Date(release.release_date) <= new Date()
           : false;
         const isExpanded = expandedId === release.id;
         const releaseIssues = changelogMap[release.id] || [];
         const isLoading = loadingId === release.id;
+
+        const progress =
+          release.total_issues > 0
+            ? Math.round(
+                (release.completed_issues / release.total_issues) * 100,
+              )
+            : 0;
 
         return (
           <div
@@ -104,9 +130,13 @@ export function ReleasesList({
                 <div>
                   <h3 className="text-[14px] font-semibold text-[#ddd] flex items-center gap-2">
                     {release.version}
-                    {isReleased && (
+                    {isReleased ? (
                       <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/15">
                         Released
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/15">
+                        Upcoming
                       </span>
                     )}
                   </h3>
@@ -121,9 +151,33 @@ export function ReleasesList({
                   )}
                 </div>
               </div>
+
+              {/* Issue count + progress */}
+              <div className="flex items-center gap-3">
+                {release.total_issues > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isReleased
+                            ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
+                            : "bg-gradient-to-r from-[#ff1f1f] to-[#ff1f1f]/60"
+                        }`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] text-[#555] font-mono">
+                      {progress}%
+                    </span>
+                  </div>
+                )}
+                <span className="text-[11px] text-[#555] font-mono bg-white/[0.03] px-2 py-0.5 rounded-full border border-white/[0.04]">
+                  {release.total_issues} issues
+                </span>
+              </div>
             </button>
 
-            {/* Expanded Changelog */}
+            {/* Expanded Changelog — grouped by issue type */}
             {isExpanded && (
               <div className="border-t border-white/[0.04]">
                 {isLoading ? (
@@ -138,41 +192,108 @@ export function ReleasesList({
                     No issues linked to this release
                   </div>
                 ) : (
-                  releaseIssues.map((issue, idx) => {
-                    const identifier = projectIdentifier
-                      ? `${projectIdentifier}-${issue.sequence_id}`
-                      : `#${issue.sequence_id}`;
-                    return (
-                      <div
-                        key={issue.id}
-                        className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors ${
-                          idx !== releaseIssues.length - 1
-                            ? "border-b border-white/[0.03]"
-                            : ""
-                        }`}
-                      >
-                        <CheckCircle2
-                          size={14}
-                          className="text-emerald-500/60 shrink-0"
-                        />
-                        <span className="text-[11px] font-mono text-[#555] w-20">
-                          {identifier}
-                        </span>
-                        <span className="text-[13px] text-[#bbb] flex-1 truncate">
-                          {issue.title}
-                        </span>
-                        <span
-                          className={`text-[10px] font-medium uppercase ${
-                            issue.issue_type === "bug"
-                              ? "text-red-400"
-                              : "text-[#555]"
-                          }`}
-                        >
-                          {issue.issue_type}
-                        </span>
-                      </div>
+                  (() => {
+                    // Group issues by type for a proper changelog view
+                    const features = releaseIssues.filter(
+                      (i) => i.issue_type === "story",
                     );
-                  })
+                    const bugs = releaseIssues.filter(
+                      (i) => i.issue_type === "bug",
+                    );
+                    const tasks = releaseIssues.filter(
+                      (i) => i.issue_type === "task",
+                    );
+
+                    const groups = [
+                      {
+                        label: "Features",
+                        icon: "✨",
+                        issues: features,
+                        color: "text-purple-400",
+                      },
+                      {
+                        label: "Bug Fixes",
+                        icon: "🐛",
+                        issues: bugs,
+                        color: "text-red-400",
+                      },
+                      {
+                        label: "Tasks",
+                        icon: "📋",
+                        issues: tasks,
+                        color: "text-[#888]",
+                      },
+                    ].filter((g) => g.issues.length > 0);
+
+                    return groups.map((group, gIdx) => (
+                      <div key={group.label}>
+                        {/* Group header */}
+                        <div className="flex items-center gap-2 px-5 py-2 bg-white/[0.01] border-b border-white/[0.04]">
+                          <span className="text-[12px]">{group.icon}</span>
+                          <span
+                            className={`text-[11px] font-semibold uppercase tracking-wider ${group.color}`}
+                          >
+                            {group.label}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#444] bg-white/[0.03] px-1.5 py-0.5 rounded-full border border-white/[0.04]">
+                            {group.issues.length}
+                          </span>
+                        </div>
+                        {/* Group issues */}
+                        {group.issues.map((issue, idx) => {
+                          const identifier = projectIdentifier
+                            ? `${projectIdentifier}-${issue.sequence_id}`
+                            : `#${issue.sequence_id}`;
+                          const stateCategory =
+                            issue.workflow_state?.category || "todo";
+                          const isDone = stateCategory === "done";
+
+                          return (
+                            <div
+                              key={issue.id}
+                              className={`flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors ${
+                                idx !== group.issues.length - 1 ||
+                                gIdx !== groups.length - 1
+                                  ? "border-b border-white/[0.03]"
+                                  : ""
+                              }`}
+                            >
+                              {/* Completion indicator */}
+                              {isDone ? (
+                                <CheckCircle2
+                                  size={14}
+                                  className="text-emerald-400 shrink-0"
+                                />
+                              ) : (
+                                <Clock
+                                  size={14}
+                                  className="text-amber-400/60 shrink-0"
+                                />
+                              )}
+                              <span className="text-[11px] font-mono text-[#555] w-20">
+                                {identifier}
+                              </span>
+                              <span
+                                className={`text-[13px] flex-1 truncate ${isDone ? "text-[#bbb]" : "text-[#888]"}`}
+                              >
+                                {issue.title}
+                              </span>
+                              {/* Completion badge */}
+                              <span
+                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+                                  isDone
+                                    ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/15"
+                                    : "text-amber-400 bg-amber-500/10 border-amber-500/15"
+                                }`}
+                              >
+                                {isDone ? "Done" : issue.workflow_state?.name || "In progress"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ));
+                  })()
                 )}
               </div>
             )}

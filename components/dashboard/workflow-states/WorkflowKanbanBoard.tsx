@@ -16,6 +16,7 @@ interface WorkflowKanbanBoardProps {
   states: WorkflowState[];
   issues: Issue[];
   projectId: string;
+  workspaceId: string;
   onCreateIssue: (stateId?: string) => void;
   onAddColumn: () => void;
 }
@@ -148,6 +149,7 @@ export function WorkflowKanbanBoard({
   states: initialStates,
   issues: initialIssues,
   projectId,
+  workspaceId,
   onCreateIssue,
   onAddColumn,
 }: WorkflowKanbanBoardProps) {
@@ -315,6 +317,7 @@ export function WorkflowKanbanBoard({
           }}
           issue={editingIssue}
           states={states}
+          workspaceId={workspaceId}
           onSuccess={(updatedIssue: Issue) => {
             setIssues(prev => prev.map(i => i.id === updatedIssue.id ? updatedIssue : i));
           }}

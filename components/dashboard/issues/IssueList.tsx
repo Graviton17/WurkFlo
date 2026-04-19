@@ -9,6 +9,7 @@ interface IssueListProps {
   states: WorkflowState[];
   issues: Issue[];
   projectId: string;
+  workspaceId: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -87,6 +88,7 @@ export function IssueList({
   states,
   issues: initialIssues,
   projectId,
+  workspaceId,
 }: IssueListProps) {
   const [issues, setIssues] = useState<Issue[]>(initialIssues);
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
@@ -125,6 +127,7 @@ export function IssueList({
           }}
           issue={editingIssue}
           states={states}
+          workspaceId={workspaceId}
           onSuccess={(updatedIssue: Issue) => {
             setIssues(prev => prev.map(i => i.id === updatedIssue.id ? updatedIssue : i));
           }}

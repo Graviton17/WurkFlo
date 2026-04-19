@@ -99,7 +99,7 @@ export async function updateWorkspaceAction(workspaceId: string, data: Record<st
 export async function getWorkspaceMembersAction(workspaceId: string): Promise<ActionResult<any[]>> {
   try {
     await requireUser();
-    const result = await workspaceService.getWorkspaceMembers(workspaceId);
+    const result = await workspaceService.getWorkspaceMembersWithInfo(workspaceId);
 
     if (!result.success || !result.data) {
       return { success: false, data: null, error: result.error?.message || "Workspace members not found" };

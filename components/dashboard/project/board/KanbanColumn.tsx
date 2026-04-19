@@ -2,13 +2,13 @@
 
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { IssueCard } from "./IssueCard";
-import type { Issue, WorkflowState } from "@/types/index";
+import type { IssueWithRelations, WorkflowState } from "@/types/index";
 
 interface KanbanColumnProps {
   state: WorkflowState;
-  issues: Issue[];
+  issues: IssueWithRelations[];
   projectIdentifier?: string;
-  onIssueClick?: (issue: Issue) => void;
+  onIssueClick?: (issue: IssueWithRelations) => void;
 }
 
 const CATEGORY_COLORS: Record<string, { dot: string; bg: string; border: string }> = {

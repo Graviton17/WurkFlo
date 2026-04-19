@@ -5,7 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X, Calendar as CalendarIcon, Timer } from "lucide-react";
 import { useState } from "react";
 import { createSprint } from "@/app/actions/sprint.actions";
-import { Sprint, SprintStatus } from "@/types/index";
+import { Sprint } from "@/types/index";
 
 interface CreateSprintDialogProps {
   open: boolean;
@@ -14,10 +14,7 @@ interface CreateSprintDialogProps {
   onSuccess: (sprint: Sprint) => void;
 }
 
-const STATUS_OPTIONS: { label: string; value: SprintStatus }[] = [
-  { label: "Planned", value: "planned" },
-  { label: "Active", value: "active" },
-];
+
 
 export function CreateSprintDialog({
   open,
@@ -28,7 +25,6 @@ export function CreateSprintDialog({
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [status, setStatus] = useState<SprintStatus>("planned");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,7 +34,6 @@ export function CreateSprintDialog({
       setName("");
       setStartDate("");
       setEndDate("");
-      setStatus("planned");
       setError("");
     }
   }, [open]);
@@ -56,7 +51,7 @@ export function CreateSprintDialog({
         name: name.trim(),
         start_date: startDate || null,
         end_date: endDate || null,
-        status,
+        status: "planned",
       });
 
       if (result.success && result.data) {
@@ -124,25 +119,6 @@ export function CreateSprintDialog({
                     onChange={(e) => setEndDate(e.target.value)}
                     className="w-full bg-white/[0.03] border border-white/10 py-2.5 px-3 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-white/20 transition-all [color-scheme:dark]"
                   />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 mt-2">
-                <label className="text-[#a0a0a0] font-medium ml-1">Initial Status</label>
-                <div className="flex gap-2">
-                  {STATUS_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setStatus(opt.value)}
-                      className={`flex-1 py-2 rounded-lg border text-[13px] font-medium transition-all ${
-                        status === opt.value
-                          ? "bg-white/10 border-white/20 text-white shadow-sm"
-                          : "bg-transparent border-white/5 text-[#888] hover:bg-white/5 hover:text-[#bbb]"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
                 </div>
               </div>
 

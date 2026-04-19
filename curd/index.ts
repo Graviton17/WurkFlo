@@ -3,6 +3,7 @@ export * from "./workspace.curd";
 export * from "./workspace_member.curd";
 export * from "./project.curd";
 export * from './sprint.curd';
+export * from './sprint_snapshot.curd';
 export * from './epic.curd';
 export * from './release.curd';
 export * from './issue.curd';

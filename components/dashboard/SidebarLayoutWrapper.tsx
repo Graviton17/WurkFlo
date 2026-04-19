@@ -4,8 +4,10 @@ import { workspaceService, projectService } from "@/services/index";
 
 export async function SidebarLayoutWrapper({
   children,
+  activeWorkspaceId,
 }: {
   children: React.ReactNode;
+  activeWorkspaceId?: string;
 }) {
   const user = await auth.getUser();
   const result = user
@@ -13,15 +15,18 @@ export async function SidebarLayoutWrapper({
     : { data: [] };
   const workspaces = result.data || [];
 
-  // Get the first workspace's projects for the sidebar
   let projects: any[] = [];
-  let activeWorkspaceId: string | null = null;
-  if (workspaces.length > 0) {
-    activeWorkspaceId = workspaces[0].id;
+  let resolvedWorkspaceId = activeWorkspaceId;
+  
+  // If no workspace ID is provided, try to default to the first one available
+  if (!resolvedWorkspaceId && workspaces.length > 0) {
+    resolvedWorkspaceId = workspaces[0].id;
+  }
+
+  // Load projects for the active workspace
+  if (resolvedWorkspaceId) {
     try {
-      const projectsResult = await projectService.getProjectsByWorkspace(
-        workspaces[0].id
-      );
+      const projectsResult = await projectService.getProjectsByWorkspace(resolvedWorkspaceId);
       projects = projectsResult.data || [];
     } catch (err) {}
   }
@@ -30,7 +35,7 @@ export async function SidebarLayoutWrapper({
     <div className="flex flex-1 min-h-0 overflow-hidden">
       <AppSidebar
         workspaces={workspaces}
-        activeWorkspaceId={activeWorkspaceId}
+        activeWorkspaceId={resolvedWorkspaceId}
         projects={projects}
       />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden w-full">
