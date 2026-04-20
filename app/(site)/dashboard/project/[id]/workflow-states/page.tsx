@@ -66,10 +66,10 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
     states.length > 0 ? Math.max(...states.map((s) => s.position)) + 1 : 1;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-52px)] w-full bg-[#1a1a1a] text-[#f0f0f0]">
+    <div className="flex flex-col h-full overflow-hidden">
 
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.04] shrink-0">
         <div className="flex items-center gap-2">
           <Layers size={18} className="text-[#888]" />
           <h1 className="text-xl font-semibold">Workflow States</h1>
