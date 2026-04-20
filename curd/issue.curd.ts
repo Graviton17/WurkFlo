@@ -9,7 +9,8 @@ const ISSUE_WITH_RELATIONS_SELECT = `
   workflow_state:workflow_states!issues_state_id_fkey ( id, name, category ),
   sprint:sprints!issues_sprint_id_fkey ( id, name ),
   epic:epics!issues_epic_id_fkey ( id, name ),
-  release:releases!issues_release_id_fkey ( id, version )
+  release:releases!issues_release_id_fkey ( id, version ),
+  project:projects!issues_project_id_fkey ( id, name, identifier )
 `;
 
 export class IssueCURD extends BaseCURD<Issue> {

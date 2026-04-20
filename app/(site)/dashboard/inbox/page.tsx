@@ -4,6 +4,9 @@ import { MyIssuesFeed } from "@/components/dashboard/inbox/MyIssuesFeed";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getUserWorkspacesAction } from "@/app/actions/workspace.actions";
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 export default async function InboxPage() {
   const user = await auth.getUser();
@@ -12,15 +15,18 @@ export default async function InboxPage() {
     redirect("/login");
   }
 
-  let activeWorkspaceId: string | null = null;
+  const cookieStore = await cookies();
+  const storedWorkspaceId = cookieStore.get("wurkflo_active_workspace_id")?.value;
+
   const result = await getUserWorkspacesAction();
   const workspaces = result.data || [];
-  if (workspaces.length > 0) {
-    activeWorkspaceId = workspaces[0].id;
-  }
+  
+  const activeWorkspaceId = storedWorkspaceId && workspaces.some(w => w.id === storedWorkspaceId)
+    ? storedWorkspaceId
+    : (workspaces.length > 0 ? workspaces[0].id : null);
 
   return (
-    <SidebarLayoutWrapper>
+    <SidebarLayoutWrapper activeWorkspaceId={activeWorkspaceId || undefined}>
       <div className="flex flex-col w-full h-full bg-[#0c0c0d] text-[#e5e7eb]">
         {/* Header */}
         <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/[0.06] shrink-0">

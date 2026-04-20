@@ -47,7 +47,6 @@ export function NewProjectForm({ workspace }: { workspace: Workspace }) {
       }
 
       router.push(`/dashboard/workspace/${workspace.id}`);
-      router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
