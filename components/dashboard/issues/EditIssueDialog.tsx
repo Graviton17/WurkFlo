@@ -133,9 +133,9 @@ export function EditIssueDialog({
                 onChange={(e) => setStateId(e.target.value)}
                 className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/20"
               >
-                <option value="unassigned">Unassigned</option>
+                <option value="unassigned" className="bg-[#0a0a0a] text-[#a0a0a0]">Unassigned</option>
                 {states.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id} className="bg-[#0a0a0a] text-[#a0a0a0]">{s.name}</option>
                 ))}
               </select>
             </div>
@@ -249,9 +249,9 @@ export function EditIssueDialog({
                     onChange={(e) => setSprintId(e.target.value)}
                     className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
                   >
-                    <option value="">No sprint</option>
+                    <option value="" className="bg-[#0a0a0a] text-[#a0a0a0]">No sprint</option>
                     {sprints.map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.id} className="bg-[#0a0a0a] text-[#a0a0a0]">
                         {s.name} {s.status === "active" ? "●" : ""}
                       </option>
                     ))}
@@ -266,9 +266,9 @@ export function EditIssueDialog({
                     onChange={(e) => setEpicId(e.target.value)}
                     className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
                   >
-                    <option value="">No epic</option>
+                    <option value="" className="bg-[#0a0a0a] text-[#a0a0a0]">No epic</option>
                     {epics.map((e) => (
-                      <option key={e.id} value={e.id}>{e.name}</option>
+                      <option key={e.id} value={e.id} className="bg-[#0a0a0a] text-[#a0a0a0]">{e.name}</option>
                     ))}
                   </select>
                 </div>
@@ -281,9 +281,9 @@ export function EditIssueDialog({
                     onChange={(e) => setReleaseId(e.target.value)}
                     className="text-xs text-[#a0a0a0] bg-white/[0.03] border border-white/10 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/20 transition-all hover:border-white/20 cursor-pointer appearance-none min-w-[120px]"
                   >
-                    <option value="">No release</option>
+                    <option value="" className="bg-[#0a0a0a] text-[#a0a0a0]">No release</option>
                     {releases.map((r) => (
-                      <option key={r.id} value={r.id}>{r.version}</option>
+                      <option key={r.id} value={r.id} className="bg-[#0a0a0a] text-[#a0a0a0]">{r.version}</option>
                     ))}
                   </select>
                 </div>
