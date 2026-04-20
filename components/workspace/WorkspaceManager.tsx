@@ -24,7 +24,7 @@ export function WorkspaceManager({ workspaces }: WorkspaceManagerProps) {
       className="mx-auto w-full max-w-7xl px-6 py-16 relative"
     >
       {/* Decorative glow — matches home page positioning */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-white/[0.015] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 left-1/3 w-[400px] h-[400px] bg-[#1d4ed8]/20 rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div variants={fadeInUp} className="mb-10">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-5 text-sm text-white/60">
