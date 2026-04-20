@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -10,7 +10,7 @@ import {
 import { WorkflowState, Issue, IssuePriority, IssueType } from "@/types/index";
 import { EditIssueDialog } from "../issues/EditIssueDialog";
 import { moveIssue } from "@/app/actions/issue.actions";
-import { GripVertical, AlertCircle, Bug, BookOpen, CheckSquare, Layers } from "lucide-react";
+import { GripVertical, AlertCircle, Bug, BookOpen, CheckSquare, Layers, Plus } from "lucide-react";
 
 interface WorkflowKanbanBoardProps {
   states: WorkflowState[];
@@ -157,6 +157,14 @@ export function WorkflowKanbanBoard({
   const [issues, setIssues] = useState<Issue[]>(initialIssues);
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
 
+  useEffect(() => {
+    setStates(initialStates);
+  }, [initialStates]);
+
+  useEffect(() => {
+    setIssues(initialIssues);
+  }, [initialIssues]);
+
   const issuesForState = (stateId: string) =>
     issues.filter((i) => i.state_id === stateId);
 
@@ -209,14 +217,22 @@ export function WorkflowKanbanBoard({
     if (issues.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-5 text-[#555]">
-          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <Layers size={28} className="text-[#666]" />
+          <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center">
+            <Layers size={28} className="text-[#888]" />
           </div>
-          <div className="text-center">
-            <p className="text-sm text-[#aaa] font-medium mb-1">No columns yet</p>
-            <p className="text-xs text-[#555]">Create your first workflow state to start the board</p>
+          <div className="text-center space-y-1.5">
+            <h2 className="text-[16px] font-semibold text-[#ddd]">
+              No columns yet
+            </h2>
+            <p className="text-[13px] text-[#666] max-w-md leading-relaxed">
+              Create your first workflow state to start the board
+            </p>
           </div>
-          <button onClick={onAddColumn} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-medium text-sm">
+          <button
+            onClick={onAddColumn}
+            className="flex items-center gap-2 text-[13px] font-medium text-[#ccc] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-4 py-2 rounded-lg border border-white/[0.06] transition-all"
+          >
+            <Plus size={15} />
             Add Column
           </button>
         </div>
@@ -226,8 +242,12 @@ export function WorkflowKanbanBoard({
       // But actually, on WorkflowStatesPage, they SHOULD create a column
       return (
         <div className="flex flex-col items-center justify-center h-full gap-5 text-[#555]">
-          <p className="text-sm">You have {issues.length} issues but no columns.</p>
-          <button onClick={onAddColumn} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-medium text-sm">
+          <p className="text-[13px] text-[#666]">You have {issues.length} issues but no columns.</p>
+          <button
+            onClick={onAddColumn}
+            className="flex items-center gap-2 text-[13px] font-medium text-[#ccc] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-4 py-2 rounded-lg border border-white/[0.06] transition-all"
+          >
+            <Plus size={15} />
             Add Column
           </button>
         </div>
