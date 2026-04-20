@@ -52,6 +52,15 @@ export default function WorkflowStatesPage({ params }: WorkflowStatesPageProps) 
     if (projectId) fetchData(projectId);
   }, [projectId, fetchData]);
 
+  useEffect(() => {
+    const handleIssueCreated = () => {
+      if (projectId) fetchData(projectId);
+    };
+
+    window.addEventListener("issue-created", handleIssueCreated);
+    return () => window.removeEventListener("issue-created", handleIssueCreated);
+  }, [projectId, fetchData]);
+
   const handleAdded = (newState: WorkflowState) => {
     setStates((prev) =>
       [...prev, newState].sort((a, b) => a.position - b.position)

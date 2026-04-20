@@ -32,6 +32,15 @@ export default function BacklogPage({ params }: BacklogPageProps) {
     if (projectId) loadBacklog(projectId);
   }, [projectId]);
 
+  useEffect(() => {
+    const handleIssueCreated = () => {
+      if (projectId) loadBacklog(projectId);
+    };
+
+    window.addEventListener("issue-created", handleIssueCreated);
+    return () => window.removeEventListener("issue-created", handleIssueCreated);
+  }, [projectId]);
+
   const loadBacklog = async (pId: string) => {
     setError("");
     try {

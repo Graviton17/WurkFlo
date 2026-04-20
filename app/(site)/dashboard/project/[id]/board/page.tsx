@@ -39,6 +39,15 @@ export default function BoardPage({ params }: BoardPageProps) {
     if (projectId) loadBoardData(projectId);
   }, [projectId]);
 
+  useEffect(() => {
+    const handleIssueCreated = () => {
+      if (projectId) loadBoardData(projectId);
+    };
+
+    window.addEventListener("issue-created", handleIssueCreated);
+    return () => window.removeEventListener("issue-created", handleIssueCreated);
+  }, [projectId]);
+
   const loadBoardData = async (pId: string) => {
     setError("");
     try {

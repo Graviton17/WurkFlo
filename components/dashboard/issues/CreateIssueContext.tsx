@@ -73,6 +73,8 @@ export function CreateIssueProvider({
         releases={releases}
         defaultStateId={defaultStateId}
         onSuccess={(issue) => {
+          const event = new CustomEvent("issue-created", { detail: { issue } });
+          window.dispatchEvent(event);
           router.refresh();
         }}
       />

@@ -33,6 +33,15 @@ export default function SprintsPage({ params }: SprintsPageProps) {
     if (projectId) loadSprints(projectId);
   }, [projectId]);
 
+  useEffect(() => {
+    const handleIssueCreated = () => {
+      if (projectId) loadSprints(projectId);
+    };
+
+    window.addEventListener("issue-created", handleIssueCreated);
+    return () => window.removeEventListener("issue-created", handleIssueCreated);
+  }, [projectId]);
+
   const loadSprints = async (pId: string) => {
     setError("");
     try {
