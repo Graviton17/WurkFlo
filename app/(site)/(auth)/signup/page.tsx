@@ -44,8 +44,10 @@ export default function SignupPage() {
       const result = await signupAction({
         email,
         password,
-        first_name: firstName,
-        last_name: lastName,
+        metadata: {
+          first_name: firstName,
+          last_name: lastName,
+        },
       });
 
       if (!result.success) {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -46,54 +46,69 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
-  const STATIC_ACTIONS: CommandAction[] = [
-    {
-      id: "board",
-      title: "Go to Active Sprint",
-      icon: Kanban,
-      group: "Navigation",
-    },
-    { id: "backlog", title: "Go to Backlog", icon: List, group: "Navigation" },
-    {
-      id: "epics",
-      title: "Go to Epics",
-      icon: Milestone,
-      group: "Navigation",
-    },
-    {
-      id: "releases",
-      title: "Go to Releases",
-      icon: Tag,
-      group: "Navigation",
-    },
-    {
-      id: "inbox",
-      title: "Go to Inbox",
-      icon: Inbox,
-      group: "Navigation",
-      href: "/dashboard/inbox",
-    },
-    {
-      id: "my-issues",
-      title: "Go to My Issues",
-      icon: ListChecks,
-      group: "Navigation",
-      href: "/dashboard/my-issues",
-    },
-    {
-      id: "create-issue",
-      title: "Create new issue",
-      icon: Plus,
-      group: "Actions",
-    },
-    {
-      id: "settings",
-      title: "Open Settings",
-      icon: Settings,
-      group: "Navigation",
-      href: "/profile",
-    },
-  ];
+  const params = useParams();
+  const projectId = params?.id as string | undefined;
+
+  const STATIC_ACTIONS: CommandAction[] = useMemo(() => {
+    const actions: CommandAction[] = [
+      {
+        id: "board",
+        title: "Go to Active Sprint",
+        icon: Kanban,
+        group: "Navigation",
+        href: projectId ? `/dashboard/project/${projectId}/board` : (workspaceId ? `/dashboard/workspace/${workspaceId}` : `/dashboard`),
+      },
+      { 
+        id: "backlog", 
+        title: "Go to Backlog", 
+        icon: List, 
+        group: "Navigation",
+        href: projectId ? `/dashboard/project/${projectId}/backlog` : (workspaceId ? `/dashboard/workspace/${workspaceId}` : `/dashboard`),
+      },
+      {
+        id: "epics",
+        title: "Go to Epics",
+        icon: Milestone,
+        group: "Navigation",
+        href: projectId ? `/dashboard/project/${projectId}/epics` : (workspaceId ? `/dashboard/workspace/${workspaceId}` : `/dashboard`),
+      },
+      {
+        id: "releases",
+        title: "Go to Releases",
+        icon: Tag,
+        group: "Navigation",
+        href: projectId ? `/dashboard/project/${projectId}/releases` : (workspaceId ? `/dashboard/workspace/${workspaceId}` : `/dashboard`),
+      },
+      {
+        id: "inbox",
+        title: "Go to Inbox",
+        icon: Inbox,
+        group: "Navigation",
+        href: "/dashboard/inbox",
+      },
+      {
+        id: "my-issues",
+        title: "Go to My Issues",
+        icon: ListChecks,
+        group: "Navigation",
+        href: "/dashboard/my-issues",
+      },
+      {
+        id: "create-issue",
+        title: "Create new issue",
+        icon: Plus,
+        group: "Actions",
+      },
+      {
+        id: "settings",
+        title: "Open Settings",
+        icon: Settings,
+        group: "Navigation",
+        href: "/profile",
+      },
+    ];
+    return actions;
+  }, [projectId, workspaceId]);
 
   // Build combined actions list from static + search results
   const buildActions = useCallback((): CommandAction[] => {
@@ -145,6 +160,22 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
   }, [search, searchResults]);
 
   const filtered = buildActions();
+
+  // Flatten the groups exactly as they are rendered so that globalIdx matches the real item
+  const groups = useMemo(() => {
+    return filtered.reduce(
+      (acc, action) => {
+        if (!acc[action.group]) acc[action.group] = [];
+        acc[action.group].push(action);
+        return acc;
+      },
+      {} as Record<string, CommandAction[]>,
+    );
+  }, [filtered]);
+
+  const flattenedActions = useMemo(() => {
+    return Object.values(groups).flat();
+  }, [groups]);
 
   // Debounced search
   useEffect(() => {
@@ -236,34 +267,24 @@ export function CommandPalette({ workspaceId }: CommandPaletteProps) {
     const handleNav = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) => Math.min(prev + 1, filtered.length - 1));
+        setSelectedIndex((prev) => Math.min(prev + 1, flattenedActions.length - 1));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (e.key === "Enter" && filtered[selectedIndex]) {
+      } else if (e.key === "Enter" && flattenedActions[selectedIndex]) {
         e.preventDefault();
-        executeAction(filtered[selectedIndex]);
+        executeAction(flattenedActions[selectedIndex]);
       }
     };
 
     window.addEventListener("keydown", handleNav);
     return () => window.removeEventListener("keydown", handleNav);
-  }, [isOpen, filtered, selectedIndex, executeAction]);
+  }, [isOpen, flattenedActions, selectedIndex, executeAction]);
 
   // Reset selection when search changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [search]);
-
-  // Group actions
-  const groups = filtered.reduce(
-    (acc, action) => {
-      if (!acc[action.group]) acc[action.group] = [];
-      acc[action.group].push(action);
-      return acc;
-    },
-    {} as Record<string, CommandAction[]>,
-  );
 
   let globalIdx = -1;
 
