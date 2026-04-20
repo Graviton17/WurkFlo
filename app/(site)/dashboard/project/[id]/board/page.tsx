@@ -101,8 +101,8 @@ export default function BoardPage({ params }: BoardPageProps) {
   if (workflowStates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-5">
-        <div className="w-16 h-16 rounded-2xl bg-[#ff1f1f]/[0.08] border border-[#ff1f1f]/20 flex items-center justify-center">
-          <Layers size={28} className="text-[#ff1f1f]/70" />
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center">
+          <Layers size={28} className="text-[#888]" />
         </div>
         <div className="text-center space-y-1.5">
           <h2 className="text-[16px] font-semibold text-[#ddd]">
@@ -115,7 +115,7 @@ export default function BoardPage({ params }: BoardPageProps) {
         </div>
         <Link
           href={`/dashboard/project/${projectId}/workflow-states`}
-          className="flex items-center gap-2 text-[13px] font-medium text-[#ff1f1f] hover:text-[#ff4f4f] bg-[#ff1f1f]/[0.08] hover:bg-[#ff1f1f]/[0.12] px-4 py-2 rounded-lg border border-[#ff1f1f]/20 transition-all"
+          className="flex items-center gap-2 text-[13px] font-medium text-[#ccc] hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-4 py-2 rounded-lg border border-white/[0.06] transition-all"
         >
           <Layers size={15} />
           Configure Workflow States
