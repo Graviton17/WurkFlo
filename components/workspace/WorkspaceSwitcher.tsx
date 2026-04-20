@@ -13,11 +13,11 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: { workspace
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const currentWorkspaceId = activeWorkspaceId ?? (params?.id as string | undefined);
+  const currentWorkspaceId = activeWorkspaceId || (params?.id as string | undefined) || (workspaces.length > 0 ? workspaces[0].id : undefined);
 
   const currentWorkspace = currentWorkspaceId 
-    ? workspaces.find((w) => w.id === currentWorkspaceId)
-    : null;
+    ? workspaces.find((w) => w.id === currentWorkspaceId) ?? (workspaces.length > 0 ? workspaces[0] : null)
+    : (workspaces.length > 0 ? workspaces[0] : null);
 
   const filteredWorkspaces = useMemo(() => {
     if (!search.trim()) return workspaces;
@@ -81,7 +81,10 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: { workspace
                   key={ws.id}
                   onClick={() => {
                     setOpen(false);
+                    document.cookie = `wurkflo_active_workspace_id=${ws.id}; path=/; max-age=31536000`;
+                    localStorage.setItem("wurkflo_active_workspace_id", ws.id);
                     router.push(`/dashboard/workspace/${ws.id}`);
+                    router.refresh();
                   }}
                   className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors flex items-center justify-between ${
                     currentWorkspaceId === ws.id 
@@ -108,6 +111,7 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: { workspace
               onClick={() => {
                 setOpen(false);
                 router.push("/dashboard/workspace");
+                router.refresh();
               }}
               className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-md transition-colors"
             >

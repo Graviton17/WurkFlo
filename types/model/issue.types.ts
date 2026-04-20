@@ -32,4 +32,5 @@ export interface IssueWithRelations extends Issue {
   sprint?: { id: string; name: string } | null;
   epic?: { id: string; name: string } | null;
   release?: { id: string; version: string } | null;
+  project?: { id: string; name: string; identifier: string } | null;
 }
