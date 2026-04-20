@@ -7,28 +7,44 @@ import {
   Loader2,
   AlertCircle,
   Circle,
+  Hash,
 } from "lucide-react";
 import { staggerContainer, staggerItem, fadeIn } from "@/lib/motion";
-import type { Issue } from "@/types/index";
+import type { IssueWithRelations } from "@/types/index";
+import Link from "next/link";
+
+import { getMyIssues } from "@/app/actions/issue.actions";
 
 interface IssueGroup {
   label: string;
   dot: string;
-  issues: Issue[];
+  issues: IssueWithRelations[];
 }
 
-export function MyIssuesList() {
-  const [issues, setIssues] = useState<Issue[]>([]);
+interface MyIssuesListProps {
+  workspaceId: string;
+}
+
+export function MyIssuesList({ workspaceId }: MyIssuesListProps) {
+  const [issues, setIssues] = useState<IssueWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     loadMyIssues();
-  }, []);
+  }, [workspaceId]);
 
   const loadMyIssues = async () => {
     try {
-      setIssues([]);
+      setIsLoading(true);
+      setError("");
+      const result = await getMyIssues(workspaceId);
+      
+      if (result.success && result.data) {
+        setIssues(result.data as IssueWithRelations[]);
+      } else {
+        setError(result.error || "Failed to load your issues");
+      }
     } catch (err) {
       setError("Failed to load your issues");
     } finally {
@@ -104,24 +120,47 @@ export function MyIssuesList() {
               <motion.div
                 key={issue.id}
                 variants={staggerItem}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer group"
               >
-                <Circle size={14} className="text-[#444] shrink-0" />
-                <span className="text-[11px] font-mono text-[#555] w-14 shrink-0">
-                  #{issue.sequence_id}
-                </span>
-                <span className="text-[13px] text-[#bbb] group-hover:text-white flex-1 truncate transition-colors font-medium">
-                  {issue.title}
-                </span>
-                <span
-                  className={`text-[10px] font-medium uppercase ${
-                    issue.issue_type === "bug"
-                      ? "text-red-400"
-                      : "text-[#555]"
-                  }`}
+                <Link
+                  href={`/dashboard/project/${issue.project_id}/board`}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors cursor-pointer group"
                 >
-                  {issue.issue_type}
-                </span>
+                  <Circle size={14} className="text-[#444] shrink-0" />
+                  
+                  {/* Project identifier tag */}
+                  {issue.project && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#555] bg-white/[0.04] border border-white/[0.06] rounded px-1.5 py-0.5 shrink-0">
+                      <Hash size={9} className="text-[#444]" />
+                      {issue.project.identifier}
+                    </span>
+                  )}
+
+                  <span className="text-[11px] font-mono text-[#555] w-10 shrink-0">
+                    #{issue.sequence_id}
+                  </span>
+                  <span className="text-[13px] text-[#bbb] group-hover:text-white flex-1 truncate transition-colors font-medium">
+                    {issue.title}
+                  </span>
+                  
+                  {/* Workflow state pill */}
+                  {issue.workflow_state && (
+                    <span className="text-[10px] font-medium text-[#555] bg-white/[0.03] border border-white/[0.05] rounded-full px-2 py-0.5 shrink-0">
+                      {issue.workflow_state.name}
+                    </span>
+                  )}
+
+                  <span
+                    className={`text-[10px] font-medium uppercase shrink-0 ${
+                      issue.issue_type === "bug"
+                        ? "text-red-400"
+                        : issue.issue_type === "story"
+                        ? "text-blue-400"
+                        : "text-[#555]"
+                    }`}
+                  >
+                    {issue.issue_type}
+                  </span>
+                </Link>
               </motion.div>
             ))}
           </div>

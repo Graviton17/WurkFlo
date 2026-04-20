@@ -14,7 +14,17 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import { getProjectData, getWorkspaceProjectsData } from "@/app/actions/project.actions";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: { initialUser?: any, userProfile?: any, workspaces?: WorkspaceWithRole[] }) {
+export function DashboardNavbar({ 
+  initialUser, 
+  userProfile, 
+  workspaces = [],
+  defaultWorkspaceId
+}: { 
+  initialUser?: any, 
+  userProfile?: any, 
+  workspaces?: WorkspaceWithRole[],
+  defaultWorkspaceId?: string | null
+}) {
   const [user, setUser] = useState<any>(initialUser || null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -28,6 +38,31 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
   const isProjectRoute = segments[0] === "project";
   const urlProjectId = isProjectRoute ? segments[1] : null;
   const urlWorkspaceId = (segments[0] === "workspace" || segments[0] === "new") && segments.length > 1 ? segments[1] : null;
+
+  // Read last-active workspace from localStorage as fallback
+  const [storedWorkspaceId, setStoredWorkspaceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("wurkflo_active_workspace_id");
+      if (stored) setStoredWorkspaceId(stored);
+    } catch {}
+  }, []);
+
+  const effectiveWorkspaceId = activeProject 
+    ? activeProject.workspace_id 
+    : (urlWorkspaceId || storedWorkspaceId || defaultWorkspaceId || (workspaces.length > 0 ? workspaces[0].id : null));
+
+  // Persist active workspace ID to localStorage and cookie whenever it changes
+  useEffect(() => {
+    if (effectiveWorkspaceId) {
+      try {
+        localStorage.setItem("wurkflo_active_workspace_id", effectiveWorkspaceId);
+        document.cookie = `wurkflo_active_workspace_id=${effectiveWorkspaceId}; path=/; max-age=31536000`;
+        setStoredWorkspaceId(effectiveWorkspaceId);
+      } catch {}
+    }
+  }, [effectiveWorkspaceId]);
 
   useEffect(() => {
 
@@ -119,7 +154,7 @@ export function DashboardNavbar({ initialUser, userProfile, workspaces = [] }: {
           <span className="text-muted-foreground/40 font-light">/</span>
           <WorkspaceSwitcher 
             workspaces={workspaces} 
-            activeWorkspaceId={activeProject ? activeProject.workspace_id : urlWorkspaceId} 
+            activeWorkspaceId={effectiveWorkspaceId} 
           />
           
         </div>

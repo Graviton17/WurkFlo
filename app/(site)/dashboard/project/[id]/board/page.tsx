@@ -11,6 +11,8 @@ import { getSprintBoardData } from "@/app/actions/board.actions";
 import { moveIssue } from "@/app/actions/issue.actions";
 import { useCreateIssue } from "@/components/dashboard/issues/CreateIssueContext";
 
+export const dynamic = "force-dynamic";
+
 interface BoardPageProps {
   params: Promise<{ id: string }>;
 }

@@ -4,6 +4,7 @@ import { requireUser } from "./utils";
 import { projectService, workflowStateService } from "@/services/index";
 import { CreateProjectSchema } from "@/types/validation";
 import { logger } from "@/lib/logger";
+import { revalidatePath } from "next/cache";
 import type { ActionResult, Project } from "@/types/index";
 
 export async function createProjectAction(data: Record<string, unknown>): Promise<ActionResult<Project>> {
@@ -22,8 +23,9 @@ export async function createProjectAction(data: Record<string, unknown>): Promis
     }
 
     const newProject = result.data;
-
-
+    
+    // Revalidate the workspace page to show the newly created project
+    revalidatePath(`/dashboard/workspace/${parsed.data.workspace_id}`);
 
     return { success: true, data: newProject };
   } catch (error) {
