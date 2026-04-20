@@ -1,6 +1,6 @@
 import { Inbox } from "lucide-react";
 import { SidebarLayoutWrapper } from "@/components/dashboard/SidebarLayoutWrapper";
-import { MyIssuesFeed } from "@/components/dashboard/inbox/MyIssuesFeed";
+import { InboxFeed } from "@/components/dashboard/inbox/InboxFeed";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getUserWorkspacesAction } from "@/app/actions/workspace.actions";
@@ -48,7 +48,7 @@ export default async function InboxPage() {
 
         {/* Feed */}
         <div className="flex-1 overflow-hidden">
-          <MyIssuesFeed workspaceId={activeWorkspaceId} />
+          <InboxFeed />
         </div>
       </div>
     </SidebarLayoutWrapper>
