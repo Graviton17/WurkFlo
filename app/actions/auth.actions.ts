@@ -5,6 +5,7 @@ import { authSyncService } from "@/services";
 import { LoginSchema, CreateUserSchema } from "@/types/validation";
 import type { ActionResult } from "@/types/index";
 import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
+import { z } from "zod";
 
 export async function loginAction(data: Record<string, unknown>): Promise<ActionResult<{ session: Session | null; message: string }>> {
   const parsed = LoginSchema.safeParse(data);
@@ -55,4 +56,24 @@ export async function syncUserAction(): Promise<ActionResult<{ success: boolean 
   }
 
   return { success: true, data: { success: true } };
+}
+
+const EmailSchema = z.object({ email: z.string().email("Valid email is required") });
+
+/**
+ * Send a magic link email for passwordless login
+ */
+export async function sendMagicLinkAction(data: Record<string, unknown>): Promise<ActionResult<{ message: string }>> {
+  const parsed = EmailSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, data: null, error: "Please enter a valid email address" };
+  }
+
+  const result = await auth.signInWithOtp(parsed.data.email);
+
+  if (!result.success) {
+    return { success: false, data: null, error: result.error?.message || "Failed to send login link" };
+  }
+
+  return { success: true, data: { message: "Login link sent to your email" } };
 }

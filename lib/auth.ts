@@ -279,6 +279,37 @@ export class Auth {
 
 
   /**
+   * Send a magic link to the user's email for passwordless login
+   * @param email - User email
+   * @returns Promise with success status
+   */
+  async signInWithOtp(email: string): Promise<AuthResponse<null>> {
+    try {
+      const client = await this.getClient();
+      const { error } = await client.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
+        },
+      });
+
+      return {
+        data: null,
+        error,
+        success: !error,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: error as Error,
+        success: false,
+      };
+    }
+  }
+
+
+  /**
    * Handle OAuth Callback
    * @param code - Authorization code
    * @param next - Redirect path
