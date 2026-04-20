@@ -157,8 +157,8 @@ export function Step4Members() {
                 disabled={!workspaceData}
                 aria-label="Member role"
               >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
+                <option value="member" className="bg-[#0c0c0d]">Member</option>
+                <option value="admin" className="bg-[#0c0c0d]">Admin</option>
               </select>
               <button
                 type="button"

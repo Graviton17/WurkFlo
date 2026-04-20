@@ -55,7 +55,7 @@ export function MyIssuesFeed({ workspaceId }: MyIssuesFeedProps) {
         animate="visible"
         className="flex items-center justify-center h-full"
       >
-        <Loader2 className="animate-spin text-[#ff1f1f]/40" size={24} />
+        <Loader2 className="animate-spin text-[#555]" size={24} />
       </motion.div>
     );
   }
@@ -78,7 +78,7 @@ export function MyIssuesFeed({ workspaceId }: MyIssuesFeedProps) {
         className="flex flex-col items-center justify-center h-full text-[#555] gap-4 px-6 relative"
       >
         {/* Decorative glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#ff1f1f]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
           <Inbox size={28} className="text-[#444]" />
         </div>

@@ -122,7 +122,7 @@ export function WorkspaceSwitcher({ workspaces, activeWorkspaceId }: { workspace
                 setOpen(false);
                 router.push("/dashboard/new");
               }}
-              className="w-full px-3 py-2 text-sm text-[#009b65] hover:text-[#009b65]/80 hover:bg-secondary/50 rounded-md transition-colors flex items-center gap-2"
+              className="w-full px-3 py-2 text-sm text-[#888] hover:text-white hover:bg-secondary/50 rounded-md transition-colors flex items-center gap-2"
             >
               <Plus size={14} />
               New workspace

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useRef, useEffect } from "react";
 import {
   X,
   User,
@@ -11,9 +11,10 @@ import {
   GitBranch,
   GitPullRequest,
   CheckCircle,
-  Hash,
   Timer,
   Package,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { IssueWithRelations, WorkflowState, Sprint, Epic, Release } from "@/types/index";
@@ -33,12 +34,105 @@ interface IssueDetailModalProps {
 }
 
 const PRIORITY_OPTIONS = [
-  { value: "urgent", label: "Urgent", color: "text-red-400", bg: "bg-red-500/10 border-red-500/15" },
-  { value: "high", label: "High", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/15" },
-  { value: "medium", label: "Medium", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/15" },
-  { value: "low", label: "Low", color: "text-zinc-400", bg: "bg-zinc-500/10 border-zinc-500/15" },
+  { value: "urgent", label: "Urgent", color: "text-red-400", dot: "bg-red-400" },
+  { value: "high",   label: "High",   color: "text-orange-400", dot: "bg-orange-400" },
+  { value: "medium", label: "Medium", color: "text-amber-400", dot: "bg-amber-400" },
+  { value: "low",    label: "Low",    color: "text-zinc-400",  dot: "bg-zinc-500" },
 ];
 
+// ─── Reusable custom dropdown ────────────────────────────────────────────────
+interface DropdownOption {
+  value: string;
+  label: string;
+  colorClass?: string;
+  dotClass?: string;
+}
+
+function CustomDropdown({
+  value,
+  options,
+  onChange,
+  placeholder = "Select…",
+  icon,
+}: {
+  value: string;
+  options: DropdownOption[];
+  onChange: (v: string) => void;
+  placeholder?: string;
+  icon?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const selected = options.find((o) => o.value === value);
+
+  // close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative w-full">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.05] rounded-lg text-[12.5px] text-[#ccc] outline-none transition-all cursor-pointer"
+      >
+        {icon && <span className="shrink-0 text-[#555]">{icon}</span>}
+        {selected?.dotClass && (
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${selected.dotClass}`} />
+        )}
+        <span className={`flex-1 text-left truncate ${selected?.colorClass ?? "text-[#888]"}`}>
+          {selected?.label ?? placeholder}
+        </span>
+        <ChevronDown
+          size={13}
+          className={`shrink-0 text-[#555] transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.12 }}
+            className="absolute z-[200] left-0 right-0 mt-1 bg-[#18181b] border border-white/[0.08] rounded-xl shadow-2xl overflow-hidden"
+            style={{ boxShadow: "0 8px 32px -4px rgba(0,0,0,0.7)" }}
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors text-left
+                  ${opt.value === value
+                    ? "bg-white/[0.07] text-white"
+                    : "text-[#aaa] hover:bg-white/[0.05] hover:text-white"
+                  }`}
+              >
+                {opt.dotClass && (
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${opt.dotClass}`} />
+                )}
+                <span className={`flex-1 ${opt.colorClass ?? ""}`}>{opt.label}</span>
+                {opt.value === value && <Check size={12} className="text-white/50 shrink-0" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Main modal ──────────────────────────────────────────────────────────────
 export function IssueDetailModal({
   issue,
   projectIdentifier,
@@ -65,11 +159,9 @@ export function IssueDetailModal({
     ? `${projectIdentifier}-${issue.sequence_id}`
     : `#${issue.sequence_id}`;
   const currentPriority =
-    PRIORITY_OPTIONS.find((p) => p.value === issue.priority) ||
-    PRIORITY_OPTIONS[2];
+    PRIORITY_OPTIONS.find((p) => p.value === issue.priority) || PRIORITY_OPTIONS[2];
   const currentState = workflowStates.find((s) => s.id === issue.state_id);
 
-  // Generic property updater with optimistic update
   const saveProperty = useCallback(
     (field: string, value: unknown) => {
       startTransition(async () => {
@@ -83,8 +175,7 @@ export function IssueDetailModal({
   );
 
   const handleDescriptionBlur = () => {
-    const current =
-      typeof issue.description === "string" ? issue.description : "";
+    const current = typeof issue.description === "string" ? issue.description : "";
     if (description !== current) {
       saveProperty("description", description || null);
     }
@@ -98,6 +189,30 @@ export function IssueDetailModal({
       saveProperty("estimate", num);
     }
   };
+
+  // Build option arrays for selects
+  const stateOptions: DropdownOption[] = [
+    { value: "", label: "Unassigned" },
+    ...workflowStates.map((s) => ({ value: s.id, label: s.name })),
+  ];
+
+  const sprintOptions: DropdownOption[] = [
+    { value: "", label: "No sprint" },
+    ...sprints.map((s) => ({
+      value: s.id,
+      label: s.name + (s.status === "active" ? " ●" : ""),
+    })),
+  ];
+
+  const epicOptions: DropdownOption[] = [
+    { value: "", label: "None" },
+    ...epics.map((e) => ({ value: e.id, label: e.name })),
+  ];
+
+  const releaseOptions: DropdownOption[] = [
+    { value: "", label: "None" },
+    ...releases.map((r) => ({ value: r.id, label: r.version })),
+  ];
 
   return (
     <AnimatePresence>
@@ -154,7 +269,7 @@ export function IssueDetailModal({
                 {issue.title}
               </h2>
 
-              {/* Description — saves on blur */}
+              {/* Description */}
               <div className="mb-8">
                 <label className="block text-[11px] font-semibold text-[#555] uppercase tracking-wider mb-2.5">
                   Description
@@ -191,24 +306,15 @@ export function IssueDetailModal({
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
                     <GitBranch size={15} className="text-[#666] shrink-0" />
-                    <span className="text-[12.5px] text-[#777] font-mono">
-                      No linked branches
-                    </span>
+                    <span className="text-[12.5px] text-[#777] font-mono">No linked branches</span>
                   </div>
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
-                    <GitPullRequest
-                      size={15}
-                      className="text-[#666] shrink-0"
-                    />
-                    <span className="text-[12.5px] text-[#777] font-mono">
-                      No pull requests
-                    </span>
+                    <GitPullRequest size={15} className="text-[#666] shrink-0" />
+                    <span className="text-[12.5px] text-[#777] font-mono">No pull requests</span>
                   </div>
                   <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.04] rounded-xl">
                     <CheckCircle size={15} className="text-[#666] shrink-0" />
-                    <span className="text-[12.5px] text-[#777]">
-                      No CI/CD pipeline linked
-                    </span>
+                    <span className="text-[12.5px] text-[#777]">No CI/CD pipeline linked</span>
                   </div>
                 </div>
               </div>
@@ -221,26 +327,18 @@ export function IssueDetailModal({
               </h3>
 
               <div className="space-y-4">
-                {/* Status — real workflow states */}
+                {/* Status */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Status
                   </label>
                   {workflowStates.length > 0 ? (
-                    <select
+                    <CustomDropdown
                       value={issue.state_id || ""}
-                      onChange={(e) =>
-                        saveProperty("state_id", e.target.value || null)
-                      }
-                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
-                    >
-                      <option value="">Unassigned</option>
-                      {workflowStates.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
+                      options={stateOptions}
+                      onChange={(v) => saveProperty("state_id", v || null)}
+                      placeholder="Unassigned"
+                    />
                   ) : (
                     <div className="px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888]">
                       {currentState?.name || issue.workflow_state?.name || "—"}
@@ -248,25 +346,24 @@ export function IssueDetailModal({
                   )}
                 </div>
 
-                {/* Priority — clickable */}
+                {/* Priority */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Priority
                   </label>
-                  <select
-                    value={issue.priority}
-                    onChange={(e) => saveProperty("priority", e.target.value)}
-                    className={`w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer ${currentPriority.color}`}
-                  >
-                    {PRIORITY_OPTIONS.map((p) => (
-                      <option key={p.value} value={p.value}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
+                  <CustomDropdown
+                    value={issue.priority || "medium"}
+                    options={PRIORITY_OPTIONS.map((p) => ({
+                      value: p.value,
+                      label: p.label,
+                      colorClass: p.color,
+                      dotClass: p.dot,
+                    }))}
+                    onChange={(v) => saveProperty("priority", v)}
+                  />
                 </div>
 
-                {/* Assignee — functional picker */}
+                {/* Assignee */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Assignee
@@ -289,7 +386,7 @@ export function IssueDetailModal({
                   )}
                 </div>
 
-                {/* Story Points — inline edit */}
+                {/* Story Points */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Story Points
@@ -319,98 +416,68 @@ export function IssueDetailModal({
 
                 <div className="border-t border-white/[0.04] pt-4 mt-4" />
 
-                {/* Sprint — editable dropdown */}
+                {/* Sprint */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Sprint
                   </label>
                   {sprints.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <Timer size={13} className="text-blue-400/70 shrink-0" />
-                      <select
-                        value={issue.sprint_id || ""}
-                        onChange={(e) =>
-                          saveProperty("sprint_id", e.target.value || null)
-                        }
-                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
-                      >
-                        <option value="">No sprint</option>
-                        {sprints.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} {s.status === "active" ? "●" : ""}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <CustomDropdown
+                      value={issue.sprint_id || ""}
+                      options={sprintOptions}
+                      onChange={(v) => saveProperty("sprint_id", v || null)}
+                      placeholder="No sprint"
+                      icon={<Timer size={13} className="text-blue-400/70" />}
+                    />
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                       <Kanban size={13} />
                       <span>
-                        {issue.sprint?.name ||
-                          (issue.sprint_id ? "Active" : "No sprint")}
+                        {issue.sprint?.name || (issue.sprint_id ? "Active" : "No sprint")}
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Epic — editable dropdown */}
+                {/* Epic */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Epic
                   </label>
                   {epics.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <Milestone size={13} className="text-[#ff1f1f]/70 shrink-0" />
-                      <select
-                        value={issue.epic_id || ""}
-                        onChange={(e) =>
-                          saveProperty("epic_id", e.target.value || null)
-                        }
-                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
-                      >
-                        <option value="">No epic</option>
-                        {epics.map((e) => (
-                          <option key={e.id} value={e.id}>{e.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <CustomDropdown
+                      value={issue.epic_id || ""}
+                      options={epicOptions}
+                      onChange={(v) => saveProperty("epic_id", v || null)}
+                      placeholder="None"
+                      icon={<Milestone size={13} className="text-purple-400/70" />}
+                    />
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                       <Milestone size={13} />
-                      <span>
-                        {issue.epic?.name || (issue.epic_id ? "Linked" : "None")}
-                      </span>
+                      <span>{issue.epic?.name || (issue.epic_id ? "Linked" : "None")}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Release — editable dropdown */}
+                {/* Release */}
                 <div>
                   <label className="block text-[11px] text-[#555] mb-1.5 font-medium">
                     Release
                   </label>
                   {releases.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <Package size={13} className="text-emerald-400/70 shrink-0" />
-                      <select
-                        value={issue.release_id || ""}
-                        onChange={(e) =>
-                          saveProperty("release_id", e.target.value || null)
-                        }
-                        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-[12.5px] text-[#ccc] outline-none hover:border-white/[0.1] focus:border-indigo-500/30 transition-colors appearance-none cursor-pointer"
-                      >
-                        <option value="">No release</option>
-                        {releases.map((r) => (
-                          <option key={r.id} value={r.id}>{r.version}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <CustomDropdown
+                      value={issue.release_id || ""}
+                      options={releaseOptions}
+                      onChange={(v) => saveProperty("release_id", v || null)}
+                      placeholder="None"
+                      icon={<Package size={13} className="text-emerald-400/70" />}
+                    />
                   ) : (
                     <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#666]">
                       <Tag size={13} />
                       <span>
-                        {issue.release?.version ||
-                          (issue.release_id ? "Linked" : "None")}
+                        {issue.release?.version || (issue.release_id ? "Linked" : "None")}
                       </span>
                     </div>
                   )}

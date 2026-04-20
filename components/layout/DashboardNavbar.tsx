@@ -136,13 +136,11 @@ export function DashboardNavbar({
 
   return (
     <nav className="sticky top-0 left-0 w-full z-50 bg-[#0c0c0d]/80 backdrop-blur-md border-b border-white/[0.06]">
-      {/* Decorative red gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#ff1f1f]/30 to-transparent" />
       <div className="mx-auto w-full px-4 h-14 flex items-center justify-between">
         
         {/* Left Side: Logo & Workspace Switcher & Project Switcher */}
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/workspace" className="flex items-center gap-2 text-emerald-500 hover:text-emerald-400 transition-colors">
+          <Link href="/dashboard/workspace" className="flex items-center gap-2 text-white/60 hover:text-white/90 transition-colors">
             <img
               src="/favicon.ico"
               alt="WurkFlo Logo"
