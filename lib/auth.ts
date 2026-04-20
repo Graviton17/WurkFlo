@@ -207,7 +207,9 @@ export class Auth {
   async resetPassword(email: string): Promise<AuthResponse<null>> {
     try {
       const client = await this.getClient();
-      const { error } = await client.auth.resetPasswordForEmail(email);
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback?next=/reset-password`,
+      });
 
       return {
         data: null,

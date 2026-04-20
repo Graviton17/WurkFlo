@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { authSyncService } from "@/services";
-import { LoginSchema, CreateUserSchema } from "@/types/validation";
+import { LoginSchema, CreateUserSchema, ForgotPasswordSchema, ResetPasswordSchema } from "@/types/validation";
 import type { ActionResult } from "@/types/index";
 import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -55,4 +55,34 @@ export async function syncUserAction(): Promise<ActionResult<{ success: boolean 
   }
 
   return { success: true, data: { success: true } };
+}
+
+export async function forgotPasswordAction(data: Record<string, unknown>): Promise<ActionResult<{ message: string }>> {
+  const parsed = ForgotPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, data: null, error: "Please enter a valid email address" };
+  }
+
+  const result = await auth.resetPassword(parsed.data.email);
+
+  if (!result.success) {
+    return { success: false, data: null, error: result.error?.message || "Failed to send reset email" };
+  }
+
+  return { success: true, data: { message: "If an account with that email exists, a password reset link has been sent." } };
+}
+
+export async function resetPasswordAction(data: Record<string, unknown>): Promise<ActionResult<{ message: string }>> {
+  const parsed = ResetPasswordSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, data: null, error: parsed.error.issues[0]?.message || "Invalid password" };
+  }
+
+  const result = await auth.updatePassword(parsed.data.password);
+
+  if (!result.success) {
+    return { success: false, data: null, error: result.error?.message || "Failed to reset password" };
+  }
+
+  return { success: true, data: { message: "Password reset successfully" } };
 }
