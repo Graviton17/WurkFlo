@@ -30,7 +30,9 @@ export function AssigneePicker({
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownStyle, setDropdownStyle] = useState({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -47,6 +49,25 @@ export function AssigneePicker({
       document.addEventListener("mousedown", handleClickOutside);
       return () =>
         document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  // Calculate position when opening — clamp so dropdown never overflows right edge
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 260;
+      const margin = 8;
+      const clampedLeft = Math.min(
+        rect.left,
+        window.innerWidth - dropdownWidth - margin,
+      );
+      setDropdownStyle({
+        position: "fixed",
+        top: `${rect.bottom + 4}px`,
+        left: `${Math.max(margin, clampedLeft)}px`,
+        width: `${dropdownWidth}px`,
+      });
     }
   }, [isOpen]);
 
@@ -94,6 +115,7 @@ export function AssigneePicker({
       {compact ? (
         <button
           type="button"
+          ref={buttonRef}
           onClick={handleOpen}
           className="flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-lg text-[12.5px] text-[#888] hover:border-white/[0.12] hover:text-white transition-all cursor-pointer w-full"
         >
@@ -116,6 +138,7 @@ export function AssigneePicker({
       ) : (
         <button
           type="button"
+          ref={buttonRef}
           onClick={handleOpen}
           className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-xs transition-colors ${
             selectedUserId
@@ -141,7 +164,7 @@ export function AssigneePicker({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-[100] top-full mt-1 left-0 w-[260px] bg-[#141414] border border-white/[0.1] rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+        <div style={dropdownStyle} className="z-[100] bg-[#141414] border border-white/[0.1] rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
           {/* Search */}
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06]">
             <Search size={13} className="text-[#555] shrink-0" />
