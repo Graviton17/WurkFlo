@@ -1,11 +1,32 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { issueService, workflowStateService } from "@/services/index";
+import { issueService, workflowStateService, sprintService } from "@/services/index";
 import { CreateIssueSchema, UpdateIssueSchema } from "@/types/validation";
 import { logger } from "@/lib/logger";
 import { requireUser } from "./utils";
 import type { ActionResult, Issue, IssueWithRelations } from "@/types/index";
+
+/**
+ * Helper: capture a burndown snapshot for a sprint (fire-and-forget).
+ * Called after issue state changes, sprint assignment changes, or issue creation.
+ * Non-blocking — failures are logged but never break the parent action.
+ */
+async function captureBurndownSnapshot(sprintId: string): Promise<void> {
+  try {
+    const issuesRes = await issueService.getSprintIssues(sprintId);
+    const sprintIssues = issuesRes.data ?? [];
+    await sprintService.captureSnapshot(
+      sprintId,
+      sprintIssues.map((i) => ({
+        state_category: i.workflow_state?.category ?? null,
+        estimate: i.estimate,
+      })),
+    );
+  } catch (err) {
+    logger.warn({ err }, "Failed to capture burndown snapshot");
+  }
+}
 
 /**
  * Move an issue to a new workflow state (drag-and-drop).
@@ -26,6 +47,11 @@ export async function moveIssue(
     // Revalidate to keep server cache consistent with the optimistic UI
     if (projectId) {
       revalidatePath(`/dashboard/project/${projectId}`);
+    }
+
+    // Capture burndown snapshot if issue is in an active sprint
+    if (result.data?.sprint_id) {
+      captureBurndownSnapshot(result.data.sprint_id).catch(() => {});
     }
 
     return { success: true, data: result.data };
@@ -88,6 +114,12 @@ export async function createIssue(
     }
 
     revalidatePath(`/dashboard/project/${validation.data.project_id}`);
+
+    // Capture burndown snapshot if issue was assigned to a sprint (scope creep detection)
+    if (result.data?.sprint_id) {
+      captureBurndownSnapshot(result.data.sprint_id).catch(() => {});
+    }
+
     return { success: true, data: result.data };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Failed to create issue";
@@ -214,6 +246,11 @@ export async function assignIssueToSprint(
     // Revalidate to keep backlog/sprint views consistent
     if (projectId) {
       revalidatePath(`/dashboard/project/${projectId}`);
+    }
+
+    // Capture burndown snapshot for the target sprint (tracks scope changes)
+    if (sprintId) {
+      captureBurndownSnapshot(sprintId).catch(() => {});
     }
 
     return { success: true, data: result.data };

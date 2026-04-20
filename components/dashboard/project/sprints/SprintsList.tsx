@@ -248,8 +248,8 @@ export function SprintsList({
               {/* Expanded Content */}
               {isExpanded && (
                 <div className="border-t border-white/[0.04]">
-                  {/* Completion summary for completed sprints */}
-                  {sprint.status === "completed" && (
+                  {/* Sprint progress summary (active + completed) */}
+                  {(sprint.status === "active" || sprint.status === "completed") && (
                     <div className="px-5 py-3 border-b border-white/[0.04] bg-white/[0.01]">
                       <div className="flex items-center gap-6 text-[11px]">
                         <span className="text-[#666]">
@@ -276,8 +276,8 @@ export function SprintsList({
                     </div>
                   )}
 
-                  {/* Burndown chart for completed sprints */}
-                  {sprint.status === "completed" && (
+                  {/* Burndown chart (active + completed sprints) */}
+                  {(sprint.status === "active" || sprint.status === "completed") && (
                     <div className="border-b border-white/[0.04]">
                       <SprintBurndownChart sprint={sprint} />
                     </div>

@@ -126,9 +126,23 @@ export async function startSprint(
       };
     }
 
-    // Activate the sprint
+    // Activate the sprint — auto-fill dates if not set
+    const today = new Date();
+    const sprintRes = await sprintService.getSprintById(sprintId);
+    const existingSprint = sprintRes.data;
+
+    const startDate =
+      existingSprint?.start_date || today.toISOString().split("T")[0];
+    const endDate =
+      existingSprint?.end_date ||
+      new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0]; // Default: 2 weeks
+
     const result = await sprintService.updateSprint(sprintId, {
       status: "active",
+      start_date: startDate,
+      end_date: endDate,
     });
 
     if (!result.success) {
