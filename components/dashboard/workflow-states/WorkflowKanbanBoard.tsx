@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DragDropContext,
   Droppable,
@@ -156,6 +156,14 @@ export function WorkflowKanbanBoard({
   const [states, setStates] = useState<WorkflowState[]>(initialStates);
   const [issues, setIssues] = useState<Issue[]>(initialIssues);
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null);
+
+  useEffect(() => {
+    setStates(initialStates);
+  }, [initialStates]);
+
+  useEffect(() => {
+    setIssues(initialIssues);
+  }, [initialIssues]);
 
   const issuesForState = (stateId: string) =>
     issues.filter((i) => i.state_id === stateId);
